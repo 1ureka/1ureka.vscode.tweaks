@@ -9,6 +9,7 @@ async function main() {
     format: "esm",
     external: ["vscode"],
     outfile: "dist/extension.js",
+    loader: { ".svg": "dataurl" },
   });
 
   // Package with vsce
