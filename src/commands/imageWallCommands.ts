@@ -30,18 +30,20 @@ export function registerImageWallCommands(context: vscode.ExtensionContext) {
   context.subscriptions.push(openImageWallFromExplorerCommand, openImageWallCommand);
 }
 
+import imageWallLight from "../icons/image-wall-light.svg";
+import imageWallDark from "../icons/image-wall-dark.svg";
+
 function openImageWall(context: vscode.ExtensionContext, folderPath: string) {
-  // 直接創建 webview panel，而不是使用 custom editor
-  const panel = vscode.window.createWebviewPanel(
-    "imageWall",
-    `圖片牆: ${path.basename(folderPath)}`,
-    vscode.ViewColumn.One,
-    {
-      enableScripts: true,
-      retainContextWhenHidden: true,
-      localResourceRoots: [vscode.Uri.file(folderPath)],
-    }
-  );
+  const panel = vscode.window.createWebviewPanel("imageWall", `${path.basename(folderPath)}`, vscode.ViewColumn.One, {
+    enableScripts: true,
+    retainContextWhenHidden: true,
+    localResourceRoots: [vscode.Uri.file(folderPath)],
+  });
+
+  panel.iconPath = {
+    light: vscode.Uri.parse(imageWallLight),
+    dark: vscode.Uri.parse(imageWallDark),
+  };
 
   updateWebviewContent(panel, folderPath);
 }
@@ -116,10 +118,10 @@ function getHtmlForWebview(webview: vscode.Webview, folderPath: string, images: 
     }
     .header h2 {
       margin: 0 0 10px 0;
-      font-size: 1.2em;
+      font-size: 1.5rem;
     }
     .folder-path {
-      font-size: 0.9em;
+      font-size: 1.1rem;
       opacity: 0.7;
     }
     .image-grid {
@@ -149,7 +151,7 @@ function getHtmlForWebview(webview: vscode.Webview, folderPath: string, images: 
       margin-bottom: 10px;
     }
     .image-name {
-      font-size: 0.85em;
+      font-size: 1rem;
       text-align: center;
       word-break: break-all;
       opacity: 0.8;
@@ -158,6 +160,7 @@ function getHtmlForWebview(webview: vscode.Webview, folderPath: string, images: 
       text-align: center;
       padding: 40px;
       opacity: 0.6;
+      font-size: 1.2rem;
     }
   </style>
 </head>
