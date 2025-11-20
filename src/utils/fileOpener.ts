@@ -15,7 +15,7 @@ export function openApplication(appName: string, appPath: string) {
   const displayName = appName.charAt(0).toUpperCase() + appName.slice(1).toLowerCase();
 
   // 直接啟動應用程式(不帶檔案)
-  exec(`start "" "${appPath}"`, (error) => {
+  exec(`"${appPath}"`, (error) => {
     if (error) vscode.window.showErrorMessage(`無法啟動 ${displayName}，請確認是否有安裝該應用程式與有足夠的權限`);
   });
 }
