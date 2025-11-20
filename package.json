@@ -1,9 +1,10 @@
 {
   "name": "1ureka-vscode-extension",
   "author": "1ureka",
+  "publisher": "1ureka",
   "description": "A Visual Studio Code extension developed for personal use.",
   "version": "0.0.1",
-  "main": "./extension.js",
+  "main": "./dist/extension.js",
   "type": "module",
   "engines": {
     "vscode": "^1.106.1"
@@ -12,7 +13,12 @@
     "onStartupFinished"
   ],
   "contributes": {
-    "commands": [],
+    "commands": [
+      {
+        "command": "extension.helloWorld",
+        "title": "Hello World"
+      }
+    ],
     "menus": {}
   },
   "scripts": {

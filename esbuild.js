@@ -1,6 +1,5 @@
 import { build } from "esbuild";
-import { copyFileSync, mkdirSync, rmSync } from "fs";
-import { resolve as resolvePath } from "path";
+import { spawn } from "child_process";
 
 async function main() {
   await build({
@@ -9,18 +8,26 @@ async function main() {
     platform: "node",
     format: "esm",
     external: ["vscode"],
-    outfile: "extension.js",
+    outfile: "dist/extension.js",
   });
 
-  const outDir = "./dist";
-  rmSync(outDir, { recursive: true, force: true });
-  mkdirSync(outDir);
+  // Package with vsce
+  await new Promise((resolve, reject) => {
+    const vsceProcess = spawn(
+      "npx",
+      ["vsce", "package", "--out", ".", "--allow-missing-repository", "--skip-license"],
+      { stdio: "inherit", shell: true }
+    );
 
-  copyFileSync("extension.js", resolvePath(outDir, "extension.js"));
-  rmSync("extension.js");
-  copyFileSync("package.json", resolvePath(outDir, "package.json"));
-
-  // TODO: 呼叫 vsce 打包成 .vsix (用 spawn? 若你有更好的做法也可以)
+    vsceProcess.on("close", (code) => {
+      if (code === 0) {
+        console.log("Successfully packaged extension");
+        resolve();
+      } else {
+        reject(new Error(`vsce exited with code ${code}`));
+      }
+    });
+  });
 }
 
 main().catch((err) => {
