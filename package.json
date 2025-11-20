@@ -1,0 +1,27 @@
+{
+  "name": "1ureka-vscode-extension",
+  "author": "1ureka",
+  "description": "A Visual Studio Code extension developed for personal use.",
+  "version": "0.0.1",
+  "main": "./extension.js",
+  "type": "module",
+  "engines": {
+    "vscode": "^1.106.1"
+  },
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "contributes": {
+    "commands": [],
+    "menus": {}
+  },
+  "scripts": {
+    "build": "node esbuild.js"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.106.1",
+    "@vscode/vsce": "^3.7.0",
+    "esbuild": "^0.27.0",
+    "typescript": "^5.9.3"
+  }
+}
