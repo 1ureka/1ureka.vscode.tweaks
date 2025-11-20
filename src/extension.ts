@@ -1,14 +1,26 @@
 import * as vscode from "vscode";
+import { registerBlenderCommands } from "./commands/blenderCommands";
+import { registerPainterCommands } from "./commands/painterCommands";
+import { registerImageWallCommands } from "./commands/imageWallCommands";
+import { FileTimestampProvider } from "./providers/fileTimestampProvider";
+import { ImageWallProvider } from "./providers/imageWallProvider";
 
 export function activate(context: vscode.ExtensionContext) {
   console.log("Extension activated");
 
-  // Hello World command for testing
-  const helloWorldCommand = vscode.commands.registerCommand("extension.helloWorld", () => {
-    vscode.window.showInformationMessage("Hello World from 1ureka extension!");
-  });
+  // 只在 Windows 上註冊 Blender 和 Painter 命令
+  if (process.platform === "win32") {
+    registerBlenderCommands(context);
+    registerPainterCommands(context);
+  }
 
-  context.subscriptions.push(helloWorldCommand);
+  // 註冊圖片牆功能
+  registerImageWallCommands(context);
+  context.subscriptions.push(ImageWallProvider.register(context));
+
+  // 註冊檔案時間戳提供者
+  const fileTimestampProvider = new FileTimestampProvider();
+  fileTimestampProvider.register(context);
 }
 
 export function deactivate() {}

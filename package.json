@@ -15,11 +15,86 @@
   "contributes": {
     "commands": [
       {
-        "command": "extension.helloWorld",
-        "title": "Hello World"
+        "command": "extension.openBlender",
+        "title": "開啟 Blender"
+      },
+      {
+        "command": "extension.openWithBlender",
+        "title": "以 Blender 開啟"
+      },
+      {
+        "command": "extension.openPainter",
+        "title": "開啟 Painter"
+      },
+      {
+        "command": "extension.openWithPainter",
+        "title": "以 Painter 開啟"
+      },
+      {
+        "command": "extension.openImageWall",
+        "title": "開啟圖片牆"
+      },
+      {
+        "command": "extension.openImageWallFromExplorer",
+        "title": "以圖片牆顯示"
       }
     ],
-    "menus": {}
+    "menus": {
+      "explorer/context": [
+        {
+          "when": "resourceExtname == .blend",
+          "command": "extension.openWithBlender",
+          "group": "navigation"
+        },
+        {
+          "when": "resourceExtname == .spp",
+          "command": "extension.openWithPainter",
+          "group": "navigation"
+        },
+        {
+          "when": "explorerResourceIsFolder",
+          "command": "extension.openImageWallFromExplorer",
+          "group": "navigation"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "extension.openBlender",
+          "when": "isWindows"
+        },
+        {
+          "command": "extension.openPainter",
+          "when": "isWindows"
+        },
+        {
+          "command": "extension.openImageWall"
+        },
+        {
+          "command": "extension.openWithBlender",
+          "when": "false"
+        },
+        {
+          "command": "extension.openWithPainter",
+          "when": "false"
+        },
+        {
+          "command": "extension.openImageWallFromExplorer",
+          "when": "false"
+        }
+      ]
+    },
+    "customEditors": [
+      {
+        "viewType": "extension.imageWallEditor",
+        "displayName": "圖片牆",
+        "selector": [
+          {
+            "filenamePattern": "image-wall:*"
+          }
+        ],
+        "priority": "default"
+      }
+    ]
   },
   "scripts": {
     "build": "node esbuild.js"
