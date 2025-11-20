@@ -44,17 +44,17 @@
         {
           "when": "resourceExtname == .blend",
           "command": "extension.openWithBlender",
-          "group": "navigation"
+          "group": "navigation@100"
         },
         {
           "when": "resourceExtname == .spp",
           "command": "extension.openWithPainter",
-          "group": "navigation"
+          "group": "navigation@100"
         },
         {
           "when": "explorerResourceIsFolder",
           "command": "extension.openImageWallFromExplorer",
-          "group": "navigation"
+          "group": "navigation@100"
         }
       ],
       "commandPalette": [
