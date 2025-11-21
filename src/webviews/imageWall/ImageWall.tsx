@@ -30,14 +30,16 @@ const ImageWallTitle = ({ folderPath, imageCount }: { folderPath: string; imageC
 );
 
 const useColumnCounts = () => {
+  const isXl = useMediaQuery((theme) => theme.breakpoints.up("xl"));
   const isLg = useMediaQuery((theme) => theme.breakpoints.up("lg"));
   const isMd = useMediaQuery((theme) => theme.breakpoints.up("md"));
   const isSm = useMediaQuery((theme) => theme.breakpoints.up("sm"));
 
-  if (isLg) return 5;
-  if (isMd) return 4;
-  if (isSm) return 3;
-  return 2;
+  if (isXl) return 5;
+  if (isLg) return 4;
+  if (isMd) return 3;
+  if (isSm) return 2;
+  return 1;
 };
 
 const ellipsisSx = {
