@@ -13,6 +13,17 @@
     "onStartupFinished"
   ],
   "contributes": {
+    "configuration": {
+      "title": "1ureka VSCode 擴展設定",
+      "properties": {
+        "1ureka.vscodeResourcePath": {
+          "type": "string",
+          "scope": "machine",
+          "default": "",
+          "markdownDescription": "設定 VSCode 資源目錄路徑，用於字型注入功能。\n\n範例：`C:/Users/YourName/AppData/Local/Programs/Microsoft VS Code/resources/app/out/vs`"
+        }
+      }
+    },
     "commands": [
       {
         "command": "extension.openBlender",
@@ -80,18 +91,6 @@
         },
         {
           "command": "extension.openImageWall"
-        },
-        {
-          "command": "extension.openWithBlender",
-          "when": "false"
-        },
-        {
-          "command": "extension.openWithPainter",
-          "when": "false"
-        },
-        {
-          "command": "extension.openImageWallFromExplorer",
-          "when": "false"
         }
       ]
     }
@@ -108,6 +107,7 @@
     "esbuild": "^0.27.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "node-html-parser": "^7.0.1"
   }
 }
