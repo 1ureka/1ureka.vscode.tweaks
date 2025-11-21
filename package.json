@@ -39,6 +39,18 @@
         "title": "以圖片牆顯示"
       }
     ],
+    "customEditors": [
+      {
+        "viewType": "fileTimestamp.catchAll",
+        "displayName": "File Timestamp Tracker",
+        "selector": [
+          {
+            "filenamePattern": "*"
+          }
+        ],
+        "priority": "option"
+      }
+    ],
     "menus": {
       "explorer/context": [
         {
