@@ -15,7 +15,7 @@ function getConfiguredPath(): string | undefined {
 function locateHtml() {
   const resourceDir = getConfiguredPath();
   if (!resourceDir) {
-    vscode.window.showInformationMessage("請先在設定中指定 VSCode 資源目錄路徑，以啟用字型注入功能。");
+    vscode.window.showInformationMessage("請先在設定中指定 VSCode 資源目錄路徑，以啟用自訂樣式功能。");
     return null;
   }
 
@@ -45,9 +45,9 @@ function locateHtml() {
 }
 
 /**
- * 修改 Content-Security-Policy，允許載入字體來源
+ * 修改 Content-Security-Policy，允許載入外部資源（字體、樣式等）
  */
-function allowFontsSources(htmlContent: string): string | null {
+function allowExternalSources(htmlContent: string): string | null {
   const document = parseHtml(htmlContent);
 
   const cspMeta = document.querySelector('meta[http-equiv="Content-Security-Policy"]');
@@ -69,9 +69,9 @@ function allowFontsSources(htmlContent: string): string | null {
 }
 
 /**
- * 注入自訂字型
+ * 注入自訂樣式
  */
-function injectFonts(htmlContent: string): string | null {
+function injectCustomStyles(htmlContent: string): string | null {
   const document = parseHtml(htmlContent);
 
   const head = document.querySelector("head");
@@ -85,22 +85,22 @@ function injectFonts(htmlContent: string): string | null {
 }
 
 /**
- * 先使用 allowFontsSources 修改 CSP，然後注入字型
+ * 先使用 allowExternalSources 修改 CSP，然後注入自訂樣式
  */
-async function injectCustomFonts() {
+async function injectStyles() {
   const htmlPath = locateHtml();
   if (!htmlPath) return;
 
   const htmlContent = fs.readFileSync(htmlPath, "utf-8");
-  const modifiedCSPContent = allowFontsSources(htmlContent);
+  const modifiedCSPContent = allowExternalSources(htmlContent);
   if (!modifiedCSPContent) {
-    vscode.window.showInformationMessage("自訂字型已經注入過了，無需重複注入。");
+    vscode.window.showInformationMessage("自訂樣式已經注入過了，無需重複注入。");
     return;
   }
 
-  const modifiedContent = injectFonts(modifiedCSPContent);
+  const modifiedContent = injectCustomStyles(modifiedCSPContent);
   if (!modifiedContent) {
-    vscode.window.showInformationMessage("自訂字型已經注入過了，無需重複注入。");
+    vscode.window.showInformationMessage("自訂樣式已經注入過了，無需重複注入。");
     return;
   }
 
@@ -108,7 +108,7 @@ async function injectCustomFonts() {
   fs.writeFileSync(htmlPath, modifiedContent, "utf-8");
 
   const result = await vscode.window.showWarningMessage(
-    "已成功注入自訂字型，請重新啟動 VSCode 以套用變更。",
+    "已成功注入自訂樣式，請重新啟動 VSCode 以套用變更。",
     "重新啟動"
   );
 
@@ -120,7 +120,7 @@ async function injectCustomFonts() {
 /**
  * 還原備份的 workbench HTML 檔案
  */
-async function restoreFonts() {
+async function restoreStyles() {
   const htmlPath = locateHtml();
   if (!htmlPath) return;
 
@@ -148,9 +148,9 @@ async function restoreFonts() {
   }
 }
 
-export function registerInjectFontsCommands(context: vscode.ExtensionContext) {
-  const injectFontsCommand = vscode.commands.registerCommand("extension.injectFonts", injectCustomFonts);
-  const restoreFontsCommand = vscode.commands.registerCommand("extension.restoreFonts", restoreFonts);
+export function registerInjectStylesCommands(context: vscode.ExtensionContext) {
+  const injectStylesCommand = vscode.commands.registerCommand("extension.injectStyles", injectStyles);
+  const restoreStylesCommand = vscode.commands.registerCommand("extension.restoreStyles", restoreStyles);
 
-  context.subscriptions.push(injectFontsCommand, restoreFontsCommand);
+  context.subscriptions.push(injectStylesCommand, restoreStylesCommand);
 }

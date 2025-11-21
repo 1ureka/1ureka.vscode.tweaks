@@ -20,7 +20,7 @@
           "type": "string",
           "scope": "machine",
           "default": "",
-          "markdownDescription": "設定 VSCode 資源目錄路徑，用於字型注入功能。\n\n範例：`C:/Users/YourName/AppData/Local/Programs/Microsoft VS Code/resources/app/out/vs`"
+          "markdownDescription": "設定 VSCode 資源目錄路徑，用於自訂樣式注入功能。\n\n範例：`C:/Users/YourName/AppData/Local/Programs/Microsoft VS Code/resources/app/out/vs`"
         }
       }
     },
@@ -50,12 +50,12 @@
         "title": "以圖片牆顯示"
       },
       {
-        "command": "extension.injectFonts",
-        "title": "注入自訂字型"
+        "command": "extension.injectStyles",
+        "title": "注入自訂樣式"
       },
       {
-        "command": "extension.restoreFonts",
-        "title": "還原字型設定"
+        "command": "extension.restoreStyles",
+        "title": "還原樣式設定"
       }
     ],
     "customEditors": [
@@ -101,10 +101,10 @@
           "command": "extension.openImageWall"
         },
         {
-          "command": "extension.injectFonts"
+          "command": "extension.injectStyles"
         },
         {
-          "command": "extension.restoreFonts"
+          "command": "extension.restoreStyles"
         }
       ]
     }
