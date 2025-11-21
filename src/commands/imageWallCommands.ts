@@ -1,6 +1,20 @@
 import * as vscode from "vscode";
 import * as fs from "fs";
 import * as path from "path";
+import { getReactWebviewHtml, setupWebviewMessageHandler, postMessageToWebview } from "../utils/webviewHelper";
+
+import imageWallLight from "../icons/image-wall-light.svg";
+import imageWallDark from "../icons/image-wall-dark.svg";
+
+interface ImageInfo {
+  uri: string;
+  fileName: string;
+}
+
+interface ImageWallState {
+  images: ImageInfo[];
+  folderPath: string;
+}
 
 export function registerImageWallCommands(context: vscode.ExtensionContext) {
   // 從檔案總管右鍵開啟圖片牆
@@ -30,30 +44,31 @@ export function registerImageWallCommands(context: vscode.ExtensionContext) {
   context.subscriptions.push(openImageWallFromExplorerCommand, openImageWallCommand);
 }
 
-import imageWallLight from "../icons/image-wall-light.svg";
-import imageWallDark from "../icons/image-wall-dark.svg";
-
 function openImageWall(context: vscode.ExtensionContext, folderPath: string) {
-  const panel = vscode.window.createWebviewPanel("imageWall", `${path.basename(folderPath)}`, vscode.ViewColumn.One, {
+  const viewType = "imageWall";
+  const title = `圖片牆 - ${path.basename(folderPath)}`;
+  const showOptions = vscode.ViewColumn.One;
+
+  const panel = vscode.window.createWebviewPanel(viewType, title, showOptions, {
     enableScripts: true,
     retainContextWhenHidden: true,
-    localResourceRoots: [vscode.Uri.file(folderPath)],
+    localResourceRoots: [vscode.Uri.file(folderPath), context.extensionUri],
   });
 
-  panel.iconPath = {
-    light: vscode.Uri.parse(imageWallLight),
-    dark: vscode.Uri.parse(imageWallDark),
-  };
+  panel.iconPath = { light: vscode.Uri.parse(imageWallLight), dark: vscode.Uri.parse(imageWallDark) };
+  panel.webview.html = getReactWebviewHtml(panel.webview, context.extensionUri, "imageWall.js", "圖片牆");
 
-  updateWebviewContent(panel, folderPath);
+  // 設置消息處理器
+  setupWebviewMessageHandler<void>(panel, (message) => {
+    if (message.type === "ready") {
+      const images = getImagesFromFolder(folderPath, panel.webview);
+      const state: ImageWallState = { images, folderPath };
+      postMessageToWebview(panel, { type: "update", payload: state });
+    }
+  });
 }
 
-function updateWebviewContent(panel: vscode.WebviewPanel, folderPath: string) {
-  const images = getImagesFromFolder(folderPath);
-  panel.webview.html = getHtmlForWebview(panel.webview, folderPath, images);
-}
-
-function getImagesFromFolder(folderPath: string): string[] {
+function getImagesFromFolder(folderPath: string, webview: vscode.Webview): ImageInfo[] {
   const supportedExtensions = [".jpg", ".jpeg", ".png", ".bmp", ".gif", ".webp", ".tiff", ".tif"];
 
   try {
@@ -62,7 +77,7 @@ function getImagesFromFolder(folderPath: string): string[] {
     }
 
     const files = fs.readdirSync(folderPath);
-    const images: string[] = [];
+    const images: ImageInfo[] = [];
 
     for (const file of files) {
       const fullPath = path.join(folderPath, file);
@@ -71,7 +86,11 @@ function getImagesFromFolder(folderPath: string): string[] {
       if (stat.isFile()) {
         const ext = path.extname(file).toLowerCase();
         if (supportedExtensions.includes(ext)) {
-          images.push(fullPath);
+          const uri = webview.asWebviewUri(vscode.Uri.file(fullPath)).toString();
+          images.push({
+            uri,
+            fileName: file,
+          });
         }
       }
     }
@@ -81,97 +100,4 @@ function getImagesFromFolder(folderPath: string): string[] {
     console.error("讀取資料夾失敗:", error);
     return [];
   }
-}
-
-function getHtmlForWebview(webview: vscode.Webview, folderPath: string, images: string[]): string {
-  const imageElements = images
-    .map((imagePath) => {
-      const uri = webview.asWebviewUri(vscode.Uri.file(imagePath));
-      const fileName = path.basename(imagePath);
-      return `
-        <div class="image-item">
-          <img src="${uri}" alt="${fileName}" />
-          <div class="image-name">${fileName}</div>
-        </div>
-      `;
-    })
-    .join("");
-
-  return `<!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>圖片牆</title>
-  <style>
-    body {
-      margin: 0;
-      padding: 20px;
-      background-color: var(--vscode-editor-background);
-      color: var(--vscode-editor-foreground);
-      font-family: var(--vscode-editor-font-family);
-    }
-    .header {
-      margin-bottom: 20px;
-      padding-bottom: 10px;
-      border-bottom: 1px solid var(--vscode-panel-border);
-    }
-    .header h2 {
-      margin: 0 0 10px 0;
-      font-size: 1.5rem;
-    }
-    .folder-path {
-      font-size: 1.1rem;
-      opacity: 0.7;
-    }
-    .image-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 20px;
-      padding: 10px 0;
-    }
-    .image-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 10px;
-      border: 1px solid var(--vscode-panel-border);
-      border-radius: 4px;
-      background-color: var(--vscode-editor-background);
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
-    .image-item:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-    }
-    .image-item img {
-      max-width: 100%;
-      height: 200px;
-      object-fit: contain;
-      margin-bottom: 10px;
-    }
-    .image-name {
-      font-size: 1rem;
-      text-align: center;
-      word-break: break-all;
-      opacity: 0.8;
-    }
-    .no-images {
-      text-align: center;
-      padding: 40px;
-      opacity: 0.6;
-      font-size: 1.2rem;
-    }
-  </style>
-</head>
-<body>
-  <div class="header">
-    <h2>圖片牆</h2>
-    <div class="folder-path">${folderPath}</div>
-  </div>
-  <div class="image-grid">
-    ${imageElements || '<div class="no-images">此資料夾中沒有圖片</div>'}
-  </div>
-</body>
-</html>`;
 }
