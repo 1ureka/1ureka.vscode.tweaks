@@ -1,5 +1,5 @@
 import React from "react";
-import { getInitialData, postMessageToExtension } from "../vscodeApi";
+import { getInitialData, postMessageToExtension } from "../utils/vscodeApi";
 
 type ImageInfo = { uri: string; fileName: string; filePath: string };
 const data = getInitialData<{ images: ImageInfo[]; folderPath: string }>() || {
