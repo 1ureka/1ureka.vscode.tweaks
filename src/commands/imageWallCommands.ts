@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import * as fs from "fs";
 import * as path from "path";
-import { generateHtml } from "../utils/webviewHelper";
+import { generateReactHtml, getReactResource } from "../utils/webviewHelper";
 
 import imageWallLight from "../icons/image-wall-light.svg";
 import imageWallDark from "../icons/image-wall-dark.svg";
@@ -11,13 +11,12 @@ export function registerImageWallCommands(context: vscode.ExtensionContext) {
   const openImageWallFromExplorerCommand = vscode.commands.registerCommand(
     "extension.openImageWallFromExplorer",
     (uri: vscode.Uri) => {
-      if (uri && uri.fsPath) {
-        openImageWall(context, uri.fsPath);
-      }
+      if (uri && uri.fsPath) openImageWall(context, uri.fsPath);
     }
   );
 
   // 從命令面板開啟圖片牆
+  // TODO: 改成支援多選資料夾
   const openImageWallCommand = vscode.commands.registerCommand("extension.openImageWall", async () => {
     const folders = await vscode.window.showOpenDialog({
       canSelectFiles: false,
@@ -26,14 +25,15 @@ export function registerImageWallCommands(context: vscode.ExtensionContext) {
       openLabel: "選擇資料夾",
     });
 
-    if (folders && folders.length > 0) {
-      openImageWall(context, folders[0].fsPath);
-    }
+    if (folders && folders.length > 0) openImageWall(context, folders[0].fsPath);
   });
 
   context.subscriptions.push(openImageWallFromExplorerCommand, openImageWallCommand);
 }
 
+/**
+ * 讀取資料夾中的圖片並在 WebView 中顯示
+ */
 function openImageWall(context: vscode.ExtensionContext, folderPath: string) {
   const viewType = "imageWall";
   const title = `圖片牆 - ${path.basename(folderPath)}`;
@@ -47,34 +47,39 @@ function openImageWall(context: vscode.ExtensionContext, folderPath: string) {
 
   panel.iconPath = { light: vscode.Uri.parse(imageWallLight), dark: vscode.Uri.parse(imageWallDark) };
 
-  const images = getImagesFromFolder(folderPath, panel.webview);
-  const initialData = { images, folderPath };
-  panel.webview.html = generateHtml(panel.webview, context.extensionUri, "imageWall.js", "圖片牆", initialData);
+  const images = getImagesFromFolder(folderPath).map(({ fileName, filePath }) => ({
+    uri: panel.webview.asWebviewUri(vscode.Uri.file(filePath)).toString(),
+    fileName,
+  }));
+
+  panel.webview.html = generateReactHtml({
+    title,
+    webview: panel.webview,
+    resource: getReactResource(viewType, context.extensionUri),
+    initialData: { folderPath, images },
+  });
 }
 
-type ImageInfo = {
-  uri: string;
-  fileName: string;
-};
-
-function getImagesFromFolder(folderPath: string, webview: vscode.Webview): ImageInfo[] {
+/**
+ * 讀取資料夾中的圖片檔案
+ */
+function getImagesFromFolder(folderPath: string) {
   const supportedExtensions = [".jpg", ".jpeg", ".png", ".bmp", ".gif", ".webp", ".tiff", ".tif"];
 
   try {
     if (!fs.existsSync(folderPath)) return [];
 
     const files = fs.readdirSync(folderPath);
-    const images: ImageInfo[] = [];
+    const images = [];
 
     for (const file of files) {
       const fullPath = path.join(folderPath, file);
       if (!fs.statSync(fullPath).isFile()) continue;
 
       const ext = path.extname(file).toLowerCase();
-      if (supportedExtensions.includes(ext)) {
-        const uri = webview.asWebviewUri(vscode.Uri.file(fullPath)).toString();
-        images.push({ uri, fileName: file });
-      }
+      if (!supportedExtensions.includes(ext)) continue;
+
+      images.push({ filePath: fullPath, fileName: file });
     }
 
     return images;

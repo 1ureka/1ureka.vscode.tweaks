@@ -14,19 +14,27 @@ function serializeForHtml(data: any): string {
 }
 
 /**
+ * 取得 React WebView 的資源 URI
+ */
+export function getReactResource(name: string, extensionUri: vscode.Uri) {
+  const jsUri = vscode.Uri.joinPath(extensionUri, "dist", "webviews", `${name}.js`);
+  const cssUri = vscode.Uri.joinPath(extensionUri, "dist", "webviews", `${name}.css`);
+  return { jsUri, cssUri };
+}
+
+type generateReactHtmlParams = {
+  title: string;
+  webview: vscode.Webview;
+  resource: ReturnType<typeof getReactResource>;
+  initialData?: any;
+};
+
+/**
  * 生成 React WebView 的 HTML 模板
  */
-export function generateHtml(
-  webview: vscode.Webview,
-  extensionUri: vscode.Uri,
-  scriptName: string,
-  title: string,
-  initialData?: any
-): string {
-  const jsUri = vscode.Uri.joinPath(extensionUri, "dist", "webviews", scriptName);
-  const jsWebviewUri = webview.asWebviewUri(jsUri);
-  const cssUri = vscode.Uri.joinPath(extensionUri, "dist", "webviews", scriptName.replace(".js", ".css"));
-  const cssWebviewUri = webview.asWebviewUri(cssUri);
+export function generateReactHtml({ title, webview, resource, initialData }: generateReactHtmlParams) {
+  const jsWebviewUri = webview.asWebviewUri(resource.jsUri);
+  const cssWebviewUri = webview.asWebviewUri(resource.cssUri);
 
   const initialDataScript = initialData
     ? `<script id="__data__" type="application/json">${serializeForHtml(initialData)}</script>`
