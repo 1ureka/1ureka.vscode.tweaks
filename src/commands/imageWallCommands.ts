@@ -50,6 +50,7 @@ function openImageWall(context: vscode.ExtensionContext, folderPath: string) {
   const images = getImagesFromFolder(folderPath).map(({ fileName, filePath }) => ({
     uri: panel.webview.asWebviewUri(vscode.Uri.file(filePath)).toString(),
     fileName,
+    filePath,
   }));
 
   panel.webview.html = generateReactHtml({
@@ -58,6 +59,17 @@ function openImageWall(context: vscode.ExtensionContext, folderPath: string) {
     resource: getReactResource(viewType, context.extensionUri),
     initialData: { folderPath, images },
   });
+
+  panel.webview.onDidReceiveMessage(
+    (message) => {
+      if (message.type === "imageClick" && message.filePath) {
+        const uri = vscode.Uri.file(message.filePath);
+        vscode.commands.executeCommand("vscode.open", uri, vscode.ViewColumn.Active);
+      }
+    },
+    undefined,
+    context.subscriptions
+  );
 }
 
 /**

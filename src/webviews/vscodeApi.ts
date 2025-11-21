@@ -14,3 +14,15 @@ export function getInitialData<T = any>(): T | null {
     return null;
   }
 }
+
+/**
+ * 從模組層確保單例化 VS Code API
+ */
+const vscode = acquireVsCodeApi();
+
+/**
+ * 向擴展發送消息
+ */
+export function postMessageToExtension(message: any) {
+  vscode.postMessage(message);
+}

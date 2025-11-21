@@ -1,10 +1,14 @@
 import React from "react";
-import { getInitialData } from "../vscodeApi";
+import { getInitialData, postMessageToExtension } from "../vscodeApi";
 
-type ImageInfo = { uri: string; fileName: string };
+type ImageInfo = { uri: string; fileName: string; filePath: string };
 const data = getInitialData<{ images: ImageInfo[]; folderPath: string }>() || {
   images: [],
   folderPath: "",
+};
+
+const createHandleClick = (filePath: string) => () => {
+  postMessageToExtension({ type: "imageClick", filePath });
 };
 
 export const ImageWall: React.FC = () => {
@@ -31,7 +35,7 @@ export const ImageWall: React.FC = () => {
       </div>
       <div className="image-grid">
         {images.map((image, index) => (
-          <div key={index} className="image-item">
+          <div key={index} className="image-item" onClick={createHandleClick(image.filePath)}>
             <img src={image.uri} alt={image.fileName} loading="lazy" />
             <div className="image-name">{image.fileName}</div>
           </div>
