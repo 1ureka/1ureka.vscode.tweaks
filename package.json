@@ -48,6 +48,14 @@
       {
         "command": "extension.openImageWallFromExplorer",
         "title": "以圖片牆顯示"
+      },
+      {
+        "command": "extension.injectFonts",
+        "title": "注入自訂字型"
+      },
+      {
+        "command": "extension.restoreFonts",
+        "title": "還原字型設定"
       }
     ],
     "customEditors": [
@@ -91,6 +99,12 @@
         },
         {
           "command": "extension.openImageWall"
+        },
+        {
+          "command": "extension.injectFonts"
+        },
+        {
+          "command": "extension.restoreFonts"
         }
       ]
     }
