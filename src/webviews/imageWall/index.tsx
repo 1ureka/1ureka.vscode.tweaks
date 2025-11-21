@@ -1,10 +1,14 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
 import { ImageWall } from "./ImageWall";
-import "./ImageWall.css";
+import { Providers } from "../utils/Providers";
 
 const container = document.getElementById("root");
 if (container) {
   const root = createRoot(container);
-  root.render(<ImageWall />);
+  root.render(
+    <Providers>
+      <ImageWall />
+    </Providers>
+  );
 }
