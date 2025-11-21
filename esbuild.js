@@ -1,8 +1,8 @@
 import { build } from "esbuild";
 import { spawn } from "child_process";
+import { readdirSync, existsSync } from "fs";
 
-async function main() {
-  // Build extension (Node.js environment)
+async function buildExtension() {
   await build({
     entryPoints: ["src/extension.ts"],
     bundle: true,
@@ -14,21 +14,32 @@ async function main() {
   });
 
   console.log("✓ Extension bundle built successfully");
+}
 
-  // TODO: 改成自動掃描 src/webviews 目錄下的所有檔案並打包
-  // Build webviews (Browser environment)
-  await build({
-    entryPoints: ["src/webviews/imageWall/index.tsx"],
-    bundle: true,
-    platform: "browser",
-    format: "iife",
-    outfile: "dist/webviews/imageWall.js",
-    minify: true,
-  });
+async function buildWebviews() {
+  const webviewDirs = readdirSync("src/webviews", { withFileTypes: true });
+  const webviews = webviewDirs.filter((dirent) => dirent.isDirectory()).map(({ name }) => name);
+
+  for (const dir of webviews) {
+    const entryPoint = `src/webviews/${dir}/index.tsx`;
+    if (!existsSync(entryPoint)) continue;
+
+    await build({
+      entryPoints: [entryPoint],
+      bundle: true,
+      platform: "browser",
+      format: "iife",
+      outfile: `dist/webviews/${dir}.js`,
+      minify: true,
+    });
+
+    console.log(`✓ Built WebView bundle: ${dir}`);
+  }
 
   console.log("✓ WebView bundles built successfully");
+}
 
-  // Package with vsce
+async function packageExtension() {
   await new Promise((resolve, reject) => {
     const vsceProcess = spawn(
       "npx",
@@ -37,14 +48,19 @@ async function main() {
     );
 
     vsceProcess.on("close", (code) => {
-      if (code === 0) {
-        console.log("✓ Successfully packaged extension");
-        resolve();
-      } else {
-        reject(new Error(`vsce exited with code ${code}`));
-      }
+      if (code === 0) resolve();
+      else reject(new Error(`vsce exited with code ${code}`));
     });
   });
+
+  console.log("✓ Successfully packaged extension");
+}
+
+async function main() {
+  await buildExtension();
+  await buildWebviews();
+  await packageExtension();
+  process.exit(0);
 }
 
 main().catch((err) => {
