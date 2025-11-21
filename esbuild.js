@@ -10,7 +10,7 @@ async function buildExtension() {
     format: "esm",
     external: ["vscode"],
     outfile: "dist/extension.js",
-    loader: { ".svg": "dataurl" },
+    loader: { ".svg": "dataurl", ".css": "text" },
   });
 
   console.log("✓ Extension bundle built successfully");
