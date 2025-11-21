@@ -16,7 +16,7 @@ function serializeForHtml(data: any): string {
 /**
  * 生成 React WebView 的 HTML 模板
  */
-export function getReactWebviewHtml(
+export function generateHtml(
   webview: vscode.Webview,
   extensionUri: vscode.Uri,
   scriptName: string,
@@ -56,29 +56,4 @@ function getNonce(): string {
     text += possible.charAt(Math.floor(Math.random() * possible.length));
   }
   return text;
-}
-
-/**
- * WebView 和 Extension 之間的消息傳遞類型
- */
-interface WebviewMessage<T = any> {
-  type: string;
-  payload?: T;
-}
-
-/**
- * 設置 WebView 的消息處理器
- */
-export function setupWebviewMessageHandler<T = any>(
-  panel: vscode.WebviewPanel,
-  handler: (message: WebviewMessage<T>) => void | Promise<void>
-): vscode.Disposable {
-  return panel.webview.onDidReceiveMessage(handler);
-}
-
-/**
- * 從 Extension 向 WebView 發送消息
- */
-export function postMessageToWebview<T = any>(panel: vscode.WebviewPanel, message: WebviewMessage<T>): void {
-  panel.webview.postMessage(message);
 }

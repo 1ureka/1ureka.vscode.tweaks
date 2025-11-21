@@ -1,20 +1,10 @@
 import * as vscode from "vscode";
 import * as fs from "fs";
 import * as path from "path";
-import { getReactWebviewHtml, setupWebviewMessageHandler, postMessageToWebview } from "../utils/webviewHelper";
+import { generateHtml } from "../utils/webviewHelper";
 
 import imageWallLight from "../icons/image-wall-light.svg";
 import imageWallDark from "../icons/image-wall-dark.svg";
-
-interface ImageInfo {
-  uri: string;
-  fileName: string;
-}
-
-interface ImageWallState {
-  images: ImageInfo[];
-  folderPath: string;
-}
 
 export function registerImageWallCommands(context: vscode.ExtensionContext) {
   // 從檔案總管右鍵開啟圖片牆
@@ -56,42 +46,34 @@ function openImageWall(context: vscode.ExtensionContext, folderPath: string) {
   });
 
   panel.iconPath = { light: vscode.Uri.parse(imageWallLight), dark: vscode.Uri.parse(imageWallDark) };
-  panel.webview.html = getReactWebviewHtml(panel.webview, context.extensionUri, "imageWall.js", "圖片牆");
 
-  // 設置消息處理器
-  setupWebviewMessageHandler<void>(panel, (message) => {
-    if (message.type === "ready") {
-      const images = getImagesFromFolder(folderPath, panel.webview);
-      const state: ImageWallState = { images, folderPath };
-      postMessageToWebview(panel, { type: "update", payload: state });
-    }
-  });
+  const images = getImagesFromFolder(folderPath, panel.webview);
+  const initialData = { images, folderPath };
+  panel.webview.html = generateHtml(panel.webview, context.extensionUri, "imageWall.js", "圖片牆", initialData);
 }
+
+type ImageInfo = {
+  uri: string;
+  fileName: string;
+};
 
 function getImagesFromFolder(folderPath: string, webview: vscode.Webview): ImageInfo[] {
   const supportedExtensions = [".jpg", ".jpeg", ".png", ".bmp", ".gif", ".webp", ".tiff", ".tif"];
 
   try {
-    if (!fs.existsSync(folderPath)) {
-      return [];
-    }
+    if (!fs.existsSync(folderPath)) return [];
 
     const files = fs.readdirSync(folderPath);
     const images: ImageInfo[] = [];
 
     for (const file of files) {
       const fullPath = path.join(folderPath, file);
-      const stat = fs.statSync(fullPath);
+      if (!fs.statSync(fullPath).isFile()) continue;
 
-      if (stat.isFile()) {
-        const ext = path.extname(file).toLowerCase();
-        if (supportedExtensions.includes(ext)) {
-          const uri = webview.asWebviewUri(vscode.Uri.file(fullPath)).toString();
-          images.push({
-            uri,
-            fileName: file,
-          });
-        }
+      const ext = path.extname(file).toLowerCase();
+      if (supportedExtensions.includes(ext)) {
+        const uri = webview.asWebviewUri(vscode.Uri.file(fullPath)).toString();
+        images.push({ uri, fileName: file });
       }
     }
 
