@@ -1,6 +1,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import * as vscode from "vscode";
+import customStyle from "../utils/customStyle.css";
 import { parse as parseHtml } from "node-html-parser";
 
 function getConfiguredPath(): string | undefined {
@@ -76,16 +77,10 @@ function injectFonts(htmlContent: string): string | null {
   const head = document.querySelector("head");
   if (!head) return null;
 
-  const inlineCSS = `
-  @import url("https://fonts.googleapis.com/css2?family=Noto+Sans+TC&display=swap");
-  @font-face {font-family: "Geist Mono";font-style: normal;font-display: swap;font-weight: 400;src: url(https://cdn.jsdelivr.net/fontsource/fonts/geist-mono@latest/latin-400-normal.woff2)format("woff2"),url(https://cdn.jsdelivr.net/fontsource/fonts/geist-mono@latest/latin-400-normal.woff)format("woff");}
-  .windows:lang(zh-Hant) {font-family: "Geist Mono", "Noto Sans TC", monospace !important;}
-  * {font-family: "Geist Mono", "Noto Sans TC", monospace, codicon !important;}`;
-
   const existingLink = document.querySelector(`style[data-injected-by="1ureka"]`);
   if (existingLink) return null;
 
-  head.insertAdjacentHTML("beforeend", `<style data-injected-by="1ureka">${inlineCSS}</style>`);
+  head.insertAdjacentHTML("beforeend", `<style data-injected-by="1ureka">${customStyle}</style>`);
   return document.toString();
 }
 
