@@ -36,7 +36,41 @@
 
 #### 解決方案
 
-本專案由於是個人使用，因此建構前就能得知來源有哪些，因此採用**修改而非刪除** CSP 的策略，實現了安全與功能性的平衡：
+本專案採用**雙階段注入策略**，結合建構時處理與執行時修改，實現安全與功能性的平衡：
+
+##### 階段一：建構時的 CSS 內聯處理
+
+透過 esbuild 的 loader 配置，在打包時就將 CSS 作為字串嵌入到 JavaScript 中：
+
+```javascript
+// esbuild.js
+await build({
+  entryPoints: ["src/extension.ts"],
+  bundle: true,
+  platform: "node",
+  format: "esm",
+  external: ["vscode"],
+  outfile: "dist/extension.js",
+  loader: {
+    ".svg": "dataurl",
+    ".css": "text"  // 關鍵：將 CSS 轉為字串
+  },
+});
+```
+
+```typescript
+// 在程式碼中直接 import CSS
+import customStyle from "../utils/customStyle.css";
+// customStyle 現在是完整的 CSS 字串，無需額外讀檔
+```
+
+**優勢**：
+- ✅ **零檔案操作**：CSS 內容已編譯進 JavaScript，不需執行時讀取外部檔案
+- ✅ **單一產物**：extension.js 已包含所有樣式，簡化部署
+
+##### 階段二：執行時的精準 CSP 修改
+
+由於建構時已知所有外部資源來源（如 Google Fonts、jsDelivr CDN），採用**修改而非刪除** CSP 的策略：
 
 ```typescript
 function allowExternalSources(htmlContent: string): string | null {
@@ -61,12 +95,37 @@ function allowExternalSources(htmlContent: string): string | null {
 }
 ```
 
+```typescript
+function injectCustomStyles(htmlContent: string): string | null {
+  const document = parseHtml(htmlContent);
+  const head = document.querySelector("head");
+
+  if (!head) return null;
+
+  // 直接將建構時內聯的 CSS 字串注入
+  head.insertAdjacentHTML("beforeend", `<style data-injected-by="1ureka">${customStyle}</style>`);
+  return document.toString();
+}
+```
+
+**優勢**：
+- ✅ **白名單機制**：僅允許已知的外部資源域名
+- ✅ **保留原有保護**：CSP 的其他安全策略完全保留
+- ✅ **通過完整性檢查**：不破壞 VSCode 的檔案結構
+
 #### 與其他方案的對比
 
-| 方案 | CSP 處理 | 安全性 | 完整性檢查 | 維護性 |
-|------|---------|--------|-----------|--------|
-| Custom JS and CSS Loader | 刪除 CSP 標籤 | ❌ 無保護 | ❌ 失敗 | ⚠️ 簡單但危險 |
-| 本專案 | 修改 CSP 內容 | ✅ 保留保護 | ✅ 通過 | ✅ 結構化處理 |
+| 方案 | CSS 處理 | CSP 處理 | 安全性 | 完整性檢查 | 維護性 |
+|------|---------|---------|--------|-----------|--------|
+| Custom JS and CSS Loader | 執行時讀檔 | 刪除 CSP 標籤 | ❌ 無保護 | ❌ 失敗 | ⚠️ 簡單但危險 |
+| 本專案 | 建構時內聯 | 精準修改 CSP | ✅ 白名單保護 | ✅ 通過 | ✅ 雙階段處理 |
+
+#### 核心技術要點
+
+1. **建構時優化**：透過 esbuild 的 `text` loader 將 CSS 轉為字串，消除執行時的檔案 I/O
+2. **類型安全**：TypeScript 模組聲明確保 CSS import 的型別正確
+3. **最小權限原則**：CSP 修改僅針對已知的外部資源，不擴大攻擊面
+4. **可追溯性**：注入的樣式帶有 `data-injected-by` 標記，便於除錯和管理
 
 ### 2. SSR 精神的初始資料注入
 
