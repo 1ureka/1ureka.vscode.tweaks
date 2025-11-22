@@ -60,6 +60,16 @@
     ],
     "customEditors": [
       {
+        "viewType": "imageViewer",
+        "displayName": "圖片檢視器",
+        "selector": [
+          {
+            "filenamePattern": "*.{jpg,jpeg,png,gif,bmp,webp,tiff,tif,svg}"
+          }
+        ],
+        "priority": "default"
+      },
+      {
         "viewType": "fileTimestamp.catchAll",
         "displayName": "File Timestamp Tracker",
         "selector": [
@@ -125,6 +135,7 @@
     "node-html-parser": "^7.0.1",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "react-zoom-pan-pinch": "^3.7.0",
     "typescript": "^5.9.3"
   }
 }
