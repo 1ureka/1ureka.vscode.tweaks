@@ -32,7 +32,13 @@ export function registerImageViewerCommands(context: vscode.ExtensionContext) {
 
     webviewPanel.webview.onDidReceiveMessage(
       (message) => {
-        if (message.type === "error") vscode.window.showErrorMessage(`圖片載入失敗: ${message.error}`);
+        if (message.type === "error") vscode.window.showErrorMessage(message.error);
+        if (message.type === "eyeDropper") {
+          const color = message.color as string;
+          vscode.env.clipboard
+            .writeText(color)
+            .then(() => vscode.window.showInformationMessage(`選取的顏色 ${color} 已複製到剪貼簿`));
+        }
       },
       undefined,
       context.subscriptions
@@ -54,16 +60,32 @@ export function registerImageViewerCommands(context: vscode.ExtensionContext) {
     supportsMultipleEditorsPerDocument: false,
   });
 
-  const commandRegistration = vscode.commands.registerCommand("extension.imageViewer.resetTransform", () => {
+  const getWebviewId = () => {
     const e = vscode.window.tabGroups.activeTabGroup.activeTab?.input as any;
-    if (!e || !e?.uri?.path) return;
+    if (!e || !e?.uri?.path) return null;
     const uri = e.uri as vscode.Uri;
+    return uri.path;
+  };
 
-    const webviewPanel = webviewsMap.get(uri.path);
+  const resetTransformCommand = vscode.commands.registerCommand("extension.imageViewer.resetTransform", () => {
+    const webviewId = getWebviewId();
+    if (!webviewId) return;
+
+    const webviewPanel = webviewsMap.get(webviewId);
     if (webviewPanel) {
       webviewPanel.webview.postMessage({ type: "resetTransform" });
     }
   });
 
-  context.subscriptions.push(providerRegistration, commandRegistration);
+  const eyeDropperCommand = vscode.commands.registerCommand("extension.imageViewer.eyeDropper", async () => {
+    const webviewId = getWebviewId();
+    if (!webviewId) return;
+
+    const webviewPanel = webviewsMap.get(webviewId);
+    if (webviewPanel) {
+      webviewPanel.webview.postMessage({ type: "eyeDropper" });
+    }
+  });
+
+  context.subscriptions.push(providerRegistration, resetTransformCommand, eyeDropperCommand);
 }

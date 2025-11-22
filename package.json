@@ -60,6 +60,10 @@
       {
         "command": "extension.imageViewer.resetTransform",
         "title": "重設圖片縮放與位置"
+      },
+      {
+        "command": "extension.imageViewer.eyeDropper",
+        "title": "吸取顏色"
       }
     ],
     "customEditors": [
@@ -105,6 +109,11 @@
       "webview/context": [
         {
           "command": "extension.imageViewer.resetTransform",
+          "when": "webviewId == '1ureka.imageViewer'",
+          "group": "navigation@100"
+        },
+        {
+          "command": "extension.imageViewer.eyeDropper",
           "when": "webviewId == '1ureka.imageViewer'",
           "group": "navigation@100"
         }
