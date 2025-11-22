@@ -36,4 +36,8 @@
 
 ---
 
-作者：1ureka | 版本：0.0.3
+作者：1ureka | 版本：0.0.4
+
+<!-- TODO -->
+<!-- 引入 sharp，在檢視器為焦點時，狀態欄右方顯示圖片資訊 -->
+<!-- 實現方式並不是修改 imageViewerCommand，反而是擴展 fileTimestampCommands，使其在判斷為圖片時，新增一個 status bar 項目 -->
