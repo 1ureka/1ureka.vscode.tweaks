@@ -11,7 +11,7 @@
 
 ### 2. 圖片牆 (Image Wall)
 
-從檔案總管右鍵或命令面板選擇資料夾，在 WebView 中以網格形式瀏覽該資料夾的所有圖片。支援常見圖片格式（JPG、PNG、GIF、WEBP 等）。
+採用 **Material UI (MUI)** 打造的現代化圖片瀏覽體驗。從檔案總管右鍵或命令面板選擇資料夾，在 WebView 中以瀑布流形式展示該資料夾的所有圖片。
 
 ### 3. 檔案時間戳顯示
 
@@ -23,7 +23,131 @@
 
 ## 技術突破點
 
-### 1. 安全的自訂樣式注入系統
+### 1. Material UI 驅動的圖片牆視覺體驗
+
+#### 設計理念
+
+圖片牆功能採用 **Material UI (MUI)** 框架打造，突破傳統 VSCode WebView 的簡陋視覺，實現接近現代 Web 應用的流暢體驗。透過 MUI 的 Masonry 排版引擎，無論圖片尺寸比例如何不一致，都能自動計算最佳的瀑布流佈局，展現專業級的視覺效果。
+
+#### 核心技術實現
+
+##### 1. Masonry 瀑布流佈局
+
+利用 MUI 的 `ImageList` 元件搭配 `variant="masonry"` 實現智慧排版：
+
+```tsx
+<ImageList variant="masonry" cols={columnCounts} gap={8}>
+  {images.map(({ uri, fileName, filePath }) => (
+    <ImageListItem key={uri}>
+      <img src={uri} alt={fileName} loading="lazy" decoding="async" />
+      <ImageListItemBar title={fileName} />
+      <ButtonBase onClick={createHandleClick(filePath)} />
+    </ImageListItem>
+  ))}
+</ImageList>
+```
+
+**技術優勢**：
+- ✅ **自適應佈局**：自動計算不同寬高比圖片的最佳位置，避免傳統 grid 的空白問題
+- ✅ **流暢排版**：CSS Grid 驅動的原生效能，無需 JavaScript 計算版面
+- ✅ **響應式欄數**：透過 MUI 的 `useMediaQuery` 動態調整 2-5 欄，適配各種螢幕尺寸
+
+##### 2. 響應式欄位系統
+
+```tsx
+const useColumnCounts = () => {
+  const isLg = useMediaQuery((theme) => theme.breakpoints.up("lg"));
+  const isMd = useMediaQuery((theme) => theme.breakpoints.up("md"));
+  const isSm = useMediaQuery((theme) => theme.breakpoints.up("sm"));
+
+  if (isLg) return 5;  // >= 1200px
+  if (isMd) return 4;  // >= 900px
+  if (isSm) return 3;  // >= 600px
+  return 2;            // < 600px
+};
+```
+
+透過 MUI 的斷點系統 (Breakpoints) 與媒體查詢 (Media Query)，根據視窗寬度智慧調整欄數，確保在任何裝置上都有最佳的視覺密度。
+
+##### 3. 精緻的互動動畫
+
+結合 MUI 的 `sx` prop 與 CSS transitions 實現多層次的 hover 效果：
+
+```tsx
+<ImageListItem
+  sx={{
+    "&:hover": {
+      boxShadow: 3,                    // 陰影加深
+      transform: "translateY(-4px)"    // 向上浮起
+    },
+    "&:hover > button": {
+      bgcolor: "action.hover"          // 半透明遮罩
+    },
+    "&:hover > .image-list-item-bar": {
+      opacity: 1                       // 檔名淡入
+    },
+    transition: "transform 0.2s, box-shadow 0.2s",
+  }}
+>
+```
+
+**互動細節**：
+- 圖片本體：陰影加深 + 向上浮動 4px，模擬卡片抬起效果
+- 透明遮罩：平時隱藏，hover 時淡入半透明深色背景
+- 檔名標籤：平時透明，hover 時淡入顯示完整檔名
+- 所有動畫使用 0.2s 統一過渡時間，確保視覺節奏一致
+
+##### 4. VSCode 主題整合
+
+透過 MUI 的 `createTheme` API 搭配 CSS 變數，實現與 VSCode 主題的無縫整合：
+
+```tsx
+const theme = createTheme({
+  colorSchemes: {
+    dark: {
+      palette: {
+        background: {
+          default: "var(--vscode-editor-background)",
+          paper: "var(--vscode-sideBar-background)",
+        },
+        text: {
+          primary: "var(--vscode-foreground)",
+          secondary: "var(--vscode-descriptionForeground)",
+        },
+        divider: "var(--vscode-panel-border)",
+      },
+    },
+  },
+  typography: {
+    fontFamily: "var(--vscode-editor-font-family)",
+  },
+});
+```
+
+**整合優勢**：
+- ✅ **自動主題同步**：隨 VSCode 主題切換自動更新配色，無需手動適配
+- ✅ **視覺一致性**：使用 VSCode 原生顏色變數，確保視覺風格完全融入編輯器
+- ✅ **字型同步**：採用編輯器字型，介面標題與檔名與 VSCode 保持一致
+
+##### 5. 效能優化
+
+```tsx
+<img src={uri} alt={fileName} loading="lazy" decoding="async" />
+```
+
+- **Lazy Loading**：圖片僅在進入視窗時才載入，大幅減少初始載入時間
+- **Async Decoding**：圖片解碼在獨立執行緒進行，避免阻塞主執行緒渲染
+- **WebView 保留**：透過 `retainContextWhenHidden: true` 保留 WebView 狀態，切換 tab 時不重新載入
+
+#### 視覺效果總結
+
+- **瀑布流佈局**：Masonry 自動處理不同比例的圖片，無空白、無錯位
+- **響應式設計**：2-5 欄自適應，手機到超寬螢幕都完美呈現
+- **流暢動畫**：hover 時的浮起、陰影、遮罩、檔名顯示，多層次視覺回饋
+- **主題整合**：完全適配 VSCode 明暗主題，彷彿原生功能
+- **效能優異**：懶加載 + 異步解碼，百張圖片依然流暢
+
+### 2. 安全的自訂樣式注入系統
 
 #### 問題背景
 
@@ -127,7 +251,7 @@ function injectCustomStyles(htmlContent: string): string | null {
 3. **最小權限原則**：CSP 修改僅針對已知的外部資源，不擴大攻擊面
 4. **可追溯性**：注入的樣式帶有 `data-injected-by` 標記，便於除錯和管理
 
-### 2. SSR 精神的初始資料注入
+### 3. SSR 精神的初始資料注入
 
 #### 問題背景
 
@@ -191,7 +315,7 @@ const data = getInitialData<{ images: ImageInfo[] }>() || { images: [] };
 - ✅ **安全性**：透過 Unicode 轉義防止 XSS 攻擊
 - ✅ **向下相容**：不妨礙後續使用 `postMessage` 進行動態更新
 
-### 3. 低優先級 Catch-All Editor 實現全檔案類型追蹤
+### 4. 低優先級 Catch-All Editor 實現全檔案類型追蹤
 
 #### 問題背景
 
