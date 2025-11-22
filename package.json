@@ -60,7 +60,7 @@
     ],
     "customEditors": [
       {
-        "viewType": "imageViewer",
+        "viewType": "1ureka.imageViewer",
         "displayName": "圖片檢視器",
         "selector": [
           {

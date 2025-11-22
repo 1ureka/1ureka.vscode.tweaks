@@ -36,7 +36,7 @@ export function registerImageViewerCommands(context: vscode.ExtensionContext) {
     );
   }
 
-  const providerRegistration = vscode.window.registerCustomEditorProvider("imageViewer", provider, {
+  const providerRegistration = vscode.window.registerCustomEditorProvider("1ureka.imageViewer", provider, {
     webviewOptions: { retainContextWhenHidden: true },
     supportsMultipleEditorsPerDocument: true,
   });
