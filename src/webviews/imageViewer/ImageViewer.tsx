@@ -34,6 +34,16 @@ if (!data) {
   postMessageToExtension({ type: "error", error: "圖片載入失敗，無法取得圖片資料" });
 }
 
+window.addEventListener("copy", (e) => {
+  e.clipboardData?.setData("text/plain", data?.metadata?.filePath || "");
+  e.preventDefault();
+});
+
+window.addEventListener("cut", (e) => {
+  e.clipboardData?.setData("text/plain", data?.metadata?.filePath || "");
+  e.preventDefault();
+});
+
 const Controls = () => {
   const { resetTransform } = useControls();
 
