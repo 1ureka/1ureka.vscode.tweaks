@@ -7,14 +7,10 @@ import { ImageWallTitle } from "./ImageWallTitle";
 import { ImageListItemBar, imageListItemBarClassName } from "./ImageListItemBar";
 import { ImageClickControl } from "./ImageClickControl";
 
-import type sharp from "sharp";
+import type { ExtendedMetadata } from "../../utils/imageOpener";
 import { getInitialData } from "../utils/vscodeApi";
 
-type ImageInfo = {
-  metadata: { fileName: string; filePath: string } & sharp.Metadata;
-  uri: string;
-};
-
+type ImageInfo = { metadata: ExtendedMetadata; uri: string };
 const data = getInitialData<{ images: ImageInfo[]; folderPath: string }>() || {
   images: [],
   folderPath: "",

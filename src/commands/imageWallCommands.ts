@@ -1,11 +1,10 @@
 import * as vscode from "vscode";
-import * as fs from "fs";
 import * as path from "path";
-import sharp from "sharp";
 import { generateReactHtml } from "../utils/webviewHelper";
 
 import imageWallLight from "../icons/image-wall-light.svg";
 import imageWallDark from "../icons/image-wall-dark.svg";
+import { openImages } from "../utils/imageOpener";
 
 export function registerImageWallCommands(context: vscode.ExtensionContext) {
   // 從檔案總管右鍵開啟圖片牆
@@ -56,19 +55,13 @@ async function openImageWall(context: vscode.ExtensionContext, folderPath: strin
 
   panel.iconPath = { light: vscode.Uri.parse(imageWallLight), dark: vscode.Uri.parse(imageWallDark) };
 
-  const imagePromises = getImagesFromFolder(folderPath).map(async ({ fileName, filePath }) => {
-    const metadata = await sharp(filePath).metadata();
-    return {
-      metadata: { ...metadata, fileName, filePath },
-      uri: panel.webview.asWebviewUri(vscode.Uri.file(filePath)).toString(),
-    };
-  });
-
-  // TODO 用 vscode.Progress 顯示讀取進度
-  const images = await Promise.all(imagePromises);
-
   // 統一用 posix 路徑格式，Windows 太醜了
   const readableFolderPath = path.posix.join(...pathToArray(folderPath));
+  const imageMetadata = await openImages(folderPath);
+  const images = imageMetadata.map((meta) => ({
+    metadata: meta,
+    uri: panel.webview.asWebviewUri(vscode.Uri.file(meta.filePath)).toString(),
+  }));
 
   panel.webview.html = generateReactHtml({
     webviewType: "imageWall",
@@ -87,33 +80,4 @@ async function openImageWall(context: vscode.ExtensionContext, folderPath: strin
     undefined,
     context.subscriptions
   );
-}
-
-/**
- * 讀取資料夾中的圖片檔案
- */
-function getImagesFromFolder(folderPath: string) {
-  const supportedExtensions = [".jpg", ".jpeg", ".png", ".bmp", ".gif", ".webp", ".tiff", ".tif"];
-
-  try {
-    if (!fs.existsSync(folderPath)) return [];
-
-    const files = fs.readdirSync(folderPath);
-    const images = [];
-
-    for (const file of files) {
-      const fullPath = path.join(folderPath, file);
-      if (!fs.statSync(fullPath).isFile()) continue;
-
-      const ext = path.extname(file).toLowerCase();
-      if (!supportedExtensions.includes(ext)) continue;
-
-      images.push({ filePath: fullPath, fileName: file });
-    }
-
-    return images;
-  } catch (error) {
-    console.error("讀取資料夾失敗:", error);
-    return [];
-  }
 }
