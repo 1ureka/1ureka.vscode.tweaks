@@ -3,3 +3,6 @@
 !package.json
 !README.md
 !CHANGELOG.md
+
+# 現在的 vsce 版本會自己知道只需包含哪些 node modules，所以不再需要特別指定要包含哪些模組
+!node_modules/**
