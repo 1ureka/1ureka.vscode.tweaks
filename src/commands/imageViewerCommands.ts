@@ -2,6 +2,7 @@ import * as vscode from "vscode";
 import * as path from "path";
 import { generateReactHtml } from "../utils/webviewHelper";
 import { ImageViewerEditorProvider } from "../providers/imageViewerProvider";
+import { openImage } from "../utils/imageOpener";
 
 export function registerImageViewerCommands(context: vscode.ExtensionContext) {
   const provider = new ImageViewerEditorProvider((document, webviewPanel) => {
@@ -11,17 +12,16 @@ export function registerImageViewerCommands(context: vscode.ExtensionContext) {
   // 儲存所有開啟的 image viewer webviews ，識別碼為 vscode.Uri.path (文件路徑)，只用於傳送重設縮放指令
   const webviewsMap = new Map<string, vscode.WebviewPanel>();
 
-  function resolveImageViewer(document: vscode.CustomDocument, webviewPanel: vscode.WebviewPanel) {
-    const fileName = path.basename(document.uri.fsPath);
-    const fileExt = path.extname(fileName).toLowerCase().slice(1);
-
+  async function resolveImageViewer(document: vscode.CustomDocument, webviewPanel: vscode.WebviewPanel) {
     webviewPanel.webview.options = {
       enableScripts: true,
       localResourceRoots: [context.extensionUri, vscode.Uri.file(path.dirname(document.uri.fsPath))],
     };
 
-    const imageUri = webviewPanel.webview.asWebviewUri(document.uri).toString();
-    const initialData = { imageUri, fileName, fileExt, filePath: document.uri.fsPath };
+    const initialData = {
+      uri: webviewPanel.webview.asWebviewUri(document.uri).toString(),
+      metadata: await openImage(document.uri.fsPath),
+    };
 
     webviewPanel.webview.html = generateReactHtml({
       webviewType: "imageViewer",

@@ -3,7 +3,7 @@
   "author": "1ureka",
   "publisher": "1ureka",
   "description": "A Visual Studio Code extension developed for personal use.",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "main": "./dist/extension.js",
   "type": "module",
   "engines": {
@@ -72,7 +72,7 @@
         "displayName": "圖片檢視器",
         "selector": [
           {
-            "filenamePattern": "*.{jpg,jpeg,png,gif,bmp,webp,tiff,tif,svg}"
+            "filenamePattern": "*.{jpg,jpeg,png,gif,bmp,webp,tiff,tif}"
           }
         ],
         "priority": "default"
@@ -141,6 +141,9 @@
   },
   "scripts": {
     "build": "node esbuild.js"
+  },
+  "dependencies": {
+    "sharp": "^0.34.5"
   },
   "devDependencies": {
     "@emotion/react": "^11.14.0",

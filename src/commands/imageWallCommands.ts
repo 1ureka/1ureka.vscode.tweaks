@@ -1,10 +1,12 @@
 import * as vscode from "vscode";
-import * as fs from "fs";
 import * as path from "path";
+import { randomUUID } from "crypto";
 import { generateReactHtml } from "../utils/webviewHelper";
 
 import imageWallLight from "../icons/image-wall-light.svg";
 import imageWallDark from "../icons/image-wall-dark.svg";
+import { generateBase64Image, openImages } from "../utils/imageOpener";
+import { formatPath } from "../utils/pathFormatter";
 
 export function registerImageWallCommands(context: vscode.ExtensionContext) {
   // 從檔案總管右鍵開啟圖片牆
@@ -32,71 +34,81 @@ export function registerImageWallCommands(context: vscode.ExtensionContext) {
 }
 
 /**
- * 讀取資料夾中的圖片並在 WebView 中顯示
+ * 該功能對應的 webviewType
  */
-function openImageWall(context: vscode.ExtensionContext, folderPath: string) {
-  const viewType = "imageWall";
+const WEBVIEW_TYPE = "imageWall";
+
+/**
+ * 建立 WebView 面板
+ */
+function createPanel(context: vscode.ExtensionContext, folderPath: string): vscode.Webview {
   const title = `圖片牆 - ${path.basename(folderPath)}`;
   const showOptions = vscode.ViewColumn.One;
 
-  const panel = vscode.window.createWebviewPanel(viewType, title, showOptions, {
+  const panel = vscode.window.createWebviewPanel(WEBVIEW_TYPE, title, showOptions, {
     enableScripts: true,
     retainContextWhenHidden: true,
     localResourceRoots: [vscode.Uri.file(folderPath), context.extensionUri],
   });
 
   panel.iconPath = { light: vscode.Uri.parse(imageWallLight), dark: vscode.Uri.parse(imageWallDark) };
-
-  const images = getImagesFromFolder(folderPath).map(({ fileName, filePath }) => ({
-    uri: panel.webview.asWebviewUri(vscode.Uri.file(filePath)).toString(),
-    fileName,
-    filePath,
-  }));
-
-  panel.webview.html = generateReactHtml({
-    webviewType: "imageWall",
-    webview: panel.webview,
-    extensionUri: context.extensionUri,
-    initialData: { folderPath, images },
-  });
-
-  panel.webview.onDidReceiveMessage(
-    (message) => {
-      if (message.type === "imageClick" && message.filePath) {
-        const uri = vscode.Uri.file(message.filePath);
-        vscode.commands.executeCommand("vscode.open", uri, vscode.ViewColumn.Active);
-      }
-    },
-    undefined,
-    context.subscriptions
-  );
+  return panel.webview;
 }
 
 /**
- * 讀取資料夾中的圖片檔案
+ * 檢查接收到的訊息格式是否正確
  */
-function getImagesFromFolder(folderPath: string) {
-  const supportedExtensions = [".jpg", ".jpeg", ".png", ".bmp", ".gif", ".webp", ".tiff", ".tif"];
+function checkMessage(value: any): { type: string; id: string } | null {
+  if (typeof value !== "object" || value === null) return null;
 
-  try {
-    if (!fs.existsSync(folderPath)) return [];
+  const hasType = "type" in value && typeof value.type === "string";
+  const hasId = "id" in value && typeof value.id === "string";
 
-    const files = fs.readdirSync(folderPath);
-    const images = [];
+  if (hasType && hasId) return value;
+  return null;
+}
 
-    for (const file of files) {
-      const fullPath = path.join(folderPath, file);
-      if (!fs.statSync(fullPath).isFile()) continue;
+/**
+ * 讀取資料夾中的圖片並在 WebView 中顯示
+ */
+async function openImageWall(context: vscode.ExtensionContext, folderPath: string) {
+  const webview = createPanel(context, folderPath);
 
-      const ext = path.extname(file).toLowerCase();
-      if (!supportedExtensions.includes(ext)) continue;
+  const imageMetadata = await openImages(folderPath);
+  const images = imageMetadata.map((meta) => ({
+    id: randomUUID(),
+    metadata: meta,
+  }));
 
-      images.push({ filePath: fullPath, fileName: file });
+  webview.html = generateReactHtml({
+    webviewType: WEBVIEW_TYPE,
+    webview,
+    extensionUri: context.extensionUri,
+    initialData: { folderPath: formatPath(folderPath), images },
+  });
+
+  const messageListener = webview.onDidReceiveMessage(async (event) => {
+    const message = checkMessage(event);
+
+    if (!message) {
+      console.warn("Image Wall Extension Host: 接收到無效的訊息", message);
+      return;
     }
 
-    return images;
-  } catch (error) {
-    console.error("讀取資料夾失敗:", error);
-    return [];
-  }
+    const filePath = images.find(({ id }) => id === message.id)?.metadata.filePath;
+    if (!filePath) return;
+
+    if (message.type === "imageClick") {
+      const uri = vscode.Uri.file(filePath);
+      vscode.commands.executeCommand("vscode.open", uri, vscode.ViewColumn.Active);
+    }
+
+    if (message.type === "generateImage") {
+      const base64 = await generateBase64Image(filePath);
+      if (!base64) return;
+      webview.postMessage({ type: "imageGenerated", id: message.id, base64 });
+    }
+  });
+
+  context.subscriptions.push(messageListener);
 }

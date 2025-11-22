@@ -1,33 +1,20 @@
 import React from "react";
-import { Box, Container, Typography, useMediaQuery, ButtonBase } from "@mui/material";
-import { ImageList, ImageListItem, ImageListItemBar } from "@mui/material";
-import { getInitialData, postMessageToExtension } from "../utils/vscodeApi";
+import { Box, Container, Typography, useMediaQuery } from "@mui/material";
+import { ImageList, ImageListItem } from "@mui/material";
 
-type ImageInfo = { uri: string; fileName: string; filePath: string };
+import { ImageWallTitle } from "./ImageWallTitle";
+import { ImageListItemBar, imageListItemBarClassName } from "./ImageListItemBar";
+import { ImageClickControl } from "./ImageClickControl";
+import { ImageDisplay } from "./ImageDisplay";
+
+import type { ExtendedMetadata } from "../../utils/imageOpener";
+import { getInitialData } from "../utils/vscodeApi";
+
+type ImageInfo = { id: string; metadata: ExtendedMetadata };
 const data = getInitialData<{ images: ImageInfo[]; folderPath: string }>() || {
   images: [],
   folderPath: "",
 };
-
-const createHandleClick = (filePath: string) => () => {
-  postMessageToExtension({ type: "imageClick", filePath });
-};
-
-const ImageWallTitle = ({ folderPath, imageCount }: { folderPath: string; imageCount: number }) => (
-  <Box sx={{ mb: 3, pb: 2, borderBottom: 1, borderColor: "divider" }}>
-    <Typography variant="h4" component="h2" gutterBottom>
-      圖片牆
-    </Typography>
-    <Typography variant="body2" color="text.secondary" sx={{ wordBreak: "break-all" }}>
-      {folderPath}
-    </Typography>
-    {imageCount > 0 && (
-      <Typography variant="body2" color="text.secondary">
-        共 {imageCount} 張圖片
-      </Typography>
-    )}
-  </Box>
-);
 
 const useColumnCounts = () => {
   const isXl = useMediaQuery((theme) => theme.breakpoints.up("xl"));
@@ -42,23 +29,14 @@ const useColumnCounts = () => {
   return 1;
 };
 
-const ellipsisSx = {
-  display: "-webkit-box",
-  WebkitLineClamp: 1,
-  WebkitBoxOrient: "vertical",
-  overflow: "hidden",
-  textOverflow: "ellipsis",
-  wordBreak: "break-all",
-} as const;
-
 const Images = ({ images }: { images: ImageInfo[] }) => {
   const columnCounts = useColumnCounts();
 
   return (
     <ImageList variant="masonry" cols={columnCounts} gap={8} sx={{ py: 1 }}>
-      {images.map(({ uri, fileName, filePath }) => (
+      {images.map(({ id, metadata: { fileName, width, height } }) => (
         <ImageListItem
-          key={uri}
+          key={id}
           sx={{
             position: "relative",
             overflow: "hidden",
@@ -67,20 +45,16 @@ const Images = ({ images }: { images: ImageInfo[] }) => {
 
             "&:hover": { boxShadow: 3, transform: "translateY(-4px)" },
             "&:hover > button": { bgcolor: "action.hover" },
-            "&:hover > .image-list-item-bar": { opacity: 1 },
+            [`&:hover > .${imageListItemBarClassName}`]: { opacity: 1 },
 
             transition: "transform 0.2s, box-shadow 0.2s",
             "& > button": { transition: "background-color 0.2s" },
-            "& > .image-list-item-bar": { transition: "opacity 0.2s" },
+            [`& > .${imageListItemBarClassName}`]: { transition: "opacity 0.2s" },
           }}
         >
-          <img src={uri} alt={fileName} loading="lazy" decoding="async" />
-          <ImageListItemBar
-            title={fileName}
-            sx={{ ...ellipsisSx, opacity: 0, fontFamily: "Noto Sans TC" }}
-            className="image-list-item-bar"
-          />
-          <ButtonBase sx={{ position: "absolute", inset: 0, zIndex: 1 }} onClick={createHandleClick(filePath)} />
+          <ImageDisplay id={id} fileName={fileName} width={width} height={height} />
+          <ImageListItemBar fileName={fileName} width={width} height={height} />
+          <ImageClickControl id={id} />
         </ImageListItem>
       ))}
     </ImageList>

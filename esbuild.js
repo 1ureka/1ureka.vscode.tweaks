@@ -1,6 +1,6 @@
 import { build } from "esbuild";
 import { spawn } from "child_process";
-import { readdirSync, existsSync } from "fs";
+import * as fs from "fs";
 
 async function buildExtension() {
   await build({
@@ -8,7 +8,7 @@ async function buildExtension() {
     bundle: true,
     platform: "node",
     format: "esm",
-    external: ["vscode"],
+    external: ["vscode", "sharp"],
     outfile: "dist/extension.js",
     loader: { ".svg": "dataurl", ".css": "text" },
   });
@@ -17,12 +17,12 @@ async function buildExtension() {
 }
 
 async function buildWebviews() {
-  const webviewDirs = readdirSync("src/webviews", { withFileTypes: true });
+  const webviewDirs = fs.readdirSync("src/webviews", { withFileTypes: true });
   const webviews = webviewDirs.filter((dirent) => dirent.isDirectory()).map(({ name }) => name);
 
   for (const dir of webviews) {
     const entryPoint = `src/webviews/${dir}/index.tsx`;
-    if (!existsSync(entryPoint)) continue;
+    if (!fs.existsSync(entryPoint)) continue;
 
     await build({
       entryPoints: [entryPoint],
@@ -57,6 +57,7 @@ async function packageExtension() {
 }
 
 async function main() {
+  if (fs.existsSync("dist")) fs.rmSync("dist", { recursive: true, force: true });
   await buildExtension();
   await buildWebviews();
   await packageExtension();
