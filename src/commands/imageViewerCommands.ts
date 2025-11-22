@@ -8,6 +8,9 @@ export function registerImageViewerCommands(context: vscode.ExtensionContext) {
     resolveImageViewer(document, webviewPanel);
   });
 
+  // 儲存所有開啟的 image viewer webviews ，識別碼為 vscode.Uri.path (文件路徑)，只用於傳送重設縮放指令
+  const webviewsMap = new Map<string, vscode.WebviewPanel>();
+
   function resolveImageViewer(document: vscode.CustomDocument, webviewPanel: vscode.WebviewPanel) {
     const fileName = path.basename(document.uri.fsPath);
     const fileExt = path.extname(fileName).toLowerCase().slice(1);
@@ -34,12 +37,33 @@ export function registerImageViewerCommands(context: vscode.ExtensionContext) {
       undefined,
       context.subscriptions
     );
+
+    webviewsMap.set(document.uri.path, webviewPanel);
+
+    webviewPanel.onDidDispose(
+      () => {
+        webviewsMap.delete(document.uri.path);
+      },
+      undefined,
+      context.subscriptions
+    );
   }
 
   const providerRegistration = vscode.window.registerCustomEditorProvider("1ureka.imageViewer", provider, {
     webviewOptions: { retainContextWhenHidden: true },
-    supportsMultipleEditorsPerDocument: true,
+    supportsMultipleEditorsPerDocument: false,
   });
 
-  context.subscriptions.push(providerRegistration);
+  const commandRegistration = vscode.commands.registerCommand("extension.imageViewer.resetTransform", () => {
+    const e = vscode.window.tabGroups.activeTabGroup.activeTab?.input as any;
+    if (!e || !e?.uri?.path) return;
+    const uri = e.uri as vscode.Uri;
+
+    const webviewPanel = webviewsMap.get(uri.path);
+    if (webviewPanel) {
+      webviewPanel.webview.postMessage({ type: "resetTransform" });
+    }
+  });
+
+  context.subscriptions.push(providerRegistration, commandRegistration);
 }
