@@ -142,6 +142,9 @@
   "scripts": {
     "build": "node esbuild.js"
   },
+  "dependencies": {
+    "sharp": "^0.34.5"
+  },
   "devDependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
