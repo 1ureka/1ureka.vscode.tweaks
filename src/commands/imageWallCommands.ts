@@ -1,10 +1,11 @@
 import * as vscode from "vscode";
 import * as path from "path";
+import { randomUUID } from "crypto";
 import { generateReactHtml } from "../utils/webviewHelper";
 
 import imageWallLight from "../icons/image-wall-light.svg";
 import imageWallDark from "../icons/image-wall-dark.svg";
-import { openImages } from "../utils/imageOpener";
+import { generateBase64Image, openImages } from "../utils/imageOpener";
 import { formatPath } from "../utils/pathFormatter";
 
 export function registerImageWallCommands(context: vscode.ExtensionContext) {
@@ -55,6 +56,19 @@ function createPanel(context: vscode.ExtensionContext, folderPath: string): vsco
 }
 
 /**
+ * 檢查接收到的訊息格式是否正確
+ */
+function checkMessage(value: any): { type: string; id: string } | null {
+  if (typeof value !== "object" || value === null) return null;
+
+  const hasType = "type" in value && typeof value.type === "string";
+  const hasId = "id" in value && typeof value.id === "string";
+
+  if (hasType && hasId) return value;
+  return null;
+}
+
+/**
  * 讀取資料夾中的圖片並在 WebView 中顯示
  */
 async function openImageWall(context: vscode.ExtensionContext, folderPath: string) {
@@ -62,8 +76,8 @@ async function openImageWall(context: vscode.ExtensionContext, folderPath: strin
 
   const imageMetadata = await openImages(folderPath);
   const images = imageMetadata.map((meta) => ({
+    id: randomUUID(),
     metadata: meta,
-    uri: webview.asWebviewUri(vscode.Uri.file(meta.filePath)).toString(),
   }));
 
   webview.html = generateReactHtml({
@@ -73,10 +87,26 @@ async function openImageWall(context: vscode.ExtensionContext, folderPath: strin
     initialData: { folderPath: formatPath(folderPath), images },
   });
 
-  const messageListener = webview.onDidReceiveMessage((message) => {
-    if (message.type === "imageClick" && message.filePath) {
-      const uri = vscode.Uri.file(message.filePath);
+  const messageListener = webview.onDidReceiveMessage(async (event) => {
+    const message = checkMessage(event);
+
+    if (!message) {
+      console.warn("Image Wall Extension Host: 接收到無效的訊息", message);
+      return;
+    }
+
+    const filePath = images.find(({ id }) => id === message.id)?.metadata.filePath;
+    if (!filePath) return;
+
+    if (message.type === "imageClick") {
+      const uri = vscode.Uri.file(filePath);
       vscode.commands.executeCommand("vscode.open", uri, vscode.ViewColumn.Active);
+    }
+
+    if (message.type === "generateImage") {
+      const base64 = await generateBase64Image(filePath);
+      if (!base64) return;
+      webview.postMessage({ type: "imageGenerated", id: message.id, base64 });
     }
   });
 

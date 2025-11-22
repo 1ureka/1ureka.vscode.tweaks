@@ -1,16 +1,16 @@
 import React from "react";
-import { ThemeProvider, createTheme, Skeleton } from "@mui/material";
 import { Box, Container, Typography, useMediaQuery } from "@mui/material";
 import { ImageList, ImageListItem } from "@mui/material";
 
 import { ImageWallTitle } from "./ImageWallTitle";
 import { ImageListItemBar, imageListItemBarClassName } from "./ImageListItemBar";
 import { ImageClickControl } from "./ImageClickControl";
+import { ImageDisplay } from "./ImageDisplay";
 
 import type { ExtendedMetadata } from "../../utils/imageOpener";
 import { getInitialData } from "../utils/vscodeApi";
 
-type ImageInfo = { metadata: ExtendedMetadata; uri: string };
+type ImageInfo = { id: string; metadata: ExtendedMetadata };
 const data = getInitialData<{ images: ImageInfo[]; folderPath: string }>() || {
   images: [],
   folderPath: "",
@@ -29,21 +29,14 @@ const useColumnCounts = () => {
   return 1;
 };
 
-const skeletonTheme = createTheme({
-  defaultColorScheme: "dark",
-  colorSchemes: {
-    dark: { palette: { text: { primary: "#ffffff" } } },
-  },
-});
-
 const Images = ({ images }: { images: ImageInfo[] }) => {
   const columnCounts = useColumnCounts();
 
   return (
     <ImageList variant="masonry" cols={columnCounts} gap={8} sx={{ py: 1 }}>
-      {images.map(({ uri, metadata: { fileName, filePath, width, height } }) => (
+      {images.map(({ id, metadata: { fileName, width, height } }) => (
         <ImageListItem
-          key={uri}
+          key={id}
           sx={{
             position: "relative",
             overflow: "hidden",
@@ -59,21 +52,9 @@ const Images = ({ images }: { images: ImageInfo[] }) => {
             [`& > .${imageListItemBarClassName}`]: { transition: "opacity 0.2s" },
           }}
         >
-          <Box sx={{ position: "relative", width: 1, height: "auto", aspectRatio: `${width} / ${height}` }}>
-            <ThemeProvider theme={skeletonTheme}>
-              <Skeleton variant="rectangular" width="100%" height="100%" animation="wave" />
-            </ThemeProvider>
-            {/* <img
-              src={uri}
-              alt={fileName}
-              loading="lazy"
-              decoding="async"
-              style={{ position: "absolute", inset: 0, display: "block" }}
-            /> */}
-          </Box>
-
+          <ImageDisplay id={id} fileName={fileName} width={width} height={height} />
           <ImageListItemBar fileName={fileName} width={width} height={height} />
-          <ImageClickControl filePath={filePath} />
+          <ImageClickControl id={id} />
         </ImageListItem>
       ))}
     </ImageList>

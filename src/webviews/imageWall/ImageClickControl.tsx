@@ -2,12 +2,12 @@ import React from "react";
 import { ButtonBase } from "@mui/material";
 import { postMessageToExtension } from "../utils/vscodeApi";
 
-const ImageClickControl = ({ filePath }: { filePath: string }) => {
+const ImageClickControl = ({ id }: { id: string }) => {
   return (
     <ButtonBase
       sx={{ position: "absolute", inset: 0, zIndex: 1 }}
       onClick={() => {
-        postMessageToExtension({ type: "imageClick", filePath });
+        postMessageToExtension({ type: "imageClick", id });
       }}
     />
   );
