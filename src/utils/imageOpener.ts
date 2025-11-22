@@ -1,7 +1,6 @@
 import sharp from "sharp";
 import * as fs from "fs";
 import * as path from "path";
-import { inspect } from "util";
 
 const supportedExtensions = [".jpg", ".jpeg", ".png", ".bmp", ".gif", ".webp", ".tiff", ".tif"];
 
@@ -49,8 +48,6 @@ async function openImages(input: string | string[]): Promise<ExtendedMetadata[]>
   const metadataPromises = filePaths.map((filePath) => openImage(filePath));
   // TODO 用 vscode.Progress 顯示讀取進度
   const metadataResults = await Promise.all(metadataPromises);
-
-  console.log("讀取結果有: " + inspect(metadataResults));
 
   return metadataResults.filter((metadata) => metadata !== null);
 }
