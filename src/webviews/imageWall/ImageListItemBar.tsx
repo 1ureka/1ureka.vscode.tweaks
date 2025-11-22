@@ -22,7 +22,13 @@ const ImageListItemBar = ({ fileName, width, height }: ImageListItemBarProps) =>
   <MuiImageListItemBar
     title={fileName}
     subtitle={`${width}px x ${height}px`}
-    sx={{ ...ellipsisSx, opacity: 0, fontFamily: "Noto Sans TC" }}
+    sx={{
+      ...ellipsisSx,
+      opacity: 0,
+      fontFamily: "Noto Sans TC",
+      "& .MuiImageListItemBar-titleWrap": { p: 1.5, pt: 1 },
+      "& .MuiImageListItemBar-subtitle": { color: "text.secondary" },
+    }}
     className={imageListItemBarClassName}
   />
 );
