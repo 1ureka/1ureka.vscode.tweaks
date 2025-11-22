@@ -1,9 +1,15 @@
 import React from "react";
+import { ThemeProvider, createTheme, Skeleton } from "@mui/material";
 import { Box, Container, Typography, useMediaQuery, ButtonBase } from "@mui/material";
 import { ImageList, ImageListItem, ImageListItemBar } from "@mui/material";
 import { getInitialData, postMessageToExtension } from "../utils/vscodeApi";
+import type sharp from "sharp";
 
-type ImageInfo = { uri: string; fileName: string; filePath: string };
+type ImageInfo = {
+  metadata: { fileName: string; filePath: string } & sharp.Metadata;
+  uri: string;
+};
+
 const data = getInitialData<{ images: ImageInfo[]; folderPath: string }>() || {
   images: [],
   folderPath: "",
@@ -51,12 +57,19 @@ const ellipsisSx = {
   wordBreak: "break-all",
 } as const;
 
+const skeletonTheme = createTheme({
+  defaultColorScheme: "dark",
+  colorSchemes: {
+    dark: { palette: { text: { primary: "#ffffff" } } },
+  },
+});
+
 const Images = ({ images }: { images: ImageInfo[] }) => {
   const columnCounts = useColumnCounts();
 
   return (
     <ImageList variant="masonry" cols={columnCounts} gap={8} sx={{ py: 1 }}>
-      {images.map(({ uri, fileName, filePath }) => (
+      {images.map(({ uri, metadata: { fileName, filePath, width, height } }) => (
         <ImageListItem
           key={uri}
           sx={{
@@ -74,7 +87,18 @@ const Images = ({ images }: { images: ImageInfo[] }) => {
             "& > .image-list-item-bar": { transition: "opacity 0.2s" },
           }}
         >
-          <img src={uri} alt={fileName} loading="lazy" decoding="async" />
+          <Box sx={{ position: "relative", width: 1, height: "auto", aspectRatio: `${width} / ${height}` }}>
+            <ThemeProvider theme={skeletonTheme}>
+              <Skeleton variant="rectangular" width="100%" height="100%" animation="wave" />
+            </ThemeProvider>
+            {/* <img
+              src={uri}
+              alt={fileName}
+              loading="lazy"
+              decoding="async"
+              style={{ position: "absolute", inset: 0, display: "block" }}
+            /> */}
+          </Box>
           <ImageListItemBar
             title={fileName}
             sx={{ ...ellipsisSx, opacity: 0, fontFamily: "Noto Sans TC" }}
