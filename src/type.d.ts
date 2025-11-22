@@ -11,3 +11,8 @@ declare module "*.css" {
 declare function acquireVsCodeApi(): {
   postMessage: (message: any) => void;
 };
+
+declare class EyeDropper {
+  constructor();
+  open(): Promise<{ sRGBHex: string }>;
+}

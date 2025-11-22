@@ -13,28 +13,19 @@ function serializeForHtml(data: any): string {
     .replace(/\u2029/g, "\\u2029"); // Paragraph separator
 }
 
-/**
- * 取得 React WebView 的資源 URI
- */
-export function getReactResource(name: string, extensionUri: vscode.Uri) {
-  const jsUri = vscode.Uri.joinPath(extensionUri, "dist", "webviews", `${name}.js`);
-  const cssUri = vscode.Uri.joinPath(extensionUri, "dist", "webviews", `${name}.css`);
-  return { jsUri, cssUri };
-}
-
 type generateReactHtmlParams = {
-  title: string;
+  webviewType: string;
   webview: vscode.Webview;
-  resource: ReturnType<typeof getReactResource>;
+  extensionUri: vscode.Uri;
   initialData?: any;
 };
 
 /**
  * 生成 React WebView 的 HTML 模板
  */
-export function generateReactHtml({ title, webview, resource, initialData }: generateReactHtmlParams) {
-  const jsWebviewUri = webview.asWebviewUri(resource.jsUri);
-  const cssWebviewUri = webview.asWebviewUri(resource.cssUri);
+export function generateReactHtml({ webviewType, webview, extensionUri, initialData }: generateReactHtmlParams) {
+  const webviewJS = vscode.Uri.joinPath(extensionUri, "dist", "webviews", `${webviewType}.js`);
+  const jsWebviewUri = webview.asWebviewUri(webviewJS);
 
   const initialDataScript = initialData
     ? `<script id="__data__" type="application/json">${serializeForHtml(initialData)}</script>`
@@ -45,10 +36,9 @@ export function generateReactHtml({ title, webview, resource, initialData }: gen
 
   const htmlMeta = `<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">`;
   const htmlCSP = `<meta http-equiv="Content-Security-Policy" content="${cspContent}">`;
-  const htmlTitle = `<title>${title}</title>`;
-  const htmlCSS = `<link rel="stylesheet" href="${cssWebviewUri}">`;
+  const htmlTitle = `<title>${webviewType}</title>`;
 
-  const htmlHead = `<head>${htmlMeta}${htmlCSP}${htmlTitle}${htmlCSS}${initialDataScript}</head>`;
+  const htmlHead = `<head>${htmlMeta}${htmlCSP}${htmlTitle}${initialDataScript}</head>`;
   const htmlBody = `<body><div id="root"></div><script nonce="${nonce}" src="${jsWebviewUri}"></script></body>`;
 
   return `<!DOCTYPE html><html lang="zh-TW">${htmlHead}${htmlBody}</html>`;
