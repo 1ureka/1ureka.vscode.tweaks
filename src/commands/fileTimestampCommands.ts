@@ -1,10 +1,18 @@
 import * as vscode from "vscode";
 import * as fs from "fs";
+import * as path from "path";
 import { formatDateCompact, formatDateFull } from "../utils/dateFormatter";
 import { FileTimestampEditorProvider } from "../providers/fileTimestampProvider";
 
 function createStatusBarItem(): vscode.StatusBarItem {
   return vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
+}
+
+function formatFileSize(size: number): string {
+  if (size < 1024) return `${size} B`;
+  else if (size < 1024 * 1024) return `${(size / 1024).toFixed(2)} KB`;
+  else if (size < 1024 * 1024 * 1024) return `${(size / (1024 * 1024)).toFixed(2)} MB`;
+  else return `${(size / (1024 * 1024 * 1024)).toFixed(2)} GB`;
 }
 
 function updateStatusBarFromUri(statusBarItem: vscode.StatusBarItem, uri: vscode.Uri | undefined) {
@@ -19,15 +27,23 @@ function updateStatusBarFromUri(statusBarItem: vscode.StatusBarItem, uri: vscode
     const stats = fs.statSync(filePath);
     const createdDate = stats.birthtime;
     const modifiedDate = stats.mtime;
+    const fileSize = stats.size;
+    const fileName = path.basename(path.resolve(filePath));
 
     const createdCompact = formatDateCompact(createdDate);
     const modifiedCompact = formatDateCompact(modifiedDate);
 
     const createdFull = formatDateFull(createdDate);
     const modifiedFull = formatDateFull(modifiedDate);
+    const formattedFileSize = formatFileSize(fileSize);
 
     statusBarItem.text = `$(history) ${createdCompact} | $(pencil) ${modifiedCompact}`;
-    statusBarItem.tooltip = `建立時間: ${createdFull}\n修改時間: ${modifiedFull}`;
+    const paddingSymbol = "&nbsp;".repeat(2);
+    statusBarItem.tooltip = new vscode.MarkdownString(
+      `### \`${fileName}\`\n\n- **建立時間:** ${createdFull}${paddingSymbol}\n\n- **修改時間:** ${modifiedFull}` +
+        `\n\n- **檔案大小:** ${formattedFileSize}`
+    );
+
     statusBarItem.show();
   } catch (error) {
     statusBarItem.hide();
