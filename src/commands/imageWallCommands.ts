@@ -73,14 +73,12 @@ async function openImageWall(context: vscode.ExtensionContext, folderPath: strin
     initialData: { folderPath: formatPath(folderPath), images },
   });
 
-  webview.onDidReceiveMessage(
-    (message) => {
-      if (message.type === "imageClick" && message.filePath) {
-        const uri = vscode.Uri.file(message.filePath);
-        vscode.commands.executeCommand("vscode.open", uri, vscode.ViewColumn.Active);
-      }
-    },
-    undefined,
-    context.subscriptions
-  );
+  const messageListener = webview.onDidReceiveMessage((message) => {
+    if (message.type === "imageClick" && message.filePath) {
+      const uri = vscode.Uri.file(message.filePath);
+      vscode.commands.executeCommand("vscode.open", uri, vscode.ViewColumn.Active);
+    }
+  });
+
+  context.subscriptions.push(messageListener);
 }
