@@ -33,6 +33,14 @@ export function registerImageWallCommands(context: vscode.ExtensionContext) {
 }
 
 /**
+ * 將路徑轉換為陣列
+ */
+function pathToArray(inputPath: string): string[] {
+  const normalized = path.normalize(inputPath);
+  return normalized.split(path.sep).filter(Boolean);
+}
+
+/**
  * 讀取資料夾中的圖片並在 WebView 中顯示
  */
 async function openImageWall(context: vscode.ExtensionContext, folderPath: string) {
@@ -58,7 +66,9 @@ async function openImageWall(context: vscode.ExtensionContext, folderPath: strin
 
   // TODO 用 vscode.Progress 顯示讀取進度
   const images = await Promise.all(imagePromises);
-  const readableFolderPath = path.resolve(folderPath);
+
+  // 統一用 posix 路徑格式，Windows 太醜了
+  const readableFolderPath = path.posix.join(...pathToArray(folderPath));
 
   panel.webview.html = generateReactHtml({
     webviewType: "imageWall",
