@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import * as fs from "fs";
 import * as path from "path";
-import { generateReactHtml, getReactResource } from "../utils/webviewHelper";
+import { generateReactHtml } from "../utils/webviewHelper";
 
 import imageWallLight from "../icons/image-wall-light.svg";
 import imageWallDark from "../icons/image-wall-dark.svg";
@@ -54,9 +54,9 @@ function openImageWall(context: vscode.ExtensionContext, folderPath: string) {
   }));
 
   panel.webview.html = generateReactHtml({
-    title,
+    webviewType: "imageWall",
     webview: panel.webview,
-    resource: getReactResource(viewType, context.extensionUri),
+    extensionUri: context.extensionUri,
     initialData: { folderPath, images },
   });
 
