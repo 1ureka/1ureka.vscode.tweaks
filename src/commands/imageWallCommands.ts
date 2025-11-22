@@ -5,6 +5,7 @@ import { generateReactHtml } from "../utils/webviewHelper";
 import imageWallLight from "../icons/image-wall-light.svg";
 import imageWallDark from "../icons/image-wall-dark.svg";
 import { openImages } from "../utils/imageOpener";
+import { formatPath } from "../utils/pathFormatter";
 
 export function registerImageWallCommands(context: vscode.ExtensionContext) {
   // 從檔案總管右鍵開啟圖片牆
@@ -32,45 +33,47 @@ export function registerImageWallCommands(context: vscode.ExtensionContext) {
 }
 
 /**
- * 將路徑轉換為陣列
+ * 該功能對應的 webviewType
  */
-function pathToArray(inputPath: string): string[] {
-  const normalized = path.normalize(inputPath);
-  return normalized.split(path.sep).filter(Boolean);
-}
+const WEBVIEW_TYPE = "imageWall";
 
 /**
- * 讀取資料夾中的圖片並在 WebView 中顯示
+ * 建立 WebView 面板
  */
-async function openImageWall(context: vscode.ExtensionContext, folderPath: string) {
-  const viewType = "imageWall";
+function createPanel(context: vscode.ExtensionContext, folderPath: string): vscode.Webview {
   const title = `圖片牆 - ${path.basename(folderPath)}`;
   const showOptions = vscode.ViewColumn.One;
 
-  const panel = vscode.window.createWebviewPanel(viewType, title, showOptions, {
+  const panel = vscode.window.createWebviewPanel(WEBVIEW_TYPE, title, showOptions, {
     enableScripts: true,
     retainContextWhenHidden: true,
     localResourceRoots: [vscode.Uri.file(folderPath), context.extensionUri],
   });
 
   panel.iconPath = { light: vscode.Uri.parse(imageWallLight), dark: vscode.Uri.parse(imageWallDark) };
+  return panel.webview;
+}
 
-  // 統一用 posix 路徑格式，Windows 太醜了
-  const readableFolderPath = path.posix.join(...pathToArray(folderPath));
+/**
+ * 讀取資料夾中的圖片並在 WebView 中顯示
+ */
+async function openImageWall(context: vscode.ExtensionContext, folderPath: string) {
+  const webview = createPanel(context, folderPath);
+
   const imageMetadata = await openImages(folderPath);
   const images = imageMetadata.map((meta) => ({
     metadata: meta,
-    uri: panel.webview.asWebviewUri(vscode.Uri.file(meta.filePath)).toString(),
+    uri: webview.asWebviewUri(vscode.Uri.file(meta.filePath)).toString(),
   }));
 
-  panel.webview.html = generateReactHtml({
-    webviewType: "imageWall",
-    webview: panel.webview,
+  webview.html = generateReactHtml({
+    webviewType: WEBVIEW_TYPE,
+    webview,
     extensionUri: context.extensionUri,
-    initialData: { folderPath: readableFolderPath, images },
+    initialData: { folderPath: formatPath(folderPath), images },
   });
 
-  panel.webview.onDidReceiveMessage(
+  webview.onDidReceiveMessage(
     (message) => {
       if (message.type === "imageClick" && message.filePath) {
         const uri = vscode.Uri.file(message.filePath);
