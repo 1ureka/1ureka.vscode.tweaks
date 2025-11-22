@@ -72,7 +72,7 @@
         "displayName": "圖片檢視器",
         "selector": [
           {
-            "filenamePattern": "*.{jpg,jpeg,png,gif,bmp,webp,tiff,tif,svg}"
+            "filenamePattern": "*.{jpg,jpeg,png,gif,bmp,webp,tiff,tif}"
           }
         ],
         "priority": "default"
