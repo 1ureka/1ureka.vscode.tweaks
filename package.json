@@ -3,7 +3,7 @@
   "author": "1ureka",
   "publisher": "1ureka",
   "description": "A Visual Studio Code extension developed for personal use.",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "main": "./dist/extension.js",
   "type": "module",
   "engines": {
@@ -63,7 +63,7 @@
       },
       {
         "command": "extension.imageViewer.eyeDropper",
-        "title": "吸取顏色"
+        "title": "吸取顏色並複製到剪貼簿"
       }
     ],
     "customEditors": [
