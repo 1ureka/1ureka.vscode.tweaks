@@ -12,9 +12,16 @@ const ellipsisSx = {
   wordBreak: "break-all",
 } as const;
 
-const ImageListItemBar = ({ fileName }: { fileName: string }) => (
+type ImageListItemBarProps = {
+  fileName: string;
+  width: number;
+  height: number;
+};
+
+const ImageListItemBar = ({ fileName, width, height }: ImageListItemBarProps) => (
   <MuiImageListItemBar
     title={fileName}
+    subtitle={`${width}px x ${height}px`}
     sx={{ ...ellipsisSx, opacity: 0, fontFamily: "Noto Sans TC" }}
     className={imageListItemBarClassName}
   />

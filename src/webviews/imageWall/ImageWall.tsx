@@ -1,12 +1,14 @@
 import React from "react";
 import { ThemeProvider, createTheme, Skeleton } from "@mui/material";
-import { Box, Container, Typography, useMediaQuery, ButtonBase } from "@mui/material";
+import { Box, Container, Typography, useMediaQuery } from "@mui/material";
 import { ImageList, ImageListItem } from "@mui/material";
+
 import { ImageWallTitle } from "./ImageWallTitle";
 import { ImageListItemBar, imageListItemBarClassName } from "./ImageListItemBar";
+import { ImageClickControl } from "./ImageClickControl";
 
 import type sharp from "sharp";
-import { getInitialData, postMessageToExtension } from "../utils/vscodeApi";
+import { getInitialData } from "../utils/vscodeApi";
 
 type ImageInfo = {
   metadata: { fileName: string; filePath: string } & sharp.Metadata;
@@ -16,10 +18,6 @@ type ImageInfo = {
 const data = getInitialData<{ images: ImageInfo[]; folderPath: string }>() || {
   images: [],
   folderPath: "",
-};
-
-const createHandleClick = (filePath: string) => () => {
-  postMessageToExtension({ type: "imageClick", filePath });
 };
 
 const useColumnCounts = () => {
@@ -78,9 +76,8 @@ const Images = ({ images }: { images: ImageInfo[] }) => {
             /> */}
           </Box>
 
-          <ImageListItemBar fileName={fileName} />
-
-          <ButtonBase sx={{ position: "absolute", inset: 0, zIndex: 1 }} onClick={createHandleClick(filePath)} />
+          <ImageListItemBar fileName={fileName} width={width} height={height} />
+          <ImageClickControl filePath={filePath} />
         </ImageListItem>
       ))}
     </ImageList>
