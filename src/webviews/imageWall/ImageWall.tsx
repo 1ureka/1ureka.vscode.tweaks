@@ -2,8 +2,10 @@ import React from "react";
 import { ThemeProvider, createTheme, Skeleton } from "@mui/material";
 import { Box, Container, Typography, useMediaQuery, ButtonBase } from "@mui/material";
 import { ImageList, ImageListItem, ImageListItemBar } from "@mui/material";
-import { getInitialData, postMessageToExtension } from "../utils/vscodeApi";
+import { ImageWallTitle } from "./ImageWallTitle";
+
 import type sharp from "sharp";
+import { getInitialData, postMessageToExtension } from "../utils/vscodeApi";
 
 type ImageInfo = {
   metadata: { fileName: string; filePath: string } & sharp.Metadata;
@@ -18,22 +20,6 @@ const data = getInitialData<{ images: ImageInfo[]; folderPath: string }>() || {
 const createHandleClick = (filePath: string) => () => {
   postMessageToExtension({ type: "imageClick", filePath });
 };
-
-const ImageWallTitle = ({ folderPath, imageCount }: { folderPath: string; imageCount: number }) => (
-  <Box sx={{ mb: 3, pb: 2, borderBottom: 1, borderColor: "divider" }}>
-    <Typography variant="h4" component="h2" gutterBottom>
-      圖片牆
-    </Typography>
-    <Typography variant="body2" color="text.secondary" sx={{ wordBreak: "break-all" }}>
-      {folderPath}
-    </Typography>
-    {imageCount > 0 && (
-      <Typography variant="body2" color="text.secondary">
-        共 {imageCount} 張圖片
-      </Typography>
-    )}
-  </Box>
-);
 
 const useColumnCounts = () => {
   const isXl = useMediaQuery((theme) => theme.breakpoints.up("xl"));
