@@ -37,6 +37,7 @@ function updateStatusBarFromUri(statusBarItem: vscode.StatusBarItem, uri: vscode
     const modifiedFull = formatDateFull(modifiedDate);
     const formattedFileSize = formatFileSize(fileSize);
 
+    statusBarItem.name = "檔案屬性";
     statusBarItem.text = `$(history) ${createdCompact} | $(pencil) ${modifiedCompact}`;
     const paddingSymbol = "&nbsp;".repeat(2);
     statusBarItem.tooltip = new vscode.MarkdownString(
