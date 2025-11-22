@@ -44,6 +44,11 @@ window.addEventListener("cut", (e) => {
   e.preventDefault();
 });
 
+window.addEventListener("paste", (e) => {
+  postMessageToExtension({ type: "info", info: "該編輯器不支援貼上操作" });
+  e.preventDefault();
+});
+
 const Controls = () => {
   const { resetTransform } = useControls();
 
