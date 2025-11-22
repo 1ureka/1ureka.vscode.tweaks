@@ -52,4 +52,32 @@ async function openImages(input: string | string[]): Promise<ExtendedMetadata[]>
   return metadataResults.filter((metadata) => metadata !== null);
 }
 
-export { openImage, openImages, type ExtendedMetadata };
+// 根據 1920x1080 (Full HD/1080p) 的總像素點數來定義「1K」的門檻。
+const PIXELS_THRESHOLD_1K: number = 1920 * 1080; // 2073600
+
+/**
+ * 給定一個檔案路徑(假設已經確認是圖片)，若其解析度超過 1K，則壓縮後回傳 base64 字串，否則原圖轉 base64 回傳
+ */
+async function generateBase64Image(filePath: string): Promise<string | null> {
+  const metadata = await openImage(filePath);
+  if (!metadata) return null;
+
+  const image = sharp(filePath);
+  let buffer: Buffer;
+
+  if (metadata.width && metadata.height && metadata.width * metadata.height > PIXELS_THRESHOLD_1K) {
+    const { width, height } = metadata;
+
+    const originalTotalPixels = width * height;
+    const scaleFactor = Math.sqrt(PIXELS_THRESHOLD_1K / originalTotalPixels);
+    const targetWidth = Math.floor(width * scaleFactor);
+
+    buffer = await image.resize({ width: targetWidth }).webp().toBuffer();
+  } else {
+    buffer = await image.webp().toBuffer();
+  }
+
+  return buffer.toString("base64");
+}
+
+export { openImage, openImages, generateBase64Image, type ExtendedMetadata };
