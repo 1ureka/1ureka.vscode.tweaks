@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
 import * as fs from "fs";
 import * as path from "path";
+import sharp from "sharp";
 import { generateReactHtml } from "../utils/webviewHelper";
 
 import imageWallLight from "../icons/image-wall-light.svg";
@@ -34,7 +35,7 @@ export function registerImageWallCommands(context: vscode.ExtensionContext) {
 /**
  * 讀取資料夾中的圖片並在 WebView 中顯示
  */
-function openImageWall(context: vscode.ExtensionContext, folderPath: string) {
+async function openImageWall(context: vscode.ExtensionContext, folderPath: string) {
   const viewType = "imageWall";
   const title = `圖片牆 - ${path.basename(folderPath)}`;
   const showOptions = vscode.ViewColumn.One;
@@ -47,17 +48,23 @@ function openImageWall(context: vscode.ExtensionContext, folderPath: string) {
 
   panel.iconPath = { light: vscode.Uri.parse(imageWallLight), dark: vscode.Uri.parse(imageWallDark) };
 
-  const images = getImagesFromFolder(folderPath).map(({ fileName, filePath }) => ({
-    uri: panel.webview.asWebviewUri(vscode.Uri.file(filePath)).toString(),
-    fileName,
-    filePath,
-  }));
+  const imagePromises = getImagesFromFolder(folderPath).map(async ({ fileName, filePath }) => {
+    const metadata = await sharp(filePath).metadata();
+    return {
+      metadata: { ...metadata, fileName, filePath },
+      uri: panel.webview.asWebviewUri(vscode.Uri.file(filePath)).toString(),
+    };
+  });
+
+  // TODO 用 vscode.Progress 顯示讀取進度
+  const images = await Promise.all(imagePromises);
+  const readableFolderPath = path.resolve(folderPath);
 
   panel.webview.html = generateReactHtml({
     webviewType: "imageWall",
     webview: panel.webview,
     extensionUri: context.extensionUri,
-    initialData: { folderPath, images },
+    initialData: { folderPath: readableFolderPath, images },
   });
 
   panel.webview.onDidReceiveMessage(
