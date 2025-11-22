@@ -1,8 +1,9 @@
 import React from "react";
 import { ThemeProvider, createTheme, Skeleton } from "@mui/material";
 import { Box, Container, Typography, useMediaQuery, ButtonBase } from "@mui/material";
-import { ImageList, ImageListItem, ImageListItemBar } from "@mui/material";
+import { ImageList, ImageListItem } from "@mui/material";
 import { ImageWallTitle } from "./ImageWallTitle";
+import { ImageListItemBar, imageListItemBarClassName } from "./ImageListItemBar";
 
 import type sharp from "sharp";
 import { getInitialData, postMessageToExtension } from "../utils/vscodeApi";
@@ -34,15 +35,6 @@ const useColumnCounts = () => {
   return 1;
 };
 
-const ellipsisSx = {
-  display: "-webkit-box",
-  WebkitLineClamp: 1,
-  WebkitBoxOrient: "vertical",
-  overflow: "hidden",
-  textOverflow: "ellipsis",
-  wordBreak: "break-all",
-} as const;
-
 const skeletonTheme = createTheme({
   defaultColorScheme: "dark",
   colorSchemes: {
@@ -66,11 +58,11 @@ const Images = ({ images }: { images: ImageInfo[] }) => {
 
             "&:hover": { boxShadow: 3, transform: "translateY(-4px)" },
             "&:hover > button": { bgcolor: "action.hover" },
-            "&:hover > .image-list-item-bar": { opacity: 1 },
+            [`&:hover > .${imageListItemBarClassName}`]: { opacity: 1 },
 
             transition: "transform 0.2s, box-shadow 0.2s",
             "& > button": { transition: "background-color 0.2s" },
-            "& > .image-list-item-bar": { transition: "opacity 0.2s" },
+            [`& > .${imageListItemBarClassName}`]: { transition: "opacity 0.2s" },
           }}
         >
           <Box sx={{ position: "relative", width: 1, height: "auto", aspectRatio: `${width} / ${height}` }}>
@@ -85,11 +77,9 @@ const Images = ({ images }: { images: ImageInfo[] }) => {
               style={{ position: "absolute", inset: 0, display: "block" }}
             /> */}
           </Box>
-          <ImageListItemBar
-            title={fileName}
-            sx={{ ...ellipsisSx, opacity: 0, fontFamily: "Noto Sans TC" }}
-            className="image-list-item-bar"
-          />
+
+          <ImageListItemBar fileName={fileName} />
+
           <ButtonBase sx={{ position: "absolute", inset: 0, zIndex: 1 }} onClick={createHandleClick(filePath)} />
         </ImageListItem>
       ))}
