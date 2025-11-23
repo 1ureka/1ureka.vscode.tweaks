@@ -10,15 +10,35 @@ const layoutTranslations: Record<ImageWallPreferenceState["mode"], string> = {
   masonry: "磚牆",
 };
 
+const sizeOptions: ImageWallPreferenceState["columnSize"][] = ["s", "m", "l"];
+const sizeTranslations: Record<ImageWallPreferenceState["columnSize"], string> = {
+  s: "小",
+  m: "中",
+  l: "大",
+};
+
 const commonPaperProps: PaperProps = {
   sx: { borderRadius: 1, boxShadow: 6, mt: 1 },
   elevation: 0,
 };
 
-// TODO: 提取共用
-const Select = () => {};
-
-const ModeSelect = ({ disabled }: { disabled: boolean }) => {
+const Select = <T extends string>({
+  label,
+  icon,
+  value,
+  options,
+  translations,
+  onChange,
+  disabled,
+}: {
+  label: string;
+  icon: string;
+  value: T;
+  options: readonly T[];
+  translations: Record<T, string>;
+  onChange: (value: T) => void;
+  disabled: boolean;
+}) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
 
@@ -29,17 +49,15 @@ const ModeSelect = ({ disabled }: { disabled: boolean }) => {
     setAnchorEl(null);
   };
 
-  const mode = imageWallPreferenceStore((state) => state.mode);
-
-  const handleModeChange = (newMode: typeof mode) => {
-    setImageWallPreference({ mode: newMode });
+  const handleChange = (newValue: T) => {
+    onChange(newValue);
     handleClose();
   };
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 1 }}>
       <Typography variant="body2" color="text.secondary">
-        布局
+        {label}
       </Typography>
 
       <Button
@@ -47,10 +65,10 @@ const ModeSelect = ({ disabled }: { disabled: boolean }) => {
         disableElevation
         onClick={handleClick}
         disabled={disabled}
-        startIcon={<span className="codicon codicon-layout"></span>}
+        startIcon={<span className={`codicon codicon-${icon}`}></span>}
         endIcon={<span className="codicon codicon-chevron-down"></span>}
       >
-        {layoutTranslations[mode]}
+        {translations[value]}
       </Button>
 
       <Popover
@@ -62,14 +80,14 @@ const ModeSelect = ({ disabled }: { disabled: boolean }) => {
         slotProps={{ paper: commonPaperProps }}
       >
         <Box sx={{ p: 1, display: "flex", flexDirection: "column" }}>
-          {layoutOptions.map((key) => (
+          {options.map((key) => (
             <Button
               key={key}
-              onClick={() => handleModeChange(key)}
-              endIcon={mode === key ? <span className="codicon codicon-check"></span> : null}
+              onClick={() => handleChange(key)}
+              endIcon={value === key ? <span className="codicon codicon-check"></span> : null}
               sx={{ justifyContent: "space-between", p: 0.5, minWidth: 120, color: "text.primary" }}
             >
-              {layoutTranslations[key]}
+              {translations[key]}
             </Button>
           ))}
         </Box>
@@ -78,4 +96,36 @@ const ModeSelect = ({ disabled }: { disabled: boolean }) => {
   );
 };
 
-export { ModeSelect };
+const ModeSelect = ({ disabled }: { disabled: boolean }) => {
+  const mode = imageWallPreferenceStore((state) => state.mode);
+
+  return (
+    <Select
+      label="布局"
+      icon="layout"
+      value={mode}
+      options={layoutOptions}
+      translations={layoutTranslations}
+      onChange={(newMode) => setImageWallPreference({ mode: newMode })}
+      disabled={disabled}
+    />
+  );
+};
+
+const SizeSelect = ({ disabled }: { disabled: boolean }) => {
+  const columnSize = imageWallPreferenceStore((state) => state.columnSize);
+
+  return (
+    <Select
+      label="尺寸"
+      icon="symbol-ruler"
+      value={columnSize}
+      options={sizeOptions}
+      translations={sizeTranslations}
+      onChange={(newSize) => setImageWallPreference({ columnSize: newSize })}
+      disabled={disabled}
+    />
+  );
+};
+
+export { ModeSelect, SizeSelect };
