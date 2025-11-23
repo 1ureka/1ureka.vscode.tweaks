@@ -58,13 +58,19 @@ function createPanel(context: vscode.ExtensionContext, folderPath: string): vsco
 /**
  * 檢查接收到的訊息格式是否正確
  */
-function checkMessage(value: any): { type: string; id: string } | null {
+function checkMessage(value: any): { type: string; id: string } | string | null {
   if (typeof value !== "object" || value === null) return null;
+  const obj = value as Record<string, unknown>;
 
-  const hasType = "type" in value && typeof value.type === "string";
-  const hasId = "id" in value && typeof value.id === "string";
+  const hasType = "type" in obj && typeof obj.type === "string";
+  const hasId = "id" in obj && typeof obj.id === "string";
 
   if (hasType && hasId) return value;
+
+  if (hasType && obj.type === "info" && "info" in obj && typeof obj.info === "string") {
+    return obj.info;
+  }
+
   return null;
 }
 
@@ -95,6 +101,11 @@ async function openImageWall(context: vscode.ExtensionContext, folderPath: strin
       return;
     }
 
+    if (typeof message === "string") {
+      vscode.window.showInformationMessage(message);
+      return;
+    }
+
     const filePath = images.find(({ id }) => id === message.id)?.metadata.filePath;
     if (!filePath) return;
 
@@ -107,6 +118,12 @@ async function openImageWall(context: vscode.ExtensionContext, folderPath: strin
       const base64 = await generateBase64Image(filePath);
       if (!base64) return;
       webview.postMessage({ type: "imageGenerated", id: message.id, base64 });
+    }
+
+    if (message.type === "copyImage") {
+      const uri = vscode.Uri.file(filePath);
+      await vscode.env.clipboard.writeText(uri.fsPath);
+      vscode.window.showInformationMessage(`已複製圖片路徑: ${uri.fsPath}`);
     }
   });
 
