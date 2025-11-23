@@ -34,12 +34,14 @@ const ModeSelect = ({ disabled }: { disabled: boolean }) => {
         布局
       </Typography>
       <Button
-        variant="outlined"
+        variant="contained"
+        disableElevation
         onClick={handleClick}
         disabled={disabled}
         startIcon={<span className="codicon codicon-layout"></span>}
+        endIcon={<span className="codicon codicon-chevron-down"></span>}
       >
-        {layoutTranslations[mode]} <span className="codicon codicon-chevron-down"></span>
+        {layoutTranslations[mode]}
       </Button>
       <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
         {layoutOptions.map((key) => (
