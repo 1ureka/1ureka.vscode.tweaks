@@ -1,7 +1,7 @@
 import { create } from "zustand";
 
 type ImageWallPreferenceState = {
-  mode: "standard" | "quilted" | "woven" | "masonry";
+  mode: "standard" | "woven" | "masonry";
   columnSize: "s" | "m" | "l";
 };
 
