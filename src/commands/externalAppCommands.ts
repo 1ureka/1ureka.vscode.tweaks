@@ -3,7 +3,20 @@ import * as fs from "fs";
 import * as path from "path";
 import { openWithDefaultApp, openApplication } from "../utils/system_windows";
 
-function findBlenderPath(): string | null {
+function getBlenderPath(): string | null {
+  // 優先使用使用者配置的路徑
+  const config = vscode.workspace.getConfiguration("1ureka");
+  const userPath = config.get<string>("blenderPath");
+
+  if (userPath && userPath.trim() !== "") {
+    if (fs.existsSync(userPath)) {
+      return userPath;
+    } else {
+      vscode.window.showWarningMessage(`配置的 Blender 路徑不存在: ${userPath}`);
+    }
+  }
+
+  // 若未配置或路徑無效,自動搜尋
   const possiblePaths = ["C:\\Program Files\\Blender Foundation", "C:\\Program Files (x86)\\Blender Foundation"];
 
   for (const basePath of possiblePaths) {
@@ -25,7 +38,20 @@ function findBlenderPath(): string | null {
   return null;
 }
 
-function findPainterPath(): string | null {
+function getPainterPath(): string | null {
+  // 優先使用使用者配置的路徑
+  const config = vscode.workspace.getConfiguration("1ureka");
+  const userPath = config.get<string>("painterPath");
+
+  if (userPath && userPath.trim() !== "") {
+    if (fs.existsSync(userPath)) {
+      return userPath;
+    } else {
+      vscode.window.showWarningMessage(`配置的 Painter 路徑不存在: ${userPath}`);
+    }
+  }
+
+  // 若未配置或路徑無效,自動搜尋
   const possiblePaths = [
     "C:\\Program Files\\Adobe\\Adobe Substance 3D Painter",
     "C:\\Program Files (x86)\\Adobe\\Adobe Substance 3D Painter",
@@ -55,12 +81,15 @@ function findPainterPath(): string | null {
 }
 
 function handleOpenApp(app: "blender" | "painter") {
-  const appPath = app === "blender" ? findBlenderPath() : findPainterPath();
+  const appPath = app === "blender" ? getBlenderPath() : getPainterPath();
   if (appPath) {
     openApplication(app, appPath);
   } else {
     const appName = app === "blender" ? "Blender" : "Adobe Substance 3D Painter";
-    vscode.window.showErrorMessage(`找不到 ${appName} 安裝路徑，請確認已安裝該軟體`);
+    const settingName = app === "blender" ? "1ureka.blenderPath" : "1ureka.painterPath";
+    vscode.window.showErrorMessage(
+      `找不到 ${appName} 安裝路徑。請在設定中手動指定路徑 (${settingName}) 或確認已安裝該軟體。`
+    );
   }
 }
 
