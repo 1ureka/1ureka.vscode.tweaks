@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import * as fs from "fs";
 import * as path from "path";
-import { formatDateCompact, formatDateFull } from "../utils/dateFormatter";
+import { formatDateCompact, formatDateFull } from "../utils/formatter";
 import { FileTimestampEditorProvider } from "../providers/fileTimestampProvider";
 import { openImage } from "../utils/imageOpener";
 

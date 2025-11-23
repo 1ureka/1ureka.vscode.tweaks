@@ -6,7 +6,7 @@ import { generateReactHtml } from "../utils/webviewHelper";
 import imageWallLight from "../icons/image-wall-light.svg";
 import imageWallDark from "../icons/image-wall-dark.svg";
 import { generateThumbnail, openImages } from "../utils/imageOpener";
-import { formatPath } from "../utils/pathFormatter";
+import { formatPath } from "../utils/formatter";
 import { copyImageWindows } from "../utils/systemClipboard";
 
 export function registerImageWallCommands(context: vscode.ExtensionContext) {
