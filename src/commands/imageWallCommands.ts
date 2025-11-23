@@ -5,7 +5,7 @@ import { generateReactHtml } from "../utils/webviewHelper";
 
 import imageWallLight from "../icons/image-wall-light.svg";
 import imageWallDark from "../icons/image-wall-dark.svg";
-import { generateBase64Image, openImages } from "../utils/imageOpener";
+import { generateThumbnail, openImages } from "../utils/imageOpener";
 import { formatPath } from "../utils/pathFormatter";
 
 export function registerImageWallCommands(context: vscode.ExtensionContext) {
@@ -115,7 +115,7 @@ async function openImageWall(context: vscode.ExtensionContext, folderPath: strin
     }
 
     if (message.type === "generateImage") {
-      const base64 = await generateBase64Image(filePath);
+      const base64 = await generateThumbnail(filePath);
       if (!base64) return;
       webview.postMessage({ type: "imageGenerated", id: message.id, base64 });
     }
