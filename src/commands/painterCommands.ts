@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { openWithDefaultApp, openApplication } from "../utils/fileOpener";
+import { openWithDefaultApp, openApplication } from "../utils/system_windows";
 import * as fs from "fs";
 import * as path from "path";
 
