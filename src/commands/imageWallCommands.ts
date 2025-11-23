@@ -6,8 +6,8 @@ import { generateReactHtml } from "../utils/webviewHelper";
 import imageWallLight from "../icons/image-wall-light.svg";
 import imageWallDark from "../icons/image-wall-dark.svg";
 import { generateThumbnail, openImages } from "../utils/imageOpener";
-import { formatPath } from "../utils/pathFormatter";
-import { copyImageWindows } from "../utils/systemClipboard";
+import { formatPath } from "../utils/formatter";
+import { copyImage } from "../utils/system_windows";
 
 export function registerImageWallCommands(context: vscode.ExtensionContext) {
   // 從檔案總管右鍵開啟圖片牆
@@ -130,7 +130,7 @@ async function openImageWall(context: vscode.ExtensionContext, folderPath: strin
       }
 
       try {
-        await copyImageWindows(filePath);
+        await copyImage(filePath);
         const message = "圖片已複製到剪貼簿\n\n可以直接貼到其他應用中 (如 Word 或是瀏覽器的 Google Keep, ChatGPT 等)";
         vscode.window.showInformationMessage(message);
       } catch (error) {

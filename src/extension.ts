@@ -1,20 +1,18 @@
 import * as vscode from "vscode";
-import { registerBlenderCommands } from "./commands/blenderCommands";
-import { registerPainterCommands } from "./commands/painterCommands";
+import { registerExternalAppCommands } from "./commands/externalAppCommands";
 import { registerImageWallCommands } from "./commands/imageWallCommands";
 import { registerImageViewerCommands } from "./commands/imageViewerCommands";
-import { registerFileTimestampCommands } from "./commands/fileTimestampCommands";
+import { registerFileMetadataCommands } from "./commands/fileMetadataCommands";
 import { registerInjectStylesCommands } from "./commands/injectStylesCommands";
 
 export function activate(context: vscode.ExtensionContext) {
   if (process.platform === "win32") {
-    registerBlenderCommands(context);
-    registerPainterCommands(context);
+    registerExternalAppCommands(context);
   }
 
   registerImageWallCommands(context);
   registerImageViewerCommands(context);
-  registerFileTimestampCommands(context);
+  registerFileMetadataCommands(context);
   registerInjectStylesCommands(context);
 }
 

@@ -3,7 +3,7 @@ import * as path from "path";
 import { generateReactHtml } from "../utils/webviewHelper";
 import { ImageViewerEditorProvider } from "../providers/imageViewerProvider";
 import { openImage } from "../utils/imageOpener";
-import { copyImageWindows } from "../utils/systemClipboard";
+import { copyImage } from "../utils/system_windows";
 
 export function registerImageViewerCommands(context: vscode.ExtensionContext) {
   const provider = new ImageViewerEditorProvider((document, webviewPanel) => {
@@ -51,7 +51,7 @@ export function registerImageViewerCommands(context: vscode.ExtensionContext) {
         }
 
         try {
-          await copyImageWindows(filePath);
+          await copyImage(filePath);
           const message = "圖片已複製到剪貼簿\n\n可以直接貼到其他應用中 (如 Word 或是瀏覽器的 Google Keep, ChatGPT 等)";
           vscode.window.showInformationMessage(message);
         } catch (error) {

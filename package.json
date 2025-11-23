@@ -3,7 +3,7 @@
   "author": "1ureka",
   "publisher": "1ureka",
   "description": "A Visual Studio Code extension developed for personal use.",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "main": "./dist/extension.js",
   "type": "module",
   "engines": {
@@ -20,7 +20,19 @@
           "type": "string",
           "scope": "machine",
           "default": "",
-          "markdownDescription": "設定 VSCode 資源目錄路徑，用於自訂樣式注入功能。\n\n範例：`C:/Users/YourName/AppData/Local/Programs/Microsoft VS Code/resources/app/out/vs`"
+          "markdownDescription": "設定 VSCode 資源目錄路徑,用於自訂樣式注入功能。\n\n範例：`C:/Users/YourName/AppData/Local/Programs/Microsoft VS Code/resources/app/out/vs`"
+        },
+        "1ureka.blenderPath": {
+          "type": "string",
+          "scope": "machine",
+          "default": "",
+          "markdownDescription": "設定 Blender 執行檔路徑。若未設定,將自動搜尋常見安裝位置。\n\n範例：`C:/Program Files/Blender Foundation/Blender 4.0/blender.exe`"
+        },
+        "1ureka.painterPath": {
+          "type": "string",
+          "scope": "machine",
+          "default": "",
+          "markdownDescription": "設定 Adobe Substance 3D Painter 執行檔路徑。若未設定,將自動搜尋常見安裝位置。\n\n範例：`C:/Program Files/Adobe/Adobe Substance 3D Painter/Adobe Substance 3D Painter.exe`"
         }
       }
     },
@@ -78,8 +90,8 @@
         "priority": "default"
       },
       {
-        "viewType": "fileTimestamp.catchAll",
-        "displayName": "File Timestamp Tracker",
+        "viewType": "1ureka.fileMetadata.catchAll",
+        "displayName": "檔案屬性檢視器",
         "selector": [
           {
             "filenamePattern": "*"

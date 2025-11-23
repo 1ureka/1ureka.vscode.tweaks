@@ -1,19 +1,12 @@
 import * as vscode from "vscode";
 import * as fs from "fs";
 import * as path from "path";
-import { formatDateCompact, formatDateFull } from "../utils/dateFormatter";
-import { FileTimestampEditorProvider } from "../providers/fileTimestampProvider";
+import { formatDateCompact, formatDateFull, formatFileSize } from "../utils/formatter";
+import { FileMetadataEditorProvider } from "../providers/fileMetadataProvider";
 import { openImage } from "../utils/imageOpener";
 
 function createStatusBarItem(): vscode.StatusBarItem {
   return vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
-}
-
-function formatFileSize(size: number): string {
-  if (size < 1024) return `${size} B`;
-  else if (size < 1024 * 1024) return `${(size / 1024).toFixed(2)} KB`;
-  else if (size < 1024 * 1024 * 1024) return `${(size / (1024 * 1024)).toFixed(2)} MB`;
-  else return `${(size / (1024 * 1024 * 1024)).toFixed(2)} GB`;
 }
 
 type FileInfo = {
@@ -152,18 +145,18 @@ async function updateFromActiveTab(statusBarItem: vscode.StatusBarItem) {
   }
 }
 
-export function registerFileTimestampCommands(context: vscode.ExtensionContext) {
+export function registerFileMetadataCommands(context: vscode.ExtensionContext) {
   const statusBarItem = createStatusBarItem();
 
   // 建立 provider，並傳入更新狀態列的回調
-  const provider = new FileTimestampEditorProvider((uri) => {
+  const provider = new FileMetadataEditorProvider((uri) => {
     updateStatusBarFromUri(statusBarItem, uri);
   });
 
   // 註冊 catch-all CustomReadonlyEditorProvider (優先級最低)
   // 確保所有檔案類型都能被追蹤 (文字檔、圖片、PDF、二進位檔等)
   context.subscriptions.push(
-    vscode.window.registerCustomEditorProvider("fileTimestamp.catchAll", provider, {
+    vscode.window.registerCustomEditorProvider("1ureka.fileMetadata.catchAll", provider, {
       webviewOptions: { retainContextWhenHidden: false },
       supportsMultipleEditorsPerDocument: true,
     })
