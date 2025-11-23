@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 import * as fs from "fs";
 import * as path from "path";
 import { formatDateCompact, formatDateFull, formatFileSize } from "../utils/formatter";
-import { FileTimestampEditorProvider } from "../providers/fileTimestampProvider";
+import { FileMetadataEditorProvider } from "../providers/fileMetadataProvider";
 import { openImage } from "../utils/imageOpener";
 
 function createStatusBarItem(): vscode.StatusBarItem {
@@ -145,18 +145,18 @@ async function updateFromActiveTab(statusBarItem: vscode.StatusBarItem) {
   }
 }
 
-export function registerFileTimestampCommands(context: vscode.ExtensionContext) {
+export function registerFileMetadataCommands(context: vscode.ExtensionContext) {
   const statusBarItem = createStatusBarItem();
 
   // 建立 provider，並傳入更新狀態列的回調
-  const provider = new FileTimestampEditorProvider((uri) => {
+  const provider = new FileMetadataEditorProvider((uri) => {
     updateStatusBarFromUri(statusBarItem, uri);
   });
 
   // 註冊 catch-all CustomReadonlyEditorProvider (優先級最低)
   // 確保所有檔案類型都能被追蹤 (文字檔、圖片、PDF、二進位檔等)
   context.subscriptions.push(
-    vscode.window.registerCustomEditorProvider("fileTimestamp.catchAll", provider, {
+    vscode.window.registerCustomEditorProvider("1ureka.fileMetadata.catchAll", provider, {
       webviewOptions: { retainContextWhenHidden: false },
       supportsMultipleEditorsPerDocument: true,
     })

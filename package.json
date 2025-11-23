@@ -78,8 +78,8 @@
         "priority": "default"
       },
       {
-        "viewType": "fileTimestamp.catchAll",
-        "displayName": "File Timestamp Tracker",
+        "viewType": "1ureka.fileMetadata.catchAll",
+        "displayName": "檔案屬性檢視器",
         "selector": [
           {
             "filenamePattern": "*"

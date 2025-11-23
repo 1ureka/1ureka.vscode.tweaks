@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 
-export class FileTimestampEditorProvider implements vscode.CustomReadonlyEditorProvider {
+export class FileMetadataEditorProvider implements vscode.CustomReadonlyEditorProvider {
   constructor(private onOpenDocument: (uri: vscode.Uri) => void) {}
 
   async openCustomDocument(
