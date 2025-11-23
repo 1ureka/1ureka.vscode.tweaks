@@ -7,6 +7,7 @@ import imageWallLight from "../icons/image-wall-light.svg";
 import imageWallDark from "../icons/image-wall-dark.svg";
 import { generateThumbnail, openImages } from "../utils/imageOpener";
 import { formatPath } from "../utils/pathFormatter";
+import { copyImageWindows } from "../utils/systemClipboard";
 
 export function registerImageWallCommands(context: vscode.ExtensionContext) {
   // 從檔案總管右鍵開啟圖片牆
@@ -121,9 +122,21 @@ async function openImageWall(context: vscode.ExtensionContext, folderPath: strin
     }
 
     if (message.type === "copyImage") {
-      const uri = vscode.Uri.file(filePath);
-      await vscode.env.clipboard.writeText(uri.fsPath);
-      vscode.window.showInformationMessage(`已複製圖片路徑: ${uri.fsPath}`);
+      if (process.platform !== "win32") {
+        const uri = vscode.Uri.file(filePath);
+        await vscode.env.clipboard.writeText(uri.fsPath);
+        vscode.window.showInformationMessage(`已複製圖片路徑: ${uri.fsPath}`);
+        return;
+      }
+
+      try {
+        await copyImageWindows(filePath);
+        const message = "圖片已複製到剪貼簿\n\n可以直接貼到其他應用中 (如 Word 或是瀏覽器的 Google Keep, ChatGPT 等)";
+        vscode.window.showInformationMessage(message);
+      } catch (error) {
+        const message = `複製圖片到剪貼簿失敗: ${error instanceof Error ? error.message : String(error)}`;
+        vscode.window.showErrorMessage(message);
+      }
     }
   });
 
