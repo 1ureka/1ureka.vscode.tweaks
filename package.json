@@ -143,6 +143,7 @@
     "build": "node esbuild.js"
   },
   "dependencies": {
+    "@vscode/codicons": "^0.0.43",
     "sharp": "^0.34.5"
   },
   "devDependencies": {
