@@ -37,23 +37,6 @@ if (!data || !data.metadata) {
   registerClipboardEvent();
 }
 
-const handleCopy = (e: ClipboardEvent) => {
-  const filePath = data?.metadata?.filePath;
-  if (!filePath) return;
-  if (!e.clipboardData) return;
-
-  e.clipboardData.setData("text/plain", filePath);
-  e.preventDefault();
-  postMessageToExtension({ type: "info", info: `已複製圖片路徑: ${filePath}` });
-};
-
-window.addEventListener("copy", handleCopy);
-window.addEventListener("cut", handleCopy);
-window.addEventListener("paste", (e) => {
-  postMessageToExtension({ type: "info", info: "該編輯器不支援貼上操作" });
-  e.preventDefault();
-});
-
 const Controls = () => {
   const { resetTransform } = useControls();
 

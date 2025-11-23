@@ -43,8 +43,6 @@ export function registerImageViewerCommands(context: vscode.ExtensionContext) {
       if (message.type === "copy") {
         const filePath = document.uri.fsPath;
 
-        console.log("複製圖片在", process.platform);
-
         if (process.platform !== "win32") {
           const uri = vscode.Uri.file(filePath);
           await vscode.env.clipboard.writeText(uri.fsPath);
