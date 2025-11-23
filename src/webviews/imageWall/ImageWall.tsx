@@ -9,6 +9,7 @@ import { ImageDisplay } from "./ImageDisplay";
 
 import type { ExtendedMetadata } from "../../utils/imageOpener";
 import { getInitialData } from "../utils/vscodeApi";
+import { setSelectedImageId } from "./clipboardEvent";
 
 type ImageInfo = { id: string; metadata: ExtendedMetadata };
 const data = getInitialData<{ images: ImageInfo[]; folderPath: string }>() || {
@@ -37,6 +38,7 @@ const Images = ({ images }: { images: ImageInfo[] }) => {
       {images.map(({ id, metadata: { fileName, width, height } }) => (
         <ImageListItem
           key={id}
+          onPointerDown={() => setSelectedImageId(id)}
           sx={{
             position: "relative",
             overflow: "hidden",

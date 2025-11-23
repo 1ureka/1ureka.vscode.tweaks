@@ -33,6 +33,7 @@ export function registerImageViewerCommands(context: vscode.ExtensionContext) {
     webviewPanel.webview.onDidReceiveMessage(
       (message) => {
         if (message.type === "error") vscode.window.showErrorMessage(message.error);
+        if (message.type === "info") vscode.window.showInformationMessage(message.info);
         if (message.type === "eyeDropper") {
           const color = message.color as string;
           vscode.env.clipboard
