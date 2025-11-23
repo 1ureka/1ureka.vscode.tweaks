@@ -3,6 +3,7 @@ import * as path from "path";
 import { generateReactHtml } from "../utils/webviewHelper";
 import { ImageViewerEditorProvider } from "../providers/imageViewerProvider";
 import { openImage } from "../utils/imageOpener";
+import { copyImageWindows } from "../utils/systemClipboard";
 
 export function registerImageViewerCommands(context: vscode.ExtensionContext) {
   const provider = new ImageViewerEditorProvider((document, webviewPanel) => {
@@ -30,30 +31,53 @@ export function registerImageViewerCommands(context: vscode.ExtensionContext) {
       initialData,
     });
 
-    webviewPanel.webview.onDidReceiveMessage(
-      (message) => {
-        if (message.type === "error") vscode.window.showErrorMessage(message.error);
-        if (message.type === "info") vscode.window.showInformationMessage(message.info);
-        if (message.type === "eyeDropper") {
-          const color = message.color as string;
-          vscode.env.clipboard
-            .writeText(color)
-            .then(() => vscode.window.showInformationMessage(`選取的顏色 ${color} 已複製到剪貼簿`));
+    const messageListener = webviewPanel.webview.onDidReceiveMessage(async (message) => {
+      if (message.type === "error") {
+        vscode.window.showErrorMessage(message.error);
+      }
+
+      if (message.type === "info") {
+        vscode.window.showInformationMessage(message.info);
+      }
+
+      if (message.type === "copy") {
+        const filePath = document.uri.fsPath;
+
+        console.log("複製圖片在", process.platform);
+
+        if (process.platform !== "win32") {
+          const uri = vscode.Uri.file(filePath);
+          await vscode.env.clipboard.writeText(uri.fsPath);
+          vscode.window.showInformationMessage(`已複製圖片路徑: ${uri.fsPath}`);
+          return;
         }
-      },
-      undefined,
-      context.subscriptions
-    );
+
+        try {
+          await copyImageWindows(filePath);
+          const message = "圖片已複製到剪貼簿\n\n可以直接貼到其他應用中 (如 Word 或是瀏覽器的 Google Keep, ChatGPT 等)";
+          vscode.window.showInformationMessage(message);
+        } catch (error) {
+          const message = `複製圖片到剪貼簿失敗: ${error instanceof Error ? error.message : String(error)}`;
+          vscode.window.showErrorMessage(message);
+        }
+      }
+
+      if (message.type === "eyeDropper") {
+        const color = message.color as string;
+        vscode.env.clipboard
+          .writeText(color)
+          .then(() => vscode.window.showInformationMessage(`選取的顏色 ${color} 已複製到剪貼簿`));
+      }
+    });
+
+    context.subscriptions.push(messageListener);
 
     webviewsMap.set(document.uri.path, webviewPanel);
+    const disposeListener = webviewPanel.onDidDispose(() => {
+      webviewsMap.delete(document.uri.path);
+    });
 
-    webviewPanel.onDidDispose(
-      () => {
-        webviewsMap.delete(document.uri.path);
-      },
-      undefined,
-      context.subscriptions
-    );
+    context.subscriptions.push(disposeListener);
   }
 
   const providerRegistration = vscode.window.registerCustomEditorProvider("1ureka.imageViewer", provider, {
