@@ -34,7 +34,7 @@ const data = getInitialData<ImageInfo>();
 if (!data || !data.metadata) {
   postMessageToExtension({ type: "error", error: "圖片載入失敗，無法取得圖片資料" });
 } else {
-  registerClipboardEvent(data.metadata);
+  registerClipboardEvent();
 }
 
 const handleCopy = (e: ClipboardEvent) => {

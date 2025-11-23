@@ -1,15 +1,9 @@
 import { postMessageToExtension } from "../utils/vscodeApi";
-import type { ExtendedMetadata } from "../../utils/imageOpener";
 
-const registerClipboardEvent = (metadata: ExtendedMetadata) => {
+const registerClipboardEvent = () => {
   const handleCopy = (e: ClipboardEvent) => {
-    const filePath = metadata?.filePath;
-    if (!filePath) return;
-    if (!e.clipboardData) return;
-
-    e.clipboardData.setData("text/plain", filePath);
+    postMessageToExtension({ type: "copy" });
     e.preventDefault();
-    postMessageToExtension({ type: "info", info: `已複製圖片路徑: ${filePath}` });
   };
 
   window.addEventListener("copy", handleCopy);
