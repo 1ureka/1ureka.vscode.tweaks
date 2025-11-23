@@ -1,13 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Box, Skeleton, ThemeProvider, createTheme } from "@mui/material";
+import { Box, Skeleton, type SxProps } from "@mui/material";
 import { postMessageToExtension } from "../utils/vscodeApi";
-
-const skeletonTheme = createTheme({
-  defaultColorScheme: "dark",
-  colorSchemes: {
-    dark: { palette: { text: { primary: "#ffffff" } } },
-  },
-});
+import { imageWallPreferenceStore } from "./imageWallPreference";
 
 type ImageDisplayProps = {
   id: string;
@@ -36,11 +30,15 @@ export const ImageDisplay: React.FC<ImageDisplayProps> = ({ id, fileName, width,
     return () => window.removeEventListener("message", handleMessage);
   }, [id]);
 
+  const mode = imageWallPreferenceStore((state) => state.mode);
+  const containerSx: SxProps =
+    mode === "masonry"
+      ? { position: "relative", width: 1, height: "auto", aspectRatio: `${width} / ${height}` }
+      : { position: "relative", width: 1, height: 1, minHeight: Math.max(150, Math.floor(Math.min(height, 1080) / 3)) };
+
   return (
-    <Box sx={{ position: "relative", width: 1, height: "auto", aspectRatio: `${width} / ${height}` }}>
-      <ThemeProvider theme={skeletonTheme}>
-        <Skeleton variant="rectangular" width="100%" height="100%" animation="wave" />
-      </ThemeProvider>
+    <Box sx={containerSx}>
+      <Skeleton variant="rectangular" width="100%" height="100%" animation="wave" />
       <img
         ref={imgRef}
         alt={fileName}
@@ -51,6 +49,7 @@ export const ImageDisplay: React.FC<ImageDisplayProps> = ({ id, fileName, width,
           display: isLoaded ? "block" : "none",
           width: "100%",
           height: "100%",
+          objectFit: "cover",
         }}
       />
     </Box>

@@ -10,6 +10,7 @@ import { ImageDisplay } from "./ImageDisplay";
 import type { ExtendedMetadata } from "../../utils/imageOpener";
 import { getInitialData } from "../utils/vscodeApi";
 import { setSelectedImageId } from "./clipboardEvent";
+import { imageWallPreferenceStore } from "./imageWallPreference";
 
 type ImageInfo = { id: string; metadata: ExtendedMetadata };
 const data = getInitialData<{ images: ImageInfo[]; folderPath: string }>() || {
@@ -17,24 +18,35 @@ const data = getInitialData<{ images: ImageInfo[]; folderPath: string }>() || {
   folderPath: "",
 };
 
+const columnCountsMap = {
+  s: { xl: 7, lg: 6, md: 5, sm: 4, xs: 3 },
+  m: { xl: 5, lg: 4, md: 3, sm: 2, xs: 1 },
+  l: { xl: 4, lg: 3, md: 2, sm: 1, xs: 1 },
+};
+
 const useColumnCounts = () => {
+  const columnSize = imageWallPreferenceStore((state) => state.columnSize);
+
   const isXl = useMediaQuery((theme) => theme.breakpoints.up("xl"));
   const isLg = useMediaQuery((theme) => theme.breakpoints.up("lg"));
   const isMd = useMediaQuery((theme) => theme.breakpoints.up("md"));
   const isSm = useMediaQuery((theme) => theme.breakpoints.up("sm"));
 
-  if (isXl) return 5;
-  if (isLg) return 4;
-  if (isMd) return 3;
-  if (isSm) return 2;
-  return 1;
+  const currentSizeMap = columnCountsMap[columnSize];
+
+  if (isXl) return currentSizeMap.xl;
+  if (isLg) return currentSizeMap.lg;
+  if (isMd) return currentSizeMap.md;
+  if (isSm) return currentSizeMap.sm;
+  return currentSizeMap.xs;
 };
 
 const Images = ({ images }: { images: ImageInfo[] }) => {
+  const variant = imageWallPreferenceStore((state) => state.mode);
   const columnCounts = useColumnCounts();
 
   return (
-    <ImageList variant="masonry" cols={columnCounts} gap={8} sx={{ py: 1 }}>
+    <ImageList variant={variant} cols={columnCounts} gap={8} sx={{ py: 1 }}>
       {images.map(({ id, metadata: { fileName, width, height } }) => (
         <ImageListItem
           key={id}

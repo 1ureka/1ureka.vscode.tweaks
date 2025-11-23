@@ -2,7 +2,13 @@ import React from "react";
 import { CssBaseline, ThemeProvider, createTheme } from "@mui/material";
 
 const getColorVar = (varName: string) => {
-  return "var(--vscode-" + varName + ")";
+  const rootElement = document.documentElement;
+  const computedStyle = window.getComputedStyle(rootElement);
+
+  const fullVarName = `--vscode-${varName}`;
+  const value = computedStyle.getPropertyValue(fullVarName).trim();
+
+  return value || "#000000";
 };
 
 const theme = createTheme({
@@ -10,6 +16,10 @@ const theme = createTheme({
   colorSchemes: {
     dark: {
       palette: {
+        primary: {
+          main: getColorVar("button-background"),
+          contrastText: getColorVar("button-foreground"),
+        },
         background: {
           default: getColorVar("editor-background"),
           paper: getColorVar("sideBar-background"),

@@ -26,19 +26,22 @@ type generateReactHtmlParams = {
 export function generateReactHtml({ webviewType, webview, extensionUri, initialData }: generateReactHtmlParams) {
   const webviewJS = vscode.Uri.joinPath(extensionUri, "dist", "webviews", `${webviewType}.js`);
   const jsWebviewUri = webview.asWebviewUri(webviewJS);
+  const codiconsCss = vscode.Uri.joinPath(extensionUri, "node_modules", "@vscode/codicons", "dist", "codicon.css");
+  const codiconsUri = webview.asWebviewUri(codiconsCss);
 
   const initialDataScript = initialData
     ? `<script id="__data__" type="application/json">${serializeForHtml(initialData)}</script>`
     : "";
 
   const nonce = getNonce();
-  const cspContent = `default-src 'none'; img-src ${webview.cspSource} https: data:; script-src 'nonce-${nonce}'; style-src ${webview.cspSource} 'unsafe-inline';`;
+  const cspContent = `default-src 'none'; img-src ${webview.cspSource} data:; script-src 'nonce-${nonce}'; style-src ${webview.cspSource} 'unsafe-inline'; font-src ${webview.cspSource};`;
 
   const htmlMeta = `<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">`;
   const htmlCSP = `<meta http-equiv="Content-Security-Policy" content="${cspContent}">`;
   const htmlTitle = `<title>${webviewType}</title>`;
+  const htmlCodicons = `<link href="${codiconsUri}" rel="stylesheet" />`;
 
-  const htmlHead = `<head>${htmlMeta}${htmlCSP}${htmlTitle}${initialDataScript}</head>`;
+  const htmlHead = `<head>${htmlMeta}${htmlCSP}${htmlTitle}${htmlCodicons}${initialDataScript}</head>`;
   const htmlBody = `<body><div id="root"></div><script nonce="${nonce}" src="${jsWebviewUri}"></script></body>`;
 
   return `<!DOCTYPE html><html lang="zh-TW">${htmlHead}${htmlBody}</html>`;
