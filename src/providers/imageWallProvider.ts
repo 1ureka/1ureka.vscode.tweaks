@@ -19,7 +19,7 @@ type CreatePanel = (params: {
   context: vscode.ExtensionContext;
   folderPath: string;
   initialData: ImageWallInitialData;
-}) => vscode.Webview;
+}) => vscode.WebviewPanel;
 
 /**
  * 建立 WebView 面板
@@ -43,7 +43,7 @@ const createPanel: CreatePanel = ({ context, folderPath, initialData }) => {
     initialData,
   });
 
-  return panel.webview;
+  return panel;
 };
 
 /**

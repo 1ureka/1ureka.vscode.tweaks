@@ -7,11 +7,24 @@ import { formatPath, formatPathToArray } from "../utils/formatter";
 import { copyImage } from "../utils/system_windows";
 
 export function registerImageWallCommands(context: vscode.ExtensionContext) {
+  const panelsMap = new Map<string, vscode.WebviewPanel>();
+
   // 從檔案總管右鍵開啟圖片牆
   const openImageWallFromExplorerCommand = vscode.commands.registerCommand(
     "extension.openImageWallFromExplorer",
-    (uri: vscode.Uri) => {
-      if (uri && uri.fsPath) openImageWall(context, uri.fsPath);
+    async (uri: vscode.Uri) => {
+      if (!uri || !uri.fsPath) {
+        vscode.window.showErrorMessage("請選擇一個資料夾來開啟圖片牆");
+        return;
+      }
+
+      const panel = await openImageWall(context, uri.fsPath);
+      const panelId = randomUUID();
+      panelsMap.set(panelId, panel);
+
+      panel.onDidDispose(() => {
+        panelsMap.delete(panelId);
+      });
     }
   );
 
@@ -25,7 +38,18 @@ export function registerImageWallCommands(context: vscode.ExtensionContext) {
       openLabel: "選擇資料夾",
     });
 
-    if (folders && folders.length > 0) openImageWall(context, folders[0].fsPath);
+    if (!folders || folders.length === 0) {
+      vscode.window.showErrorMessage("請選擇一個資料夾來開啟圖片牆");
+      return;
+    }
+
+    const panel = await openImageWall(context, folders[0].fsPath);
+    const panelId = randomUUID();
+    panelsMap.set(panelId, panel);
+
+    panel.onDidDispose(() => {
+      panelsMap.delete(panelId);
+    });
   });
 
   context.subscriptions.push(openImageWallFromExplorerCommand, openImageWallCommand);
@@ -56,7 +80,8 @@ async function openImageWall(context: vscode.ExtensionContext, folderPath: strin
     images,
   };
 
-  const webview = createPanel({ context, folderPath, initialData });
+  const panel = createPanel({ context, folderPath, initialData });
+  const webview = panel.webview;
 
   const messageListener = webview.onDidReceiveMessage(async (event) => {
     const message = checkMessage(event);
@@ -105,4 +130,6 @@ async function openImageWall(context: vscode.ExtensionContext, folderPath: strin
   });
 
   context.subscriptions.push(messageListener);
+
+  return panel;
 }
