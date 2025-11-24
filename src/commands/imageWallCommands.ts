@@ -106,7 +106,7 @@ export type ImageWallInitialData = {
  */
 async function openImageWall(context: vscode.ExtensionContext, folderPath: string) {
   const imageMetadata = await vscode.window.withProgress(
-    { location: vscode.ProgressLocation.Notification, title: "正在讀取圖片", cancellable: false },
+    { location: vscode.ProgressLocation.Notification, title: "開啟圖片牆中", cancellable: false },
     (progress) => {
       let lastProgress = 0;
 
