@@ -69,9 +69,11 @@ $ms.Dispose()
 `;
 
 /** 將圖片複製到剪貼簿，可以直接貼在比如瀏覽器的 google keep, chatGPT 或是 Word 等 */
-async function copyImage(filePath: string) {
+async function copyImage(filePath: string, onProgress?: (message: string, percent: number) => void) {
+  onProgress?.("正在轉碼中...", 10);
   const base64 = await generateBase64(filePath, "png");
   if (!base64) throw new Error("file is not an image");
+  onProgress?.("正在傳送至剪貼簿...", 70);
   return runPowerShell(copyImagePowerShellScript, base64);
 }
 
