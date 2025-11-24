@@ -5,8 +5,8 @@ import { generateReactHtml } from "../utils/webviewHelper";
 
 import imageWallLight from "../icons/image-wall-light.svg";
 import imageWallDark from "../icons/image-wall-dark.svg";
-import { generateThumbnail, openImages } from "../utils/imageOpener";
-import { formatPath } from "../utils/formatter";
+import { type ExtendedMetadata, generateThumbnail, openImages } from "../utils/imageOpener";
+import { formatPath, formatPathToArray } from "../utils/formatter";
 import { copyImage } from "../utils/system_windows";
 
 export function registerImageWallCommands(context: vscode.ExtensionContext) {
@@ -76,6 +76,15 @@ function checkMessage(value: any): { type: string; id: string } | string | null 
 }
 
 /**
+ * 該功能對應的 WebView 的初始資料型別
+ */
+export type ImageWallInitialData = {
+  images: { id: `${string}-${string}-${string}-${string}-${string}`; metadata: ExtendedMetadata }[];
+  folderPath: string;
+  folderPathParts: string[];
+};
+
+/**
  * 讀取資料夾中的圖片並在 WebView 中顯示
  */
 async function openImageWall(context: vscode.ExtensionContext, folderPath: string) {
@@ -87,11 +96,17 @@ async function openImageWall(context: vscode.ExtensionContext, folderPath: strin
     metadata: meta,
   }));
 
+  const initialData: ImageWallInitialData = {
+    folderPath: formatPath(folderPath),
+    folderPathParts: formatPathToArray(folderPath),
+    images,
+  };
+
   webview.html = generateReactHtml({
     webviewType: WEBVIEW_TYPE,
     webview,
     extensionUri: context.extensionUri,
-    initialData: { folderPath: formatPath(folderPath), images },
+    initialData,
   });
 
   const messageListener = webview.onDidReceiveMessage(async (event) => {

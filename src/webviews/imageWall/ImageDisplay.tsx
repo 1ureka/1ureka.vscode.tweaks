@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Box, Skeleton, type SxProps } from "@mui/material";
+import { Box, Skeleton } from "@mui/material";
 import { postMessageToExtension } from "../utils/vscodeApi";
-import { imageWallPreferenceStore } from "./imageWallPreference";
 
 type ImageDisplayProps = {
   id: string;
@@ -30,14 +29,16 @@ export const ImageDisplay: React.FC<ImageDisplayProps> = ({ id, fileName, width,
     return () => window.removeEventListener("message", handleMessage);
   }, [id]);
 
-  const mode = imageWallPreferenceStore((state) => state.mode);
-  const containerSx: SxProps =
-    mode === "masonry"
-      ? { position: "relative", width: 1, height: "auto", aspectRatio: `${width} / ${height}` }
-      : { position: "relative", width: 1, height: 1, minHeight: Math.max(150, Math.floor(Math.min(height, 1080) / 3)) };
-
   return (
-    <Box sx={containerSx}>
+    <Box
+      sx={{
+        position: "relative",
+        width: 1,
+        height: "auto",
+        aspectRatio: `${width} / ${height}`,
+        minHeight: "100%",
+      }}
+    >
       <Skeleton variant="rectangular" width="100%" height="100%" animation="wave" />
       <img
         ref={imgRef}

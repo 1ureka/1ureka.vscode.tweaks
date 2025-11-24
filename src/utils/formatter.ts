@@ -17,6 +17,12 @@ function formatPath(inputPath: string): string {
   return path.posix.join(...parts);
 }
 
+/** 將任意格式的路徑轉為字串陣列 */
+function formatPathToArray(inputPath: string): string[] {
+  const normalized = path.normalize(inputPath);
+  return normalized.split(path.sep).filter(Boolean);
+}
+
 /** 格式化日期為 "MM-DD HH:mm" */
 function formatDateCompact(date: Date): string {
   const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -45,4 +51,4 @@ function formatFileSize(size: number): string {
   else return `${(size / (1024 * 1024 * 1024)).toFixed(2)} GB`;
 }
 
-export { formatPath, formatDateCompact, formatDateFull, formatFileSize };
+export { formatPath, formatPathToArray, formatDateCompact, formatDateFull, formatFileSize };
