@@ -3,7 +3,7 @@
   "author": "1ureka",
   "publisher": "1ureka",
   "description": "A Visual Studio Code extension developed for personal use.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "main": "./dist/extension.js",
   "type": "module",
   "engines": {
@@ -92,6 +92,10 @@
       {
         "command": "1ureka.restoreStyles",
         "title": "還原樣式設定"
+      },
+      {
+        "command": "1ureka.restoreAndReinjectStyles",
+        "title": "還原並重新注入樣式"
       },
       {
         "command": "1ureka.imageViewer.resetTransform",
@@ -235,6 +239,9 @@
         },
         {
           "command": "1ureka.restoreStyles"
+        },
+        {
+          "command": "1ureka.restoreAndReinjectStyles"
         },
         {
           "command": "1ureka.imageViewer.resetTransform",
