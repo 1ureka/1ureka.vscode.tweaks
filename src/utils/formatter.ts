@@ -17,10 +17,15 @@ function formatPath(inputPath: string): string {
   return path.posix.join(...parts);
 }
 
-/** 將任意格式的路徑轉為字串陣列 */
+/** 將任意格式的路徑轉為美觀的字串陣列 */
 function formatPathToArray(inputPath: string): string[] {
-  const normalized = path.normalize(inputPath);
-  return normalized.split(path.sep).filter(Boolean);
+  const parts = pathToArray(inputPath);
+
+  if (parts.length > 0 && /^[a-zA-Z]:$/.test(parts[0])) {
+    parts[0] = parts[0].toUpperCase();
+  }
+
+  return parts;
 }
 
 /** 格式化日期為 "MM-DD HH:mm" */
