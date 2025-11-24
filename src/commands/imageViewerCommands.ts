@@ -103,7 +103,7 @@ export function registerImageViewerCommands(context: vscode.ExtensionContext) {
     return uri.path;
   };
 
-  const resetTransformCommand = vscode.commands.registerCommand("extension.imageViewer.resetTransform", () => {
+  const resetTransformCommand = vscode.commands.registerCommand("1ureka.imageViewer.resetTransform", () => {
     const webviewId = getWebviewId();
     if (!webviewId) return;
 
@@ -113,7 +113,7 @@ export function registerImageViewerCommands(context: vscode.ExtensionContext) {
     }
   });
 
-  const eyeDropperCommand = vscode.commands.registerCommand("extension.imageViewer.eyeDropper", async () => {
+  const eyeDropperCommand = vscode.commands.registerCommand("1ureka.imageViewer.eyeDropper", async () => {
     const webviewId = getWebviewId();
     if (!webviewId) return;
 
