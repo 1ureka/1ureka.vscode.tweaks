@@ -1,6 +1,5 @@
 import React from "react";
 import { Box, Typography } from "@mui/material";
-import { ModeSelect, SizeSelect } from "./ImageWallControl";
 
 const ImageWallTitle = ({ folderPath, imageCount }: { folderPath: string; imageCount: number }) => (
   <Box sx={{ mb: 3, pb: 2, display: "flex", gap: 2, justifyContent: "space-between" }}>
@@ -16,11 +15,6 @@ const ImageWallTitle = ({ folderPath, imageCount }: { folderPath: string; imageC
           共 {imageCount} 張圖片
         </Typography>
       )}
-    </Box>
-
-    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-      <ModeSelect disabled={imageCount === 0} />
-      <SizeSelect disabled={imageCount === 0} />
     </Box>
   </Box>
 );

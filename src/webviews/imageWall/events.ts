@@ -1,4 +1,41 @@
+import { create } from "zustand";
 import { postMessageToExtension } from "../utils/vscodeApi";
+
+type ImageWallPreferenceState = {
+  mode: "standard" | "woven" | "masonry";
+  columnSize: "s" | "m" | "l";
+};
+
+const imageWallPreferenceStore = create<ImageWallPreferenceState>(() => ({
+  mode: "masonry",
+  columnSize: "m",
+}));
+
+const setImageWallPreference = (preference: Partial<ImageWallPreferenceState>) => {
+  imageWallPreferenceStore.setState((state) => ({ ...state, ...preference }));
+};
+
+type PreferenceMessage = {
+  type: "setPreference";
+  preference: {
+    mode?: "standard" | "woven" | "masonry"; // 布局模式
+    size?: "s" | "m" | "l"; // 尺寸
+  };
+};
+
+const registerPreferenceEvent = () => {
+  window.addEventListener("message", (event) => {
+    if (event.data && event.data.type === "setPreference") {
+      const { preference } = event.data as PreferenceMessage;
+      if (preference.mode) {
+        setImageWallPreference({ mode: preference.mode });
+      }
+      if (preference.size) {
+        setImageWallPreference({ columnSize: preference.size });
+      }
+    }
+  });
+};
 
 const registerClipboardEvent = () => {
   let lastPointerDownImageId: string | null = null;
@@ -29,4 +66,4 @@ const registerClipboardEvent = () => {
   });
 };
 
-export { registerClipboardEvent };
+export { registerClipboardEvent, registerPreferenceEvent, imageWallPreferenceStore };
