@@ -55,14 +55,22 @@ export function registerImageViewerCommands(context: vscode.ExtensionContext) {
           return;
         }
 
-        try {
-          await copyImage(filePath);
-          const message = "圖片已複製到剪貼簿\n\n可以直接貼到其他應用中 (如 Word 或是瀏覽器的 Google Keep, ChatGPT 等)";
-          vscode.window.showInformationMessage(message);
-        } catch (error) {
-          const message = `複製圖片到剪貼簿失敗: ${error instanceof Error ? error.message : String(error)}`;
-          vscode.window.showErrorMessage(message);
-        }
+        vscode.window.withProgress(
+          { location: vscode.ProgressLocation.Notification, title: "正在複製圖片", cancellable: false },
+          async (progress) => {
+            progress.report({ increment: 0, message: "讀取圖片中..." });
+
+            try {
+              await copyImage(filePath, (message, percent) => progress.report({ increment: percent, message }));
+              const message = "圖片已複製到剪貼簿\n\n可以直接貼到其他應用中 (如 Word 、瀏覽器等)";
+              progress.report({ increment: 100 });
+              vscode.window.showInformationMessage(message);
+            } catch (error) {
+              const message = `複製圖片到剪貼簿失敗: ${error instanceof Error ? error.message : String(error)}`;
+              vscode.window.showErrorMessage(message);
+            }
+          }
+        );
       }
 
       if (message.type === "eyeDropper") {

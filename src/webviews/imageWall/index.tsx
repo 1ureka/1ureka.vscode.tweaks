@@ -18,3 +18,5 @@ if (container) {
   registerPreferenceEvent();
   createRoot(container).render(<App />);
 }
+
+document.body.style.padding = "0"; // 防止 VsCode 預設讓 Webview 左右有 padding
