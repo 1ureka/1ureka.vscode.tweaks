@@ -105,7 +105,19 @@ export type ImageWallInitialData = {
  * 讀取資料夾中的圖片並在 WebView 中顯示
  */
 async function openImageWall(context: vscode.ExtensionContext, folderPath: string) {
-  const imageMetadata = await openImages(folderPath);
+  const imageMetadata = await vscode.window.withProgress(
+    { location: vscode.ProgressLocation.Notification, title: "開啟圖片牆中", cancellable: false },
+    (progress) => {
+      let lastProgress = 0;
+
+      return openImages(folderPath, (message, percent) => {
+        const increment = percent - lastProgress;
+        progress.report({ increment, message });
+        lastProgress = percent;
+      });
+    }
+  );
+
   const images = imageMetadata.map((meta) => ({
     id: randomUUID(),
     metadata: meta,

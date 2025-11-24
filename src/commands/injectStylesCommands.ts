@@ -148,9 +148,60 @@ async function restoreStyles() {
   }
 }
 
+/**
+ * 還原並重新注入樣式
+ */
+async function restoreAndReinjectStyles() {
+  const htmlPath = locateHtml();
+  if (!htmlPath) return;
+
+  const backupPath = htmlPath + ".bak";
+  if (!fs.existsSync(backupPath)) {
+    vscode.window.showErrorMessage("找不到備份檔案，無法還原。請先執行注入樣式命令。");
+    return;
+  }
+
+  try {
+    // 還原備份
+    const backupContent = fs.readFileSync(backupPath, "utf-8");
+    fs.writeFileSync(htmlPath, backupContent, "utf-8");
+
+    // 重新注入
+    const htmlContent = fs.readFileSync(htmlPath, "utf-8");
+    const modifiedCSPContent = allowExternalSources(htmlContent);
+    if (!modifiedCSPContent) {
+      vscode.window.showErrorMessage("無法修改 CSP，重新注入失敗。");
+      return;
+    }
+
+    const modifiedContent = injectCustomStyles(modifiedCSPContent);
+    if (!modifiedContent) {
+      vscode.window.showErrorMessage("無法注入自訂樣式，重新注入失敗。");
+      return;
+    }
+
+    fs.writeFileSync(htmlPath, modifiedContent, "utf-8");
+
+    const result = await vscode.window.showWarningMessage(
+      "已成功還原並重新注入自訂樣式，請重新啟動 VSCode 以套用變更。",
+      "重新啟動"
+    );
+
+    if (result === "重新啟動") {
+      vscode.commands.executeCommand("workbench.action.reloadWindow");
+    }
+  } catch (error) {
+    vscode.window.showErrorMessage(`還原並重新注入失敗: ${error}`);
+  }
+}
+
 export function registerInjectStylesCommands(context: vscode.ExtensionContext) {
   const injectStylesCommand = vscode.commands.registerCommand("1ureka.injectStyles", injectStyles);
   const restoreStylesCommand = vscode.commands.registerCommand("1ureka.restoreStyles", restoreStyles);
+  const restoreAndReinjectStylesCommand = vscode.commands.registerCommand(
+    "1ureka.restoreAndReinjectStyles",
+    restoreAndReinjectStyles
+  );
 
-  context.subscriptions.push(injectStylesCommand, restoreStylesCommand);
+  context.subscriptions.push(injectStylesCommand, restoreStylesCommand, restoreAndReinjectStylesCommand);
 }

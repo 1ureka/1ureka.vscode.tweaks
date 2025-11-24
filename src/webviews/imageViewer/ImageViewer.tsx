@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { Box, Container, Typography } from "@mui/material";
+import { Box, Container, Skeleton, Typography } from "@mui/material";
 import { TransformWrapper, TransformComponent, useControls } from "react-zoom-pan-pinch";
 import { imageViewerInitialData } from "./data";
+import { useDecodeImage } from "./hooks";
 
 const Controls = () => {
   const { resetTransform } = useControls();
@@ -22,19 +23,44 @@ const Controls = () => {
   return null;
 };
 
-const ImageDisplay = ({ data }: { data: NonNullable<typeof imageViewerInitialData> }) => {
+type ImageDisplayProps = {
+  src: string;
+  alt: string;
+  width: number;
+  height: number;
+};
+
+const ImageDisplay = ({ src: initialSrc, alt, width, height }: ImageDisplayProps) => {
   const [cursor, setCursor] = useState("grab");
+  const [src, loaded] = useDecodeImage(initialSrc);
+
+  const handlePanStart = () => setCursor("grabbing");
+  const handlePanStop = () => setCursor("grab");
 
   return (
-    <TransformWrapper centerOnInit onPanningStart={() => setCursor("grabbing")} onPanningStop={() => setCursor("grab")}>
+    <TransformWrapper centerOnInit onPanningStart={handlePanStart} onPanningStop={handlePanStop}>
       {({ resetTransform, ...rest }) => (
         <>
-          <TransformComponent wrapperStyle={{ width: "100%", height: "100dvh" }} contentStyle={{ cursor }}>
-            <img
-              src={data.uri}
-              alt={data.metadata?.fileName || "Image"}
-              style={{ display: "block", maxWidth: "100%", maxHeight: "100vh" }}
-            />
+          <TransformComponent wrapperStyle={{ width: "100%", height: "100dvh" }} contentStyle={{ cursor, padding: 16 }}>
+            {loaded && src ? (
+              <img
+                src={src}
+                alt={alt}
+                style={{ display: "block", maxWidth: "100%", maxHeight: "100vh", opacity: loaded ? 1 : 0 }}
+              />
+            ) : (
+              <Skeleton
+                variant="rectangular"
+                animation="wave"
+                sx={{
+                  width,
+                  height: "auto",
+                  aspectRatio: `${width} / ${height}`,
+                  maxWidth: "calc(100dvw - 32px)",
+                  maxHeight: "calc(100dvh - 32px)",
+                }}
+              />
+            )}
           </TransformComponent>
           <Controls />
         </>
@@ -45,8 +71,10 @@ const ImageDisplay = ({ data }: { data: NonNullable<typeof imageViewerInitialDat
 
 export const ImageViewer: React.FC = () => {
   const data = imageViewerInitialData;
+
   if (data && data.metadata) {
-    return <ImageDisplay data={{ ...data, metadata: data.metadata }} />;
+    const { fileName, width, height } = data.metadata;
+    return <ImageDisplay src={data.uri} alt={fileName} width={width} height={height} />;
   }
 
   return (
