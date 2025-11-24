@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { Box, Container, Typography } from "@mui/material";
+import { Box, Container, Skeleton, Typography } from "@mui/material";
 import { TransformWrapper, TransformComponent, useControls } from "react-zoom-pan-pinch";
 import { imageViewerInitialData } from "./data";
+import { useDecodeImage } from "./hooks";
 
 const Controls = () => {
   const { resetTransform } = useControls();
@@ -22,8 +23,16 @@ const Controls = () => {
   return null;
 };
 
-const ImageDisplay = ({ src, alt }: { src: string; alt: string }) => {
+type ImageDisplayProps = {
+  src: string;
+  alt: string;
+  width: number;
+  height: number;
+};
+
+const ImageDisplay = ({ src: initialSrc, alt, width, height }: ImageDisplayProps) => {
   const [cursor, setCursor] = useState("grab");
+  const [src, loaded] = useDecodeImage(initialSrc);
 
   const handlePanStart = () => setCursor("grabbing");
   const handlePanStop = () => setCursor("grab");
@@ -33,7 +42,25 @@ const ImageDisplay = ({ src, alt }: { src: string; alt: string }) => {
       {({ resetTransform, ...rest }) => (
         <>
           <TransformComponent wrapperStyle={{ width: "100%", height: "100dvh" }} contentStyle={{ cursor }}>
-            <img src={src} alt={alt} style={{ display: "block", maxWidth: "100%", maxHeight: "100vh" }} />
+            {loaded && src ? (
+              <img
+                src={src}
+                alt={alt}
+                style={{ display: "block", maxWidth: "100%", maxHeight: "100vh", opacity: loaded ? 1 : 0 }}
+              />
+            ) : (
+              <Skeleton
+                variant="rectangular"
+                animation="wave"
+                sx={{
+                  width,
+                  height: "auto",
+                  aspectRatio: `${width} / ${height}`,
+                  maxWidth: "100dvw",
+                  maxHeight: "100dvh",
+                }}
+              />
+            )}
           </TransformComponent>
           <Controls />
         </>
@@ -46,7 +73,8 @@ export const ImageViewer: React.FC = () => {
   const data = imageViewerInitialData;
 
   if (data && data.metadata) {
-    return <ImageDisplay src={data.uri} alt={data.metadata.fileName} />;
+    const { fileName, width, height } = data.metadata;
+    return <ImageDisplay src={data.uri} alt={fileName} width={width} height={height} />;
   }
 
   return (
