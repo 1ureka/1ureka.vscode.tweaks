@@ -198,17 +198,61 @@
           "when": "isWindows"
         },
         {
+          "command": "1ureka.openWithBlender",
+          "when": "false"
+        },
+        {
           "command": "1ureka.openPainter",
           "when": "isWindows"
         },
         {
+          "command": "1ureka.openWithPainter",
+          "when": "false"
+        },
+        {
           "command": "1ureka.openImageWall"
+        },
+        {
+          "command": "1ureka.openImageWallFromExplorer",
+          "when": "false"
+        },
+        {
+          "command": "1ureka.imageWall.setLayoutStandard",
+          "when": "false"
+        },
+        {
+          "command": "1ureka.imageWall.setLayoutWoven",
+          "when": "false"
+        },
+        {
+          "command": "1ureka.imageWall.setLayoutMasonry",
+          "when": "false"
+        },
+        {
+          "command": "1ureka.imageWall.setSizeSmall",
+          "when": "false"
+        },
+        {
+          "command": "1ureka.imageWall.setSizeMedium",
+          "when": "false"
+        },
+        {
+          "command": "1ureka.imageWall.setSizeLarge",
+          "when": "false"
         },
         {
           "command": "1ureka.injectStyles"
         },
         {
           "command": "1ureka.restoreStyles"
+        },
+        {
+          "command": "1ureka.imageViewer.resetTransform",
+          "when": "false"
+        },
+        {
+          "command": "1ureka.imageViewer.eyeDropper",
+          "when": "false"
         }
       ]
     },
