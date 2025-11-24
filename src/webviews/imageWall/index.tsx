@@ -2,6 +2,9 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import { ImageWall } from "./ImageWall";
 import { Providers } from "../utils/Providers";
+import { registerClipboardEvent } from "./events";
+
+registerClipboardEvent();
 
 const container = document.getElementById("root");
 if (container) {

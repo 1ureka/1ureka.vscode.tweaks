@@ -9,7 +9,7 @@ import { ImageDisplay } from "./ImageDisplay";
 
 import type { ImageWallInitialData } from "../../commands/imageWallCommands";
 import { getInitialData } from "../utils/vscodeApi";
-import { setSelectedImageId } from "./clipboardEvent";
+import { setSelectedImageId } from "./events";
 import { imageWallPreferenceStore } from "./imageWallPreference";
 
 const data = getInitialData<ImageWallInitialData>() || {

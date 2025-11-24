@@ -16,12 +16,13 @@ const handleCopy = (e: ClipboardEvent) => {
   e.preventDefault();
 };
 
-window.addEventListener("copy", handleCopy);
-window.addEventListener("cut", handleCopy);
+const registerClipboardEvent = () => {
+  window.addEventListener("copy", handleCopy);
+  window.addEventListener("cut", handleCopy);
+  window.addEventListener("paste", (e) => {
+    postMessageToExtension({ type: "info", info: "該編輯器不支援貼上操作" });
+    e.preventDefault();
+  });
+};
 
-window.addEventListener("paste", (e) => {
-  postMessageToExtension({ type: "info", info: "該編輯器不支援貼上操作" });
-  e.preventDefault();
-});
-
-export { selectedImageIdStore, setSelectedImageId };
+export { registerClipboardEvent, selectedImageIdStore, setSelectedImageId };
