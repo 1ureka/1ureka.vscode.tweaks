@@ -5,6 +5,11 @@ import { ImageViewerEditorProvider } from "../providers/imageViewerProvider";
 import { openImage } from "../utils/imageOpener";
 import { copyImage } from "../utils/system_windows";
 
+export type ImageViewerInitialData = {
+  uri: string;
+  metadata: Awaited<ReturnType<typeof openImage>>;
+};
+
 export function registerImageViewerCommands(context: vscode.ExtensionContext) {
   const provider = new ImageViewerEditorProvider((document, webviewPanel) => {
     resolveImageViewer(document, webviewPanel);
@@ -19,7 +24,7 @@ export function registerImageViewerCommands(context: vscode.ExtensionContext) {
       localResourceRoots: [context.extensionUri, vscode.Uri.file(path.dirname(document.uri.fsPath))],
     };
 
-    const initialData = {
+    const initialData: ImageViewerInitialData = {
       uri: webviewPanel.webview.asWebviewUri(document.uri).toString(),
       metadata: await openImage(document.uri.fsPath),
     };
