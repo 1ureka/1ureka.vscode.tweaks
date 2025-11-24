@@ -41,7 +41,7 @@ const ImageDisplay = ({ src: initialSrc, alt, width, height }: ImageDisplayProps
     <TransformWrapper centerOnInit onPanningStart={handlePanStart} onPanningStop={handlePanStop}>
       {({ resetTransform, ...rest }) => (
         <>
-          <TransformComponent wrapperStyle={{ width: "100%", height: "100dvh" }} contentStyle={{ cursor }}>
+          <TransformComponent wrapperStyle={{ width: "100%", height: "100dvh" }} contentStyle={{ cursor, padding: 16 }}>
             {loaded && src ? (
               <img
                 src={src}
@@ -56,8 +56,8 @@ const ImageDisplay = ({ src: initialSrc, alt, width, height }: ImageDisplayProps
                   width,
                   height: "auto",
                   aspectRatio: `${width} / ${height}`,
-                  maxWidth: "100dvw",
-                  maxHeight: "100dvh",
+                  maxWidth: "calc(100dvw - 32px)",
+                  maxHeight: "calc(100dvh - 32px)",
                 }}
               />
             )}
