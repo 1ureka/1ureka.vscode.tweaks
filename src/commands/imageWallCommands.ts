@@ -53,6 +53,49 @@ export function registerImageWallCommands(context: vscode.ExtensionContext) {
   });
 
   context.subscriptions.push(openImageWallFromExplorerCommand, openImageWallCommand);
+
+  const createPreferenceCommandHandler = (preference: { mode?: string; size?: string }) => () => {
+    panelsMap.forEach((panel) => {
+      panel.webview.postMessage({
+        type: "setPreference",
+        preference,
+      });
+    });
+  };
+
+  const setLayoutCommand1 = vscode.commands.registerCommand(
+    "extension.imageWall.setLayoutStandard",
+    createPreferenceCommandHandler({ mode: "standard" })
+  );
+
+  const setLayoutCommand2 = vscode.commands.registerCommand(
+    "extension.imageWall.setLayoutWoven",
+    createPreferenceCommandHandler({ mode: "woven" })
+  );
+
+  const setLayoutCommand3 = vscode.commands.registerCommand(
+    "extension.imageWall.setLayoutMasonry",
+    createPreferenceCommandHandler({ mode: "masonry" })
+  );
+
+  context.subscriptions.push(setLayoutCommand1, setLayoutCommand2, setLayoutCommand3);
+
+  const setSizeCommand1 = vscode.commands.registerCommand(
+    "extension.imageWall.setSizeSmall",
+    createPreferenceCommandHandler({ size: "s" })
+  );
+
+  const setSizeCommand2 = vscode.commands.registerCommand(
+    "extension.imageWall.setSizeMedium",
+    createPreferenceCommandHandler({ size: "m" })
+  );
+
+  const setSizeCommand3 = vscode.commands.registerCommand(
+    "extension.imageWall.setSizeLarge",
+    createPreferenceCommandHandler({ size: "l" })
+  );
+
+  context.subscriptions.push(setSizeCommand1, setSizeCommand2, setSizeCommand3);
 }
 
 /**
