@@ -3,7 +3,7 @@
   "author": "1ureka",
   "publisher": "1ureka",
   "description": "A Visual Studio Code extension developed for personal use.",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "main": "./dist/extension.js",
   "type": "module",
   "engines": {
@@ -60,6 +60,30 @@
       {
         "command": "extension.openImageWallFromExplorer",
         "title": "以圖片牆顯示"
+      },
+      {
+        "command": "extension.imageWall.setLayoutStandard",
+        "title": "標準布局"
+      },
+      {
+        "command": "extension.imageWall.setLayoutWoven",
+        "title": "編織布局"
+      },
+      {
+        "command": "extension.imageWall.setLayoutMasonry",
+        "title": "磚牆布局 (預設)"
+      },
+      {
+        "command": "extension.imageWall.setSizeSmall",
+        "title": "小尺寸"
+      },
+      {
+        "command": "extension.imageWall.setSizeMedium",
+        "title": "中尺寸 (預設)"
+      },
+      {
+        "command": "extension.imageWall.setSizeLarge",
+        "title": "大尺寸"
       },
       {
         "command": "extension.injectStyles",
@@ -128,6 +152,44 @@
           "command": "extension.imageViewer.eyeDropper",
           "when": "webviewId == '1ureka.imageViewer'",
           "group": "navigation@100"
+        },
+        {
+          "submenu": "imageWall.layout",
+          "when": "webviewId == '1ureka.imageWall'",
+          "group": "1_layout"
+        },
+        {
+          "submenu": "imageWall.size",
+          "when": "webviewId == '1ureka.imageWall'",
+          "group": "2_size"
+        }
+      ],
+      "imageWall.layout": [
+        {
+          "command": "extension.imageWall.setLayoutStandard",
+          "group": "1_modes@1"
+        },
+        {
+          "command": "extension.imageWall.setLayoutWoven",
+          "group": "1_modes@2"
+        },
+        {
+          "command": "extension.imageWall.setLayoutMasonry",
+          "group": "1_modes@3"
+        }
+      ],
+      "imageWall.size": [
+        {
+          "command": "extension.imageWall.setSizeSmall",
+          "group": "1_sizes@1"
+        },
+        {
+          "command": "extension.imageWall.setSizeMedium",
+          "group": "1_sizes@2"
+        },
+        {
+          "command": "extension.imageWall.setSizeLarge",
+          "group": "1_sizes@3"
         }
       ],
       "commandPalette": [
@@ -149,7 +211,17 @@
           "command": "extension.restoreStyles"
         }
       ]
-    }
+    },
+    "submenus": [
+      {
+        "id": "imageWall.layout",
+        "label": "圖片牆布局"
+      },
+      {
+        "id": "imageWall.size",
+        "label": "圖片牆尺寸"
+      }
+    ]
   },
   "scripts": {
     "build": "node esbuild.js"

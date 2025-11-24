@@ -1,20 +1,30 @@
 import * as vscode from "vscode";
-import * as path from "path";
 import { randomUUID } from "crypto";
-import { generateReactHtml } from "../utils/webviewHelper";
 
-import imageWallLight from "../icons/image-wall-light.svg";
-import imageWallDark from "../icons/image-wall-dark.svg";
+import { checkMessage, createPanel } from "../providers/imageWallProvider";
 import { type ExtendedMetadata, generateThumbnail, openImages } from "../utils/imageOpener";
 import { formatPath, formatPathToArray } from "../utils/formatter";
 import { copyImage } from "../utils/system_windows";
 
 export function registerImageWallCommands(context: vscode.ExtensionContext) {
+  const panelsMap = new Map<string, vscode.WebviewPanel>();
+
   // 從檔案總管右鍵開啟圖片牆
   const openImageWallFromExplorerCommand = vscode.commands.registerCommand(
     "extension.openImageWallFromExplorer",
-    (uri: vscode.Uri) => {
-      if (uri && uri.fsPath) openImageWall(context, uri.fsPath);
+    async (uri: vscode.Uri) => {
+      if (!uri || !uri.fsPath) {
+        vscode.window.showErrorMessage("請選擇一個資料夾來開啟圖片牆");
+        return;
+      }
+
+      const panel = await openImageWall(context, uri.fsPath);
+      const panelId = randomUUID();
+      panelsMap.set(panelId, panel);
+
+      panel.onDidDispose(() => {
+        panelsMap.delete(panelId);
+      });
     }
   );
 
@@ -28,51 +38,64 @@ export function registerImageWallCommands(context: vscode.ExtensionContext) {
       openLabel: "選擇資料夾",
     });
 
-    if (folders && folders.length > 0) openImageWall(context, folders[0].fsPath);
+    if (!folders || folders.length === 0) {
+      vscode.window.showErrorMessage("請選擇一個資料夾來開啟圖片牆");
+      return;
+    }
+
+    const panel = await openImageWall(context, folders[0].fsPath);
+    const panelId = randomUUID();
+    panelsMap.set(panelId, panel);
+
+    panel.onDidDispose(() => {
+      panelsMap.delete(panelId);
+    });
   });
 
   context.subscriptions.push(openImageWallFromExplorerCommand, openImageWallCommand);
-}
 
-/**
- * 該功能對應的 webviewType
- */
-const WEBVIEW_TYPE = "imageWall";
+  const createPreferenceCommandHandler = (preference: { mode?: string; size?: string }) => () => {
+    panelsMap.forEach((panel) => {
+      panel.webview.postMessage({
+        type: "setPreference",
+        preference,
+      });
+    });
+  };
 
-/**
- * 建立 WebView 面板
- */
-function createPanel(context: vscode.ExtensionContext, folderPath: string): vscode.Webview {
-  const title = `圖片牆 - ${path.basename(folderPath)}`;
-  const showOptions = vscode.ViewColumn.One;
+  const setLayoutCommand1 = vscode.commands.registerCommand(
+    "extension.imageWall.setLayoutStandard",
+    createPreferenceCommandHandler({ mode: "standard" })
+  );
 
-  const panel = vscode.window.createWebviewPanel(WEBVIEW_TYPE, title, showOptions, {
-    enableScripts: true,
-    retainContextWhenHidden: true,
-    localResourceRoots: [vscode.Uri.file(folderPath), context.extensionUri],
-  });
+  const setLayoutCommand2 = vscode.commands.registerCommand(
+    "extension.imageWall.setLayoutWoven",
+    createPreferenceCommandHandler({ mode: "woven" })
+  );
 
-  panel.iconPath = { light: vscode.Uri.parse(imageWallLight), dark: vscode.Uri.parse(imageWallDark) };
-  return panel.webview;
-}
+  const setLayoutCommand3 = vscode.commands.registerCommand(
+    "extension.imageWall.setLayoutMasonry",
+    createPreferenceCommandHandler({ mode: "masonry" })
+  );
 
-/**
- * 檢查接收到的訊息格式是否正確
- */
-function checkMessage(value: any): { type: string; id: string } | string | null {
-  if (typeof value !== "object" || value === null) return null;
-  const obj = value as Record<string, unknown>;
+  context.subscriptions.push(setLayoutCommand1, setLayoutCommand2, setLayoutCommand3);
 
-  const hasType = "type" in obj && typeof obj.type === "string";
-  const hasId = "id" in obj && typeof obj.id === "string";
+  const setSizeCommand1 = vscode.commands.registerCommand(
+    "extension.imageWall.setSizeSmall",
+    createPreferenceCommandHandler({ size: "s" })
+  );
 
-  if (hasType && hasId) return value;
+  const setSizeCommand2 = vscode.commands.registerCommand(
+    "extension.imageWall.setSizeMedium",
+    createPreferenceCommandHandler({ size: "m" })
+  );
 
-  if (hasType && obj.type === "info" && "info" in obj && typeof obj.info === "string") {
-    return obj.info;
-  }
+  const setSizeCommand3 = vscode.commands.registerCommand(
+    "extension.imageWall.setSizeLarge",
+    createPreferenceCommandHandler({ size: "l" })
+  );
 
-  return null;
+  context.subscriptions.push(setSizeCommand1, setSizeCommand2, setSizeCommand3);
 }
 
 /**
@@ -88,8 +111,6 @@ export type ImageWallInitialData = {
  * 讀取資料夾中的圖片並在 WebView 中顯示
  */
 async function openImageWall(context: vscode.ExtensionContext, folderPath: string) {
-  const webview = createPanel(context, folderPath);
-
   const imageMetadata = await openImages(folderPath);
   const images = imageMetadata.map((meta) => ({
     id: randomUUID(),
@@ -102,12 +123,8 @@ async function openImageWall(context: vscode.ExtensionContext, folderPath: strin
     images,
   };
 
-  webview.html = generateReactHtml({
-    webviewType: WEBVIEW_TYPE,
-    webview,
-    extensionUri: context.extensionUri,
-    initialData,
-  });
+  const panel = createPanel({ context, folderPath, initialData });
+  const webview = panel.webview;
 
   const messageListener = webview.onDidReceiveMessage(async (event) => {
     const message = checkMessage(event);
@@ -156,4 +173,6 @@ async function openImageWall(context: vscode.ExtensionContext, folderPath: strin
   });
 
   context.subscriptions.push(messageListener);
+
+  return panel;
 }

@@ -2,16 +2,19 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import { ImageWall } from "./ImageWall";
 import { Providers } from "../utils/Providers";
-import { registerClipboardEvent } from "./events";
+import { registerClipboardEvent, registerPreferenceEvent } from "./events";
 
-registerClipboardEvent();
-
-const container = document.getElementById("root");
-if (container) {
-  const root = createRoot(container);
-  root.render(
+const App = () => {
+  return (
     <Providers>
       <ImageWall />
     </Providers>
   );
+};
+
+const container = document.getElementById("root");
+if (container) {
+  registerClipboardEvent();
+  registerPreferenceEvent();
+  createRoot(container).render(<App />);
 }

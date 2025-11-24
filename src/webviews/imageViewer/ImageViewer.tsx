@@ -1,41 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Box, Container, Typography } from "@mui/material";
 import { TransformWrapper, TransformComponent, useControls } from "react-zoom-pan-pinch";
-
-import { getInitialData, postMessageToExtension } from "../utils/vscodeApi";
-import type { ExtendedMetadata } from "../../utils/imageOpener";
-import { registerClipboardEvent } from "./clipboardEvent";
-
-const useEyeDropper = () => {
-  useEffect(() => {
-    const handleMessage = async (event: MessageEvent) => {
-      const message = event.data;
-      if (message.type !== "eyeDropper") return;
-
-      const eyeDropper = new EyeDropper();
-      try {
-        const result = await eyeDropper.open();
-        postMessageToExtension({ type: "eyeDropper", color: result.sRGBHex });
-      } catch (error) {
-        postMessageToExtension({ type: "error", error: "顏色選取失敗" });
-      }
-    };
-
-    window.addEventListener("message", handleMessage);
-
-    return () => {
-      window.removeEventListener("message", handleMessage);
-    };
-  }, []);
-};
-
-type ImageInfo = { metadata: ExtendedMetadata | null; uri: string };
-const data = getInitialData<ImageInfo>();
-if (!data || !data.metadata) {
-  postMessageToExtension({ type: "error", error: "圖片載入失敗，無法取得圖片資料" });
-} else {
-  registerClipboardEvent();
-}
+import { imageViewerInitialData } from "./data";
 
 const Controls = () => {
   const { resetTransform } = useControls();
@@ -56,9 +22,8 @@ const Controls = () => {
   return null;
 };
 
-const ImageDisplay = ({ data }: { data: ImageInfo & { metadata: ExtendedMetadata } }) => {
+const ImageDisplay = ({ data }: { data: NonNullable<typeof imageViewerInitialData> }) => {
   const [cursor, setCursor] = useState("grab");
-  useEyeDropper();
 
   return (
     <TransformWrapper centerOnInit onPanningStart={() => setCursor("grabbing")} onPanningStop={() => setCursor("grab")}>
@@ -67,7 +32,7 @@ const ImageDisplay = ({ data }: { data: ImageInfo & { metadata: ExtendedMetadata
           <TransformComponent wrapperStyle={{ width: "100%", height: "100dvh" }} contentStyle={{ cursor }}>
             <img
               src={data.uri}
-              alt={data.metadata.fileName}
+              alt={data.metadata?.fileName || "Image"}
               style={{ display: "block", maxWidth: "100%", maxHeight: "100vh" }}
             />
           </TransformComponent>
@@ -79,6 +44,7 @@ const ImageDisplay = ({ data }: { data: ImageInfo & { metadata: ExtendedMetadata
 };
 
 export const ImageViewer: React.FC = () => {
+  const data = imageViewerInitialData;
   if (data && data.metadata) {
     return <ImageDisplay data={{ ...data, metadata: data.metadata }} />;
   }
