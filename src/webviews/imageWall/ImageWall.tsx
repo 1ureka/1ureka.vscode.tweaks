@@ -7,15 +7,15 @@ import { ImageListItemBar, imageListItemBarClassName } from "./ImageListItemBar"
 import { ImageClickControl } from "./ImageClickControl";
 import { ImageDisplay } from "./ImageDisplay";
 
-import type { ExtendedMetadata } from "../../utils/imageOpener";
+import type { ImageWallInitialData } from "../../commands/imageWallCommands";
 import { getInitialData } from "../utils/vscodeApi";
 import { setSelectedImageId } from "./clipboardEvent";
 import { imageWallPreferenceStore } from "./imageWallPreference";
 
-type ImageInfo = { id: string; metadata: ExtendedMetadata };
-const data = getInitialData<{ images: ImageInfo[]; folderPath: string }>() || {
-  images: [],
+const data = getInitialData<ImageWallInitialData>() || {
   folderPath: "",
+  folderPathParts: [],
+  images: [],
 };
 
 const columnCountsMap = {
@@ -41,7 +41,7 @@ const useColumnCounts = () => {
   return currentSizeMap.xs;
 };
 
-const Images = ({ images }: { images: ImageInfo[] }) => {
+const Images = ({ images }: { images: ImageWallInitialData["images"] }) => {
   const variant = imageWallPreferenceStore((state) => state.mode);
   const columnCounts = useColumnCounts();
 
