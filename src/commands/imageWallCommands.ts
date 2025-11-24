@@ -38,6 +38,7 @@ export function registerImageWallCommands(context: vscode.ExtensionContext) {
  * 該功能對應的 webviewType
  */
 const WEBVIEW_TYPE = "imageWall";
+const WEBVIEW_VIEW_ID = "1ureka" + "." + WEBVIEW_TYPE;
 
 /**
  * 建立 WebView 面板
@@ -46,7 +47,7 @@ function createPanel(context: vscode.ExtensionContext, folderPath: string): vsco
   const title = `圖片牆 - ${path.basename(folderPath)}`;
   const showOptions = vscode.ViewColumn.One;
 
-  const panel = vscode.window.createWebviewPanel(WEBVIEW_TYPE, title, showOptions, {
+  const panel = vscode.window.createWebviewPanel(WEBVIEW_VIEW_ID, title, showOptions, {
     enableScripts: true,
     retainContextWhenHidden: true,
     localResourceRoots: [vscode.Uri.file(folderPath), context.extensionUri],
