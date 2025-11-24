@@ -38,67 +38,67 @@
     },
     "commands": [
       {
-        "command": "extension.openBlender",
+        "command": "1ureka.openBlender",
         "title": "開啟 Blender"
       },
       {
-        "command": "extension.openWithBlender",
+        "command": "1ureka.openWithBlender",
         "title": "以 Blender 開啟"
       },
       {
-        "command": "extension.openPainter",
+        "command": "1ureka.openPainter",
         "title": "開啟 Painter"
       },
       {
-        "command": "extension.openWithPainter",
+        "command": "1ureka.openWithPainter",
         "title": "以 Painter 開啟"
       },
       {
-        "command": "extension.openImageWall",
+        "command": "1ureka.openImageWall",
         "title": "開啟圖片牆"
       },
       {
-        "command": "extension.openImageWallFromExplorer",
+        "command": "1ureka.openImageWallFromExplorer",
         "title": "以圖片牆顯示"
       },
       {
-        "command": "extension.imageWall.setLayoutStandard",
+        "command": "1ureka.imageWall.setLayoutStandard",
         "title": "標準布局"
       },
       {
-        "command": "extension.imageWall.setLayoutWoven",
+        "command": "1ureka.imageWall.setLayoutWoven",
         "title": "編織布局"
       },
       {
-        "command": "extension.imageWall.setLayoutMasonry",
+        "command": "1ureka.imageWall.setLayoutMasonry",
         "title": "磚牆布局 (預設)"
       },
       {
-        "command": "extension.imageWall.setSizeSmall",
+        "command": "1ureka.imageWall.setSizeSmall",
         "title": "小尺寸"
       },
       {
-        "command": "extension.imageWall.setSizeMedium",
+        "command": "1ureka.imageWall.setSizeMedium",
         "title": "中尺寸 (預設)"
       },
       {
-        "command": "extension.imageWall.setSizeLarge",
+        "command": "1ureka.imageWall.setSizeLarge",
         "title": "大尺寸"
       },
       {
-        "command": "extension.injectStyles",
+        "command": "1ureka.injectStyles",
         "title": "注入自訂樣式"
       },
       {
-        "command": "extension.restoreStyles",
+        "command": "1ureka.restoreStyles",
         "title": "還原樣式設定"
       },
       {
-        "command": "extension.imageViewer.resetTransform",
+        "command": "1ureka.imageViewer.resetTransform",
         "title": "重設圖片縮放與位置"
       },
       {
-        "command": "extension.imageViewer.eyeDropper",
+        "command": "1ureka.imageViewer.eyeDropper",
         "title": "吸取顏色並複製到剪貼簿"
       }
     ],
@@ -128,92 +128,93 @@
       "explorer/context": [
         {
           "when": "resourceExtname == .blend",
-          "command": "extension.openWithBlender",
+          "command": "1ureka.openWithBlender",
           "group": "navigation@100"
         },
         {
           "when": "resourceExtname == .spp",
-          "command": "extension.openWithPainter",
+          "command": "1ureka.openWithPainter",
           "group": "navigation@100"
         },
         {
           "when": "explorerResourceIsFolder",
-          "command": "extension.openImageWallFromExplorer",
+          "command": "1ureka.openImageWallFromExplorer",
           "group": "navigation@100"
         }
       ],
       "webview/context": [
         {
-          "command": "extension.imageViewer.resetTransform",
+          "command": "1ureka.imageViewer.resetTransform",
           "when": "webviewId == '1ureka.imageViewer'",
           "group": "navigation@100"
         },
         {
-          "command": "extension.imageViewer.eyeDropper",
+          "command": "1ureka.imageViewer.eyeDropper",
           "when": "webviewId == '1ureka.imageViewer'",
           "group": "navigation@100"
         },
         {
           "submenu": "imageWall.layout",
           "when": "webviewId == '1ureka.imageWall'",
-          "group": "1_layout"
+          "group": "0_preferences"
         },
         {
           "submenu": "imageWall.size",
           "when": "webviewId == '1ureka.imageWall'",
-          "group": "2_size"
+          "group": "0_preferences"
         }
       ],
       "imageWall.layout": [
         {
-          "command": "extension.imageWall.setLayoutStandard",
+          "command": "1ureka.imageWall.setLayoutStandard",
           "group": "1_modes@1"
         },
         {
-          "command": "extension.imageWall.setLayoutWoven",
+          "command": "1ureka.imageWall.setLayoutWoven",
           "group": "1_modes@2"
         },
         {
-          "command": "extension.imageWall.setLayoutMasonry",
+          "command": "1ureka.imageWall.setLayoutMasonry",
           "group": "1_modes@3"
         }
       ],
       "imageWall.size": [
         {
-          "command": "extension.imageWall.setSizeSmall",
+          "command": "1ureka.imageWall.setSizeSmall",
           "group": "1_sizes@1"
         },
         {
-          "command": "extension.imageWall.setSizeMedium",
+          "command": "1ureka.imageWall.setSizeMedium",
           "group": "1_sizes@2"
         },
         {
-          "command": "extension.imageWall.setSizeLarge",
+          "command": "1ureka.imageWall.setSizeLarge",
           "group": "1_sizes@3"
         }
       ],
       "commandPalette": [
         {
-          "command": "extension.openBlender",
+          "command": "1ureka.openBlender",
           "when": "isWindows"
         },
         {
-          "command": "extension.openPainter",
+          "command": "1ureka.openPainter",
           "when": "isWindows"
         },
         {
-          "command": "extension.openImageWall"
+          "command": "1ureka.openImageWall"
         },
         {
-          "command": "extension.injectStyles"
+          "command": "1ureka.injectStyles"
         },
         {
-          "command": "extension.restoreStyles"
+          "command": "1ureka.restoreStyles"
         }
       ]
     },
     "submenus": [
       {
+
         "id": "imageWall.layout",
         "label": "圖片牆布局"
       },

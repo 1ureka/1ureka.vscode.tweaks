@@ -98,19 +98,19 @@ function handleOpenFile(uri: vscode.Uri | undefined) {
 }
 
 export function registerExternalAppCommands(context: vscode.ExtensionContext) {
-  const openBlenderCommand = vscode.commands.registerCommand("extension.openBlender", () => {
+  const openBlenderCommand = vscode.commands.registerCommand("1ureka.openBlender", () => {
     handleOpenApp("blender");
   });
 
-  const openPainterCommand = vscode.commands.registerCommand("extension.openPainter", () => {
+  const openPainterCommand = vscode.commands.registerCommand("1ureka.openPainter", () => {
     handleOpenApp("painter");
   });
 
-  const openWithBlenderCommand = vscode.commands.registerCommand("extension.openWithBlender", (uri: vscode.Uri) => {
+  const openWithBlenderCommand = vscode.commands.registerCommand("1ureka.openWithBlender", (uri: vscode.Uri) => {
     handleOpenFile(uri);
   });
 
-  const openWithPainterCommand = vscode.commands.registerCommand("extension.openWithPainter", (uri: vscode.Uri) => {
+  const openWithPainterCommand = vscode.commands.registerCommand("1ureka.openWithPainter", (uri: vscode.Uri) => {
     handleOpenFile(uri);
   });
 

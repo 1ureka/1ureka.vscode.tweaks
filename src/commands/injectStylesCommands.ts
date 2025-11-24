@@ -149,8 +149,8 @@ async function restoreStyles() {
 }
 
 export function registerInjectStylesCommands(context: vscode.ExtensionContext) {
-  const injectStylesCommand = vscode.commands.registerCommand("extension.injectStyles", injectStyles);
-  const restoreStylesCommand = vscode.commands.registerCommand("extension.restoreStyles", restoreStyles);
+  const injectStylesCommand = vscode.commands.registerCommand("1ureka.injectStyles", injectStyles);
+  const restoreStylesCommand = vscode.commands.registerCommand("1ureka.restoreStyles", restoreStyles);
 
   context.subscriptions.push(injectStylesCommand, restoreStylesCommand);
 }

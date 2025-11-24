@@ -11,7 +11,7 @@ export function registerImageWallCommands(context: vscode.ExtensionContext) {
 
   // 從檔案總管右鍵開啟圖片牆
   const openImageWallFromExplorerCommand = vscode.commands.registerCommand(
-    "extension.openImageWallFromExplorer",
+    "1ureka.openImageWallFromExplorer",
     async (uri: vscode.Uri) => {
       if (!uri || !uri.fsPath) {
         vscode.window.showErrorMessage("請選擇一個資料夾來開啟圖片牆");
@@ -29,8 +29,7 @@ export function registerImageWallCommands(context: vscode.ExtensionContext) {
   );
 
   // 從命令面板開啟圖片牆
-  // TODO: 改成支援多選資料夾
-  const openImageWallCommand = vscode.commands.registerCommand("extension.openImageWall", async () => {
+  const openImageWallCommand = vscode.commands.registerCommand("1ureka.openImageWall", async () => {
     const folders = await vscode.window.showOpenDialog({
       canSelectFiles: false,
       canSelectFolders: true,
@@ -55,43 +54,38 @@ export function registerImageWallCommands(context: vscode.ExtensionContext) {
   context.subscriptions.push(openImageWallFromExplorerCommand, openImageWallCommand);
 
   const createPreferenceCommandHandler = (preference: { mode?: string; size?: string }) => () => {
-    panelsMap.forEach((panel) => {
-      panel.webview.postMessage({
-        type: "setPreference",
-        preference,
-      });
-    });
+    panelsMap.forEach((panel) => panel.webview.postMessage({ type: "setPreference", preference }));
   };
 
   const setLayoutCommand1 = vscode.commands.registerCommand(
-    "extension.imageWall.setLayoutStandard",
+    "1ureka.imageWall.setLayoutStandard",
     createPreferenceCommandHandler({ mode: "standard" })
   );
 
   const setLayoutCommand2 = vscode.commands.registerCommand(
-    "extension.imageWall.setLayoutWoven",
+    "1ureka.imageWall.setLayoutWoven",
     createPreferenceCommandHandler({ mode: "woven" })
   );
 
   const setLayoutCommand3 = vscode.commands.registerCommand(
-    "extension.imageWall.setLayoutMasonry",
+    "1ureka.imageWall.setLayoutMasonry",
     createPreferenceCommandHandler({ mode: "masonry" })
   );
 
   context.subscriptions.push(setLayoutCommand1, setLayoutCommand2, setLayoutCommand3);
 
   const setSizeCommand1 = vscode.commands.registerCommand(
-    "extension.imageWall.setSizeSmall",
+    "1ureka.imageWall.setSizeSmall",
     createPreferenceCommandHandler({ size: "s" })
   );
 
   const setSizeCommand2 = vscode.commands.registerCommand(
-    "extension.imageWall.setSizeMedium",
+    "1ureka.imageWall.setSizeMedium",
     createPreferenceCommandHandler({ size: "m" })
   );
 
   const setSizeCommand3 = vscode.commands.registerCommand(
-    "extension.imageWall.setSizeLarge",
+    "1ureka.imageWall.setSizeLarge",
     createPreferenceCommandHandler({ size: "l" })
   );
 
