@@ -1,22 +1,26 @@
-import { create } from "zustand";
 import { postMessageToExtension } from "../utils/vscodeApi";
 
-const selectedImageIdStore = create<{ id: string | null }>(() => ({ id: null }));
-const setSelectedImageId = (id: string | null) => {
-  selectedImageIdStore.setState({ id });
-};
-
-const handleCopy = (e: ClipboardEvent) => {
-  const { id } = selectedImageIdStore.getState();
-  if (!id) {
-    postMessageToExtension({ type: "info", info: "目前沒有選取任何圖片" });
-    return;
-  }
-  postMessageToExtension({ type: "copyImage", id });
-  e.preventDefault();
-};
-
 const registerClipboardEvent = () => {
+  let lastPointerDownImageId: string | null = null;
+
+  const handlePointerDown = (e: PointerEvent) => {
+    const target = e.target;
+
+    if (target instanceof Element && target.classList.contains("image-click-area") && target.id) {
+      lastPointerDownImageId = target.id;
+    } else {
+      lastPointerDownImageId = null;
+    }
+  };
+
+  window.addEventListener("pointerdown", handlePointerDown, true);
+
+  const handleCopy = () => {
+    if (lastPointerDownImageId) {
+      postMessageToExtension({ type: "copyImage", id: lastPointerDownImageId });
+    }
+  };
+
   window.addEventListener("copy", handleCopy);
   window.addEventListener("cut", handleCopy);
   window.addEventListener("paste", (e) => {
@@ -25,4 +29,4 @@ const registerClipboardEvent = () => {
   });
 };
 
-export { registerClipboardEvent, selectedImageIdStore, setSelectedImageId };
+export { registerClipboardEvent };

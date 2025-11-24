@@ -9,7 +9,6 @@ import { ImageDisplay } from "./ImageDisplay";
 
 import type { ImageWallInitialData } from "../../commands/imageWallCommands";
 import { getInitialData } from "../utils/vscodeApi";
-import { setSelectedImageId } from "./events";
 import { imageWallPreferenceStore } from "./imageWallPreference";
 
 const data = getInitialData<ImageWallInitialData>() || {
@@ -50,7 +49,6 @@ const Images = ({ images }: { images: ImageWallInitialData["images"] }) => {
       {images.map(({ id, metadata: { fileName, width, height } }) => (
         <ImageListItem
           key={id}
-          onPointerDown={() => setSelectedImageId(id)}
           sx={{
             position: "relative",
             overflow: "hidden",
