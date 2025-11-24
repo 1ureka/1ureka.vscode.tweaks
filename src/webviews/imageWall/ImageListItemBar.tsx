@@ -25,7 +25,6 @@ const ImageListItemBar = ({ fileName, width, height }: ImageListItemBarProps) =>
     sx={{
       ...ellipsisSx,
       opacity: 0,
-      fontFamily: "Noto Sans TC",
       "& .MuiImageListItemBar-titleWrap": { p: 1.5, pt: 1 },
       "& .MuiImageListItemBar-subtitle": { color: "text.secondary" },
     }}

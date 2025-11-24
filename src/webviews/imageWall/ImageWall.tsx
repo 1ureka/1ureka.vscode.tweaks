@@ -74,12 +74,12 @@ const Images = ({ images }: { images: ImageWallInitialData["images"] }) => {
 };
 
 export const ImageWall: React.FC = () => {
-  const { images, folderPath } = data;
+  const { images, folderPathParts } = data;
 
   if (images.length === 0) {
     return (
       <Container maxWidth="xl" sx={{ py: 3, height: "100vh", overflow: "auto" }}>
-        <ImageWallTitle folderPath={folderPath} imageCount={0} />
+        <ImageWallTitle folderPathParts={folderPathParts} imageCount={0} />
         <Box sx={{ textAlign: "center", py: 8 }}>
           <Typography variant="h6" color="text.secondary">
             此資料夾中沒有圖片
@@ -91,7 +91,7 @@ export const ImageWall: React.FC = () => {
 
   return (
     <Container maxWidth="xl" sx={{ py: 3, height: "100vh", overflow: "auto" }}>
-      <ImageWallTitle folderPath={folderPath} imageCount={images.length} />
+      <ImageWallTitle folderPathParts={folderPathParts} imageCount={images.length} />
       <Images images={images} />
     </Container>
   );
