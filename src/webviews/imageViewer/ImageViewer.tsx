@@ -22,19 +22,18 @@ const Controls = () => {
   return null;
 };
 
-const ImageDisplay = ({ data }: { data: NonNullable<typeof imageViewerInitialData> }) => {
+const ImageDisplay = ({ src, alt }: { src: string; alt: string }) => {
   const [cursor, setCursor] = useState("grab");
 
+  const handlePanStart = () => setCursor("grabbing");
+  const handlePanStop = () => setCursor("grab");
+
   return (
-    <TransformWrapper centerOnInit onPanningStart={() => setCursor("grabbing")} onPanningStop={() => setCursor("grab")}>
+    <TransformWrapper centerOnInit onPanningStart={handlePanStart} onPanningStop={handlePanStop}>
       {({ resetTransform, ...rest }) => (
         <>
           <TransformComponent wrapperStyle={{ width: "100%", height: "100dvh" }} contentStyle={{ cursor }}>
-            <img
-              src={data.uri}
-              alt={data.metadata?.fileName || "Image"}
-              style={{ display: "block", maxWidth: "100%", maxHeight: "100vh" }}
-            />
+            <img src={src} alt={alt} style={{ display: "block", maxWidth: "100%", maxHeight: "100vh" }} />
           </TransformComponent>
           <Controls />
         </>
@@ -45,8 +44,9 @@ const ImageDisplay = ({ data }: { data: NonNullable<typeof imageViewerInitialDat
 
 export const ImageViewer: React.FC = () => {
   const data = imageViewerInitialData;
+
   if (data && data.metadata) {
-    return <ImageDisplay data={{ ...data, metadata: data.metadata }} />;
+    return <ImageDisplay src={data.uri} alt={data.metadata.fileName} />;
   }
 
   return (
