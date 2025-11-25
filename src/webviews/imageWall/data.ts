@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { postMessageToExtension, getInitialData } from "../utils/vscodeApi";
-import type { ImageWallData, ImageWallInitialData } from "../../commands/imageWallCommands";
+import type { ImageWallData, ImageWallInitialData } from "../../handlers/imageWallHandlers";
 
 const initialData = getInitialData<ImageWallInitialData>();
 if (!initialData) {
