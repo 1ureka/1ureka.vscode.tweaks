@@ -1,52 +1,20 @@
 import * as vscode from "vscode";
 import * as path from "path";
 
-import imageWallLight from "../icons/image-wall-light.svg";
-import imageWallDark from "../icons/image-wall-dark.svg";
 import { createWebviewPanel } from "../utils/webviewHelper";
-import type { ImageWallInitialData } from "../commands/imageWallCommands";
+import { handlePrepareInitialData, handlePreparePageData, imageHandlers } from "../handlers/imageWallHandlers";
+import type { ImageWallInitialData } from "../handlers/imageWallHandlers";
 import type { OneOf } from "../utils/type";
 
-/**
- * 該功能對應的 webviewType
- */
-const WEBVIEW_TYPE = "imageWall";
-const WEBVIEW_VIEW_ID = "1ureka" + "." + WEBVIEW_TYPE;
+import imageWallLight from "../icons/image-wall-light.svg";
+import imageWallDark from "../icons/image-wall-dark.svg";
 
-/**
- * 建立 WebView 面板
- */
-type CreatePanel = (params: {
-  context: vscode.ExtensionContext;
-  folderPath: string;
-  initialData: ImageWallInitialData;
-}) => vscode.WebviewPanel;
-
-/**
- * 建立 WebView 面板
- */
-const createPanel: CreatePanel = ({ context, folderPath, initialData }) => {
-  const panel = createWebviewPanel<ImageWallInitialData>({
-    panelId: WEBVIEW_VIEW_ID,
-    panelTitle: `圖片牆 - ${path.basename(folderPath)}`,
-    webviewType: WEBVIEW_TYPE,
-    extensionUri: context.extensionUri,
-    resourceUri: vscode.Uri.file(folderPath),
-    initialData,
-    iconPath: { light: vscode.Uri.parse(imageWallLight), dark: vscode.Uri.parse(imageWallDark) },
-  });
-
-  return panel;
-};
-
-type Message = OneOf<
+type ImageWallMessage = OneOf<
   [{ type: "ready" }, { type: "image"; request: { type: string; id: string } }, { type: "info"; message: string }]
 >;
 
-/**
- * 檢查接收到的訊息格式是否正確
- */
-function checkMessage(value: any): Message | null {
+/** 檢查接收到的訊息格式是否正確 */
+function checkMessage(value: any): ImageWallMessage | null {
   if (typeof value !== "object" || value === null) return null;
 
   const { type, id, info } = value as Record<string, unknown>;
@@ -62,4 +30,55 @@ function checkMessage(value: any): Message | null {
   return null;
 }
 
-export { createPanel, checkMessage };
+/**
+ * 讀取資料夾中的圖片並在 WebView 中顯示
+ */
+async function createImageWallPanel(context: vscode.ExtensionContext, folderPath: string) {
+  const { initialData, images } = await handlePrepareInitialData(folderPath);
+
+  const panel = createWebviewPanel<ImageWallInitialData>({
+    panelId: "1ureka.imageWall",
+    panelTitle: `圖片牆 - ${path.basename(folderPath)}`,
+    webviewType: "imageWall",
+    extensionUri: context.extensionUri,
+    resourceUri: vscode.Uri.file(folderPath),
+    initialData,
+    iconPath: { light: vscode.Uri.parse(imageWallLight), dark: vscode.Uri.parse(imageWallDark) },
+  });
+
+  const webview = panel.webview;
+
+  const messageListener = webview.onDidReceiveMessage(async (event) => {
+    const result = checkMessage(event);
+    if (!result) {
+      console.warn("Image Wall Extension Host: 接收到無效的訊息");
+      return;
+    }
+
+    if (result.type === "ready") {
+      handlePreparePageData({ webview, images, page: 1 });
+      return;
+    }
+
+    if (result.type === "info") {
+      vscode.window.showInformationMessage(result.message);
+      return;
+    }
+
+    const { request } = result;
+    const filePath = images.find(({ id }) => id === request.id)?.metadata.filePath;
+    if (!filePath) return;
+
+    const handler = imageHandlers[request.type];
+    if (!handler) return;
+
+    const response = await handler(request.id, filePath);
+    if (response) webview.postMessage(response);
+  });
+
+  context.subscriptions.push(messageListener);
+
+  return panel;
+}
+
+export { createImageWallPanel };
