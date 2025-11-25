@@ -7,24 +7,26 @@ import { formatPath, formatPathToArray } from "../utils/formatter";
 import { copyImage } from "../utils/system_windows";
 
 export function registerImageWallCommands(context: vscode.ExtensionContext) {
+  // ------------------------------ Open Image Wall Commands ------------------------------
+
   const panelsMap = new Map<string, vscode.WebviewPanel>();
 
-  const openImageWallFromExplorerCommand = vscode.commands.registerCommand(
-    "1ureka.openImageWallFromExplorer",
-    async (uri: vscode.Uri) => {
-      if (!uri || !uri.fsPath) {
-        vscode.window.showErrorMessage("請選擇一個資料夾來開啟圖片牆");
-        return;
-      }
+  const openPanel = async (folderPath: string) => {
+    const panel = await openImageWall(context, folderPath);
+    const panelId = randomUUID();
+    panelsMap.set(panelId, panel);
+    panel.onDidDispose(() => panelsMap.delete(panelId));
+  };
 
-      const panel = await openImageWall(context, uri.fsPath);
-      const panelId = randomUUID();
-      panelsMap.set(panelId, panel);
-      panel.onDidDispose(() => panelsMap.delete(panelId));
+  const openFromExplorer = (uri: vscode.Uri) => {
+    if (!uri || !uri.fsPath) {
+      vscode.window.showErrorMessage("請選擇一個資料夾來開啟圖片牆");
+    } else {
+      openPanel(uri.fsPath);
     }
-  );
+  };
 
-  const openImageWallCommand = vscode.commands.registerCommand("1ureka.openImageWall", async () => {
+  const openFromCommandPalette = async () => {
     const folders = await vscode.window.showOpenDialog({
       canSelectFiles: false,
       canSelectFolders: true,
@@ -34,16 +36,17 @@ export function registerImageWallCommands(context: vscode.ExtensionContext) {
 
     if (!folders || folders.length === 0) {
       vscode.window.showErrorMessage("請選擇一個資料夾來開啟圖片牆");
-      return;
+    } else {
+      openPanel(folders[0].fsPath);
     }
+  };
 
-    const panel = await openImageWall(context, folders[0].fsPath);
-    const panelId = randomUUID();
-    panelsMap.set(panelId, panel);
-    panel.onDidDispose(() => panelsMap.delete(panelId));
-  });
+  const openFromExplorerCommand = vscode.commands.registerCommand("1ureka.openImageWallFromExplorer", openFromExplorer);
+  const openFromCommandPaletteCommand = vscode.commands.registerCommand("1ureka.openImageWall", openFromCommandPalette);
 
-  context.subscriptions.push(openImageWallFromExplorerCommand, openImageWallCommand);
+  context.subscriptions.push(openFromExplorerCommand, openFromCommandPaletteCommand);
+
+  // ------------------------------ Preference Commands ------------------------------
 
   const createPreferenceCommandHandler = (preference: { mode?: string; size?: string }) => () => {
     panelsMap.forEach((panel) => panel.webview.postMessage({ type: "setPreference", preference }));
