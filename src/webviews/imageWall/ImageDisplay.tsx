@@ -14,11 +14,11 @@ export const ImageDisplay: React.FC<ImageDisplayProps> = ({ id, fileName, width,
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    postMessageToExtension({ type: "generateImage", id });
+    postMessageToExtension({ type: "generateThumbnail", id });
 
     const handleMessage = (event: MessageEvent) => {
       const message = event.data;
-      if (message.type === "imageGenerated" && message.id === id && imgRef.current) {
+      if (message.type === "thumbnailGenerated" && message.id === id && imgRef.current) {
         // 命令式更新 DOM，避免將 base64 存入 state
         imgRef.current.src = `data:image/webp;base64,${message.base64}`;
         setIsLoaded(true);
