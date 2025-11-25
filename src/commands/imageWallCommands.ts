@@ -155,25 +155,30 @@ async function openImageWall(context: vscode.ExtensionContext, folderPath: strin
   const webview = panel.webview;
 
   const messageListener = webview.onDidReceiveMessage(async (event) => {
-    const message = checkMessage(event);
-
-    if (!message) {
-      console.warn("Image Wall Extension Host: 接收到無效的訊息", message);
+    const result = checkMessage(event);
+    if (!result) {
+      console.warn("Image Wall Extension Host: 接收到無效的訊息");
       return;
     }
 
-    if (typeof message === "string") {
-      vscode.window.showInformationMessage(message);
+    if (result.type === "ready") {
+      webview.postMessage({ type: "initCompleted" });
       return;
     }
 
-    const filePath = images.find(({ id }) => id === message.id)?.metadata.filePath;
+    if (result.type === "info") {
+      vscode.window.showInformationMessage(result.message);
+      return;
+    }
+
+    const { request } = result;
+    const filePath = images.find(({ id }) => id === request.id)?.metadata.filePath;
     if (!filePath) return;
 
-    const handler = imageHandlers[message.type];
+    const handler = imageHandlers[request.type];
     if (!handler) return;
 
-    const response = await handler(message.id, filePath);
+    const response = await handler(request.id, filePath);
     if (response) webview.postMessage(response);
   });
 

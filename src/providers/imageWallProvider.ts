@@ -5,6 +5,7 @@ import imageWallLight from "../icons/image-wall-light.svg";
 import imageWallDark from "../icons/image-wall-dark.svg";
 import { generateReactHtml } from "../utils/webviewHelper";
 import type { ImageWallInitialData } from "../commands/imageWallCommands";
+import type { OneOf } from "../utils/type";
 
 /**
  * 該功能對應的 webviewType
@@ -46,21 +47,25 @@ const createPanel: CreatePanel = ({ context, folderPath, initialData }) => {
   return panel;
 };
 
+type Message = OneOf<
+  [{ type: "ready" }, { type: "image"; request: { type: string; id: string } }, { type: "info"; message: string }]
+>;
+
 /**
  * 檢查接收到的訊息格式是否正確
  */
-function checkMessage(value: any): { type: string; id: string } | string | null {
+function checkMessage(value: any): Message | null {
   if (typeof value !== "object" || value === null) return null;
-  const obj = value as Record<string, unknown>;
 
-  const hasType = "type" in obj && typeof obj.type === "string";
-  const hasId = "id" in obj && typeof obj.id === "string";
+  const { type, id, info } = value as Record<string, unknown>;
+  if (typeof type !== "string") return null; // 訊息必須包含 type
 
-  if (hasType && hasId) return value;
-
-  if (hasType && obj.type === "info" && "info" in obj && typeof obj.info === "string") {
-    return obj.info;
-  }
+  // webview 準備訊息
+  if (type === "ready") return { type: "ready" };
+  // 圖片相關訊息：包含 type 和 id
+  if (typeof id === "string") return { type: "image", request: { type, id } };
+  // 要求顯示資訊訊息
+  if (type === "info" && typeof info === "string") return { type: "info", message: info };
 
   return null;
 }
