@@ -3,7 +3,7 @@ import * as path from "path";
 
 import imageWallLight from "../icons/image-wall-light.svg";
 import imageWallDark from "../icons/image-wall-dark.svg";
-import { generateReactHtml } from "../utils/webviewHelper";
+import { createWebviewPanel } from "../utils/webviewHelper";
 import type { ImageWallInitialData } from "../commands/imageWallCommands";
 import type { OneOf } from "../utils/type";
 
@@ -26,22 +26,14 @@ type CreatePanel = (params: {
  * 建立 WebView 面板
  */
 const createPanel: CreatePanel = ({ context, folderPath, initialData }) => {
-  const title = `圖片牆 - ${path.basename(folderPath)}`;
-  const showOptions = vscode.ViewColumn.One;
-
-  const panel = vscode.window.createWebviewPanel(WEBVIEW_VIEW_ID, title, showOptions, {
-    enableScripts: true,
-    retainContextWhenHidden: true,
-    localResourceRoots: [vscode.Uri.file(folderPath), context.extensionUri],
-  });
-
-  panel.iconPath = { light: vscode.Uri.parse(imageWallLight), dark: vscode.Uri.parse(imageWallDark) };
-
-  panel.webview.html = generateReactHtml({
+  const panel = createWebviewPanel<ImageWallInitialData>({
+    panelId: WEBVIEW_VIEW_ID,
+    panelTitle: `圖片牆 - ${path.basename(folderPath)}`,
     webviewType: WEBVIEW_TYPE,
-    webview: panel.webview,
     extensionUri: context.extensionUri,
+    resourceUri: vscode.Uri.file(folderPath),
     initialData,
+    iconPath: { light: vscode.Uri.parse(imageWallLight), dark: vscode.Uri.parse(imageWallDark) },
   });
 
   return panel;

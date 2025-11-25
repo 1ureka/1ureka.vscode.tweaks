@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import * as path from "path";
-import { generateReactHtml } from "../utils/webviewHelper";
+import { createWebviewPanel } from "../utils/webviewHelper";
 import { ImageViewerEditorProvider } from "../providers/imageViewerProvider";
 import { openImage } from "../utils/imageOpener";
 import { copyImage } from "../utils/system_windows";
@@ -19,21 +19,15 @@ export function registerImageViewerCommands(context: vscode.ExtensionContext) {
   const webviewsMap = new Map<string, vscode.WebviewPanel>();
 
   async function resolveImageViewer(document: vscode.CustomDocument, webviewPanel: vscode.WebviewPanel) {
-    webviewPanel.webview.options = {
-      enableScripts: true,
-      localResourceRoots: [context.extensionUri, vscode.Uri.file(path.dirname(document.uri.fsPath))],
-    };
-
-    const initialData: ImageViewerInitialData = {
-      uri: webviewPanel.webview.asWebviewUri(document.uri).toString(),
-      metadata: await openImage(document.uri.fsPath),
-    };
-
-    webviewPanel.webview.html = generateReactHtml({
+    createWebviewPanel<ImageViewerInitialData>({
+      panel: webviewPanel,
       webviewType: "imageViewer",
-      webview: webviewPanel.webview,
       extensionUri: context.extensionUri,
-      initialData,
+      resourceUri: vscode.Uri.file(path.dirname(document.uri.fsPath)),
+      initialData: {
+        uri: webviewPanel.webview.asWebviewUri(document.uri).toString(),
+        metadata: await openImage(document.uri.fsPath),
+      },
     });
 
     const messageListener = webviewPanel.webview.onDidReceiveMessage(async (message) => {

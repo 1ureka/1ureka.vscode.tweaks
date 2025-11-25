@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import type { OneOf } from "./type";
 
 /**
  * 將資料序列化為適合插入 HTML 的字串
@@ -23,7 +24,7 @@ type generateReactHtmlParams = {
 /**
  * 生成 React WebView 的 HTML 模板
  */
-export function generateReactHtml({ webviewType, webview, extensionUri, initialData }: generateReactHtmlParams) {
+function generateReactHtml({ webviewType, webview, extensionUri, initialData }: generateReactHtmlParams) {
   const webviewJS = vscode.Uri.joinPath(extensionUri, "dist", "webviews", `${webviewType}.js`);
   const jsWebviewUri = webview.asWebviewUri(webviewJS);
   const codiconsCss = vscode.Uri.joinPath(extensionUri, "node_modules", "@vscode/codicons", "dist", "codicon.css");
@@ -58,3 +59,42 @@ function getNonce(): string {
   }
   return text;
 }
+
+/**
+ * 建立或初始化 Webview Panel 的參數類型
+ */
+type CreateWebviewPanelParams<T> = {
+  webviewType: string;
+  extensionUri: vscode.Uri;
+  resourceUri: vscode.Uri;
+  initialData: T;
+  iconPath?: { light: vscode.Uri; dark: vscode.Uri };
+} & OneOf<[{ panelId: string; panelTitle: string }, { panel: vscode.WebviewPanel }]>;
+
+/**
+ * 建立一個新的 Webview Panel 或者根據 Editor 提供的 Panel 初始化 Webview Panel
+ */
+function createWebviewPanel<T>(params: CreateWebviewPanelParams<T>) {
+  const { webviewType, extensionUri, resourceUri, initialData, iconPath } = params;
+
+  let panel: vscode.WebviewPanel;
+  const localResourceRoots = [extensionUri, resourceUri];
+
+  if ("panel" in params) {
+    panel = params.panel;
+    panel.webview.options = { enableScripts: true, localResourceRoots };
+  } else {
+    const { panelId, panelTitle } = params;
+    panel = vscode.window.createWebviewPanel(panelId, panelTitle, vscode.ViewColumn.One, {
+      enableScripts: true,
+      retainContextWhenHidden: true,
+      localResourceRoots,
+    });
+  }
+
+  if (iconPath) panel.iconPath = iconPath;
+  panel.webview.html = generateReactHtml({ webviewType, webview: panel.webview, extensionUri, initialData });
+  return panel;
+}
+
+export { createWebviewPanel };
