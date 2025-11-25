@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { randomUUID } from "crypto";
+import { randomUUID, type UUID } from "crypto";
 
 import { checkMessage, createPanel } from "../providers/imageWallProvider";
 import { type ExtendedMetadata, generateThumbnail, openImages } from "../utils/imageOpener";
@@ -69,13 +69,27 @@ export function registerImageWallCommands(context: vscode.ExtensionContext) {
 }
 
 /**
- * 該功能對應的 WebView 的初始資料型別
+ * 由插件主機提供的初始資料型別
  */
 export type ImageWallInitialData = {
-  images: { id: `${string}-${string}-${string}-${string}-${string}`; metadata: ExtendedMetadata }[];
   folderPath: string;
   folderPathParts: string[];
+  page: number;
+  pages: number;
+  totalImages: number;
 };
+
+/**
+ * 由插件主機提供的每一頁圖片牆資料型別
+ */
+export type ImageWallData = ImageWallInitialData & {
+  images: { id: UUID; metadata: ExtendedMetadata; uri: vscode.Uri }[];
+};
+
+/**
+ * 一頁圖片牆包含的圖片數量
+ */
+const IMAGES_PER_PAGE = 120;
 
 /**
  * 處理前端要求的圖片相關事件的統一介面
@@ -143,6 +157,8 @@ async function openImageWall(context: vscode.ExtensionContext, folderPath: strin
     }
   );
 
+  // 在 closure 中建立所有圖片的 ID 與資料，確保圖片事件處理函式中能夠正確找到對應的圖片
+  // 但這時還沒有 webview
   const images = imageMetadata.map((meta) => ({
     id: randomUUID(),
     metadata: meta,
@@ -151,7 +167,9 @@ async function openImageWall(context: vscode.ExtensionContext, folderPath: strin
   const initialData: ImageWallInitialData = {
     folderPath: formatPath(folderPath),
     folderPathParts: formatPathToArray(folderPath),
-    images,
+    page: 1,
+    pages: Math.ceil(images.length / IMAGES_PER_PAGE),
+    totalImages: images.length,
   };
 
   const panel = createPanel({ context, folderPath, initialData });
@@ -164,8 +182,16 @@ async function openImageWall(context: vscode.ExtensionContext, folderPath: strin
       return;
     }
 
+    // 這時再補上 webview URI 資料
     if (result.type === "ready") {
-      webview.postMessage({ type: "initCompleted" });
+      const imagesInPage1 = images.slice(0, IMAGES_PER_PAGE);
+      const imagesWithUri = imagesInPage1.map((img) => ({
+        ...img,
+        uri: webview.asWebviewUri(vscode.Uri.file(img.metadata.filePath)),
+      }));
+
+      const data: ImageWallData = { ...initialData, images: imagesWithUri };
+      webview.postMessage({ type: "imageWallData", data });
       return;
     }
 
