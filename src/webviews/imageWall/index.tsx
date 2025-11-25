@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import { ImageWall } from "./ImageWall";
 import { Providers } from "../utils/Providers";
 import { registerClipboardEvent, registerPreferenceEvent } from "./events";
+import { registerDataChangeEvent } from "./data";
 
 const App = () => {
   return (
@@ -16,6 +17,7 @@ const container = document.getElementById("root");
 if (container) {
   registerClipboardEvent();
   registerPreferenceEvent();
+  registerDataChangeEvent();
   createRoot(container).render(<App />);
 }
 
