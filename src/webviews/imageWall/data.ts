@@ -10,6 +10,10 @@ if (!initialData) {
 
 const imageWallDataStore = create<ImageWallInitialData>(() => ({ ...initialData }));
 
+const setPage = (page: number) => {
+  postMessageToExtension({ type: "images", page });
+};
+
 const registerDataChangeEvent = () => {
   window.addEventListener("message", (event) => {
     if (event.data && event.data.type === "imageWallData") {
@@ -19,4 +23,4 @@ const registerDataChangeEvent = () => {
   });
 };
 
-export { imageWallDataStore, registerDataChangeEvent };
+export { imageWallDataStore, registerDataChangeEvent, setPage };
