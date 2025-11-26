@@ -2,9 +2,9 @@ import * as vscode from "vscode";
 import * as path from "path";
 import type { CustomDocument, CustomDocumentOpenContext, WebviewPanel, CancellationToken } from "vscode";
 
-import { handleCopyImage, handleEyeDropper } from "../handlers/imageViewerHandler";
+import { handleCopyImage, handleExportImage, handleEyeDropper } from "../handlers/imageViewerHandler";
 import { createWebviewPanel } from "../utils/webviewHelper";
-import { openImage } from "../utils/imageOpener";
+import { type ExportFormat, openImage } from "../utils/imageOpener";
 import type { OneOf } from "../utils/type";
 
 /**
@@ -100,12 +100,77 @@ class ImageViewerEditorProvider implements vscode.CustomReadonlyEditorProvider {
       }
     });
 
-    this.map.set(document.uri.path, panel);
-    const disposeListener = panel.onDidDispose(() => this.map.delete(document.uri.path));
+    this.map.set(document.uri.fsPath, panel);
+    const disposeListener = panel.onDidDispose(() => this.map.delete(document.uri.fsPath));
 
     this.context.subscriptions.push(messageListener, disposeListener);
   }
 }
 
-export { ImageViewerEditorProvider };
+/**
+ * 格式選項介面
+ */
+interface FormatOption extends vscode.QuickPickItem {
+  format: ExportFormat;
+  extension: string;
+}
+
+/**
+ * 可供選擇的格式選項
+ */
+const formatOptions: FormatOption[] = [
+  {
+    label: "PNG",
+    description: "無損壓縮，支援透明度",
+    detail: "適合需要透明背景的圖片",
+    format: "png",
+    extension: ".png",
+  },
+  {
+    label: "JPEG",
+    description: "有損壓縮，檔案較小",
+    detail: "適合相片或不需要透明度的圖片",
+    format: "jpeg",
+    extension: ".jpg",
+  },
+  {
+    label: "WebP",
+    description: "現代格式，壓縮率高",
+    detail: "有損壓縮，品質優於 JPEG ，且支援透明度",
+    format: "webp",
+    extension: ".webp",
+  },
+  {
+    label: "WebP (無損)",
+    description: "無損壓縮，支援透明度",
+    detail: "若應用程式支援，相比 PNG 其檔案通常更小但品質相同",
+    format: "webp-lossless",
+    extension: ".webp",
+  },
+];
+
+/**
+ * 開啟導出圖片流程
+ */
+const startExportImage = async (imagePath: string) => {
+  const pickerOptions = { placeHolder: "選擇導出格式", title: "圖片導出格式" };
+  const formatOption = await vscode.window.showQuickPick(formatOptions, pickerOptions);
+  if (!formatOption) return;
+
+  const sourceName = path.basename(imagePath, path.extname(imagePath));
+  const defaultFileName = `${sourceName}${formatOption.extension}`;
+
+  const uri = await vscode.window.showSaveDialog({
+    defaultUri: vscode.Uri.file(path.join(path.dirname(imagePath), defaultFileName)),
+    filters: { Images: [formatOption.extension.replace(".", "")] },
+    saveLabel: "導出",
+    title: `導出為 ${formatOption.label}`,
+  });
+
+  if (!uri) return;
+
+  return handleExportImage(imagePath, uri.fsPath, formatOption.format);
+};
+
+export { ImageViewerEditorProvider, startExportImage };
 export type { ImageViewerInitialData };

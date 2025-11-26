@@ -104,6 +104,10 @@
       {
         "command": "1ureka.imageViewer.eyeDropper",
         "title": "吸取顏色並複製到剪貼簿"
+      },
+      {
+        "command": "1ureka.imageViewer.exportAs",
+        "title": "導出為..."
       }
     ],
     "customEditors": [
@@ -146,6 +150,11 @@
           "command": "1ureka.imageViewer.eyeDropper",
           "when": "webviewId == '1ureka.imageViewer'",
           "group": "navigation@100"
+        },
+        {
+          "command": "1ureka.imageViewer.exportAs",
+          "when": "webviewId == '1ureka.imageViewer'",
+          "group": "navigation@101"
         },
         {
           "submenu": "imageWall.layout",
@@ -249,6 +258,10 @@
         },
         {
           "command": "1ureka.imageViewer.eyeDropper",
+          "when": "false"
+        },
+        {
+          "command": "1ureka.imageViewer.exportAs",
           "when": "false"
         }
       ]

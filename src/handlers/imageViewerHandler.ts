@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import { copyImage } from "../utils/system_windows";
+import { type ExportFormat, exportImage } from "../utils/imageOpener";
 
 /**
  * 處理複製圖片到剪貼簿的請求
@@ -38,4 +39,30 @@ const handleEyeDropper = async (color: string) => {
   vscode.window.showInformationMessage(`選取的顏色 ${color} 已複製到剪貼簿`);
 };
 
-export { handleCopyImage, handleEyeDropper };
+/**
+ * 處理圖片導出請求
+ */
+const handleExportImage = async (sourceFilePath: string, savePath: string, format: ExportFormat) => {
+  const withProgressOptions = {
+    title: "正在導出圖片",
+    location: vscode.ProgressLocation.Notification,
+    cancellable: false,
+  };
+
+  await vscode.window.withProgress(withProgressOptions, async (progress) => {
+    try {
+      await exportImage((options) => progress.report(options), sourceFilePath, savePath, format);
+
+      const openAction = "開啟檔案";
+      const result = await vscode.window.showInformationMessage(`圖片已成功導出至：\n${savePath}`, openAction);
+      if (result === openAction) {
+        await vscode.commands.executeCommand("vscode.open", vscode.Uri.file(savePath));
+      }
+    } catch (error) {
+      const message = `導出圖片失敗: ${error instanceof Error ? error.message : String(error)}`;
+      vscode.window.showErrorMessage(message);
+    }
+  });
+};
+
+export { handleCopyImage, handleEyeDropper, handleExportImage };
