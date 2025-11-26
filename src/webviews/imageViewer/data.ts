@@ -1,4 +1,4 @@
-import type { ImageViewerInitialData } from "../../commands/imageViewerCommands";
+import type { ImageViewerInitialData } from "../../providers/imageViewerProvider";
 import { getInitialData, postMessageToExtension } from "../utils/vscodeApi";
 
 const imageViewerInitialData = getInitialData<ImageViewerInitialData>();
