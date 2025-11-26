@@ -129,9 +129,9 @@ type ProgressReport = Progress<{ message: string; increment: number }>["report"]
 /**
  * 執行圖片轉換與導出
  */
-async function exportImage(report: ProgressReport, sourceFilePath: string, savePath: string, format: ExportFormat) {
+async function exportImage(report: ProgressReport, sourcePath: string, savePath: string, format: ExportFormat) {
   report({ message: "讀取原始圖片...", increment: 0 });
-  let image = sharp(sourceFilePath);
+  let image = sharp(sourcePath);
 
   report({ message: "轉換格式中...", increment: 30 });
   if (format === "png") {
