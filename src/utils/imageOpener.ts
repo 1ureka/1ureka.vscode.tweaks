@@ -135,7 +135,7 @@ async function exportImage(report: ProgressReport, sourcePath: string, savePath:
 
   report({ message: "轉換格式中...", increment: 30 });
   if (format === "png") {
-    image = image.png({ quality: 100 });
+    image = image.png();
   } else if (format === "jpeg") {
     image = image.jpeg();
   } else if (format === "webp") {
