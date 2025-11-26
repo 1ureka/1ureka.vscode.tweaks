@@ -45,6 +45,85 @@
 - 命令選擇區也可直接啟動 Substance Painter 或 Blender
 - 若應用位置特殊或想指定版本，可在 VsCode 設定中自訂路徑
 
+## 架構設計
+
+本擴充套件採用 **Commands / Providers / Handlers / Webview** 四層架構。
+
+### 後端架構（延伸主機）
+
+#### Commands 層
+- **職責：** 命令註冊與生命週期管理
+- 使用 `vscode.commands.registerCommand` 註冊命令
+- 管理 Webview Panel/Editor 的生命週期
+- 處理使用者輸入驗證（如檔案選擇對話框）
+- 負責呼叫 Providers 層的功能
+
+#### Providers 層
+- **職責：** 延伸主機操作 VS Code 介面
+- **注意：** 這裡的 "Providers" 是廣義概念，不限於 VS Code 的 `Provider` API（如 TreeDataProvider、CompletionItemProvider 等），而是指所有「延伸主機操作介面」的邏輯
+- 建立與管理 Webview Panel 和 Custom Editor
+- 操作 StatusBar 等 UI 元件
+- 處理 Webview 與延伸主機之間的訊息通訊
+- 協調 Handlers 層處理業務邏輯
+
+#### Handlers 層
+- **職責：** 純業務邏輯處理
+- 資料準備與轉換
+- 圖片處理、檔案操作等核心功能
+- 不依賴 VS Code API（除了基本的進度/錯誤提示）
+- 可獨立測試的功能單元
+
+### 前端架構（Webview）
+
+#### Webview 層
+- **職責：** 使用者介面呈現與互動
+- 使用 React + Material-UI 構建 UI 元件
+- 採用 Zustand 可在 React 外部更新的特性，銜接後端與前端的資料狀態
+- 利用 `var(--vscode-theme-*)` CSS 變數一開始就會被 VsCode 注入的特性，實現 MUI 主題自動同步
+- 將使用者互動事件透過 `vscodeApi.postMessage` 傳送給延伸主機
+- 延伸主機透過 Providers 層的路由機制將訊息傳遞給 Handlers 層處理
+- 若有回傳需求，則會透過 Zustand 在外部更新，並觸發 React 元件重新渲染，盡量避免使用 useEffect
+
+### 資料流向
+
+#### 初始化階段
+
+```
+使用者觸發命令
+    ↓
+Commands (驗證、呼叫 Provider)
+    ↓
+Providers (呼叫 Handler 準備初始資料)
+    ↓
+Handlers (讀取檔案、處理資料)
+    ↓
+Providers (將 initialData 序列化並注入 HTML <script id="__data__">)
+    ↓
+Webview 載入時立即讀取 initialData (無需等待 postMessage)
+    ↓
+React 元件直接使用資料進行初次渲染（類似 SSR，避免閃爍）
+```
+
+#### 後續互動階段
+
+```
+使用者在 Webview 中互動（點擊、換頁等）
+    ↓
+vscodeApi.postMessage (傳送事件請求)
+    ↓
+Providers (onDidReceiveMessage 接收並驗證訊息)
+    ↓
+Handlers (處理業務邏輯)
+    ↓
+Providers (透過 webview.postMessage 回傳結果)
+    ↓
+Webview 監聽 message 事件
+    ↓
+Zustand 更新狀態（在 registerXxxEvent 中）
+    ↓
+React 元件自動重新渲染
+```
+
 ---
 
 作者：1ureka | 版本：0.1.3
