@@ -10,18 +10,22 @@ import imageWallLight from "../icons/image-wall-light.svg";
 import imageWallDark from "../icons/image-wall-dark.svg";
 
 type ImageWallMessage = OneOf<
-  [{ type: "ready" }, { type: "image"; request: { type: string; id: string } }, { type: "info"; message: string }]
+  [
+    { type: "images"; page: number },
+    { type: "image"; request: { type: string; id: string } },
+    { type: "info"; message: string }
+  ]
 >;
 
 /** 檢查接收到的訊息格式是否正確 */
 function checkMessage(value: any): ImageWallMessage | null {
   if (typeof value !== "object" || value === null) return null;
 
-  const { type, id, info } = value as Record<string, unknown>;
+  const { type, id, info, page } = value as Record<string, unknown>;
   if (typeof type !== "string") return null; // 訊息必須包含 type
 
-  // webview 準備訊息
-  if (type === "ready") return { type: "ready" };
+  // 請求圖片牆某頁的所有圖片
+  if (type === "images" && typeof page === "number") return { type: "images", page };
   // 圖片相關訊息：包含 type 和 id
   if (typeof id === "string") return { type: "image", request: { type, id } };
   // 要求顯示資訊訊息
@@ -55,13 +59,13 @@ async function createImageWallPanel(context: vscode.ExtensionContext, folderPath
       return;
     }
 
-    if (result.type === "ready") {
-      handlePreparePageData({ webview, images, page: 1 });
+    if (result.type === "info") {
+      vscode.window.showInformationMessage(result.message);
       return;
     }
 
-    if (result.type === "info") {
-      vscode.window.showInformationMessage(result.message);
+    if (result.type === "images") {
+      handlePreparePageData({ webview, images, page: result.page });
       return;
     }
 

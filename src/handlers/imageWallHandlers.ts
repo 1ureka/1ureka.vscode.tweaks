@@ -14,14 +14,15 @@ type ImageWallInitialData = {
   page: number;
   pages: number;
   totalImages: number;
+  images: { id: UUID; metadata: ExtendedMetadata }[];
 };
 
 /**
  * 由插件主機提供的每一頁圖片牆資料型別
  */
-type ImageWallData = {
+type ImageWallPageData = {
   page: number;
-  images: { id: UUID; metadata: ExtendedMetadata; uri: vscode.Uri }[];
+  images: { id: UUID; metadata: ExtendedMetadata }[];
 };
 
 /** 一頁圖片牆包含的圖片數量 */
@@ -55,6 +56,7 @@ const handlePrepareInitialData = async (folderPath: string) => {
     page: 1,
     pages: Math.ceil(images.length / IMAGES_PER_PAGE),
     totalImages: images.length,
+    images: images.slice(0, IMAGES_PER_PAGE),
   };
 
   return { initialData, images };
@@ -75,12 +77,7 @@ type HanldePreparePageDataParams = {
 const handlePreparePageData = ({ webview, images, page }: HanldePreparePageDataParams) => {
   const startIndex = (page - 1) * IMAGES_PER_PAGE;
   const imagesInPage = images.slice(startIndex, startIndex + IMAGES_PER_PAGE);
-  const imagesWithUri = imagesInPage.map((img) => ({
-    ...img,
-    uri: webview.asWebviewUri(vscode.Uri.file(img.metadata.filePath)),
-  }));
-
-  const data: ImageWallData = { page, images: imagesWithUri };
+  const data: ImageWallPageData = { page, images: imagesInPage };
   webview.postMessage({ type: "imageWallData", data });
 };
 
@@ -146,4 +143,4 @@ const imageHandlers: Record<string, ImageHandler> = {
 };
 
 export { imageHandlers, handlePrepareInitialData, handlePreparePageData };
-export type { ImageWallInitialData, ImageWallData };
+export type { ImageWallInitialData, ImageWallPageData };

@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { postMessageToExtension, getInitialData } from "../utils/vscodeApi";
-import type { ImageWallData, ImageWallInitialData } from "../../handlers/imageWallHandlers";
+import type { ImageWallPageData, ImageWallInitialData } from "../../handlers/imageWallHandlers";
 
 const initialData = getInitialData<ImageWallInitialData>();
 if (!initialData) {
@@ -8,18 +8,13 @@ if (!initialData) {
   throw new Error("無法取得圖片牆初始資料");
 }
 
-const imageWallDataStore = create<ImageWallData>(() => ({
-  ...initialData,
-  images: [],
-}));
+const imageWallDataStore = create<ImageWallInitialData>(() => ({ ...initialData }));
 
 const registerDataChangeEvent = () => {
-  postMessageToExtension({ type: "ready" });
-
   window.addEventListener("message", (event) => {
     if (event.data && event.data.type === "imageWallData") {
-      const data = event.data as { type: "imageWallData"; data: ImageWallData };
-      imageWallDataStore.setState(data.data);
+      const { data } = event.data as { type: "imageWallData"; data: ImageWallPageData };
+      imageWallDataStore.setState(data);
     }
   });
 };
