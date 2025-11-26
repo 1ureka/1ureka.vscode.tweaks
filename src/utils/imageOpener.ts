@@ -1,6 +1,7 @@
 import sharp from "sharp";
 import * as fs from "fs";
 import * as path from "path";
+import type { Progress } from "vscode";
 
 const supportedExtensions = [".jpg", ".jpeg", ".png", ".bmp", ".gif", ".webp", ".tiff", ".tif"];
 
@@ -118,4 +119,35 @@ async function generateBase64(filePath: string, format: "png" | "jpeg" | "webp" 
   return sharpToBase64(image, format);
 }
 
-export { openImage, openImages, generateThumbnail, generateBase64, type ExtendedMetadata };
+/**
+ * 支援的導出格式
+ */
+type ExportFormat = "png" | "jpeg" | "webp" | "webp-lossless";
+
+type ProgressReport = Progress<{ message: string; increment: number }>["report"];
+
+/**
+ * 執行圖片轉換與導出
+ */
+async function exportImage(report: ProgressReport, sourceFilePath: string, savePath: string, format: ExportFormat) {
+  report({ message: "讀取原始圖片...", increment: 0 });
+  let image = sharp(sourceFilePath);
+
+  report({ message: "轉換格式中...", increment: 30 });
+  if (format === "png") {
+    image = image.png({ quality: 100 });
+  } else if (format === "jpeg") {
+    image = image.jpeg();
+  } else if (format === "webp") {
+    image = image.webp();
+  } else if (format === "webp-lossless") {
+    image = image.webp({ lossless: true });
+  }
+
+  report({ message: "寫入檔案中...", increment: 60 });
+  await image.toFile(savePath);
+  report({ message: "完成", increment: 100 });
+}
+
+export { openImage, openImages, generateThumbnail, generateBase64, exportImage };
+export type { ExtendedMetadata, ExportFormat };
