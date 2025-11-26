@@ -7,15 +7,8 @@ import { ImageListItemBar, imageListItemBarClassName } from "./ImageListItemBar"
 import { ImageClickControl } from "./ImageClickControl";
 import { ImageDisplay } from "./ImageDisplay";
 
-import type { ImageWallInitialData } from "../../commands/imageWallCommands";
-import { getInitialData } from "../utils/vscodeApi";
 import { imageWallPreferenceStore } from "./events";
-
-const data = getInitialData<ImageWallInitialData>() || {
-  folderPath: "",
-  folderPathParts: [],
-  images: [],
-};
+import { imageWallDataStore } from "./data";
 
 const columnCountsMap = {
   s: { xl: 7, lg: 6, md: 5, sm: 4, xs: 3 },
@@ -40,7 +33,8 @@ const useColumnCounts = () => {
   return currentSizeMap.xs;
 };
 
-const Images = ({ images }: { images: ImageWallInitialData["images"] }) => {
+const Images = () => {
+  const images = imageWallDataStore((state) => state.images);
   const variant = imageWallPreferenceStore((state) => state.mode);
   const columnCounts = useColumnCounts();
 
@@ -74,25 +68,21 @@ const Images = ({ images }: { images: ImageWallInitialData["images"] }) => {
 };
 
 export const ImageWall: React.FC = () => {
-  const { images, folderPathParts } = data;
+  const totalImages = imageWallDataStore((state) => state.totalImages);
 
-  if (images.length === 0) {
-    return (
-      <Container maxWidth="xl" sx={{ py: 3, height: "100vh", overflow: "auto" }}>
-        <ImageWallTitle folderPathParts={folderPathParts} imageCount={0} />
+  return (
+    <Container maxWidth="xl" sx={{ py: 3, height: "100vh", overflow: "auto" }}>
+      <ImageWallTitle />
+
+      {totalImages === 0 ? (
         <Box sx={{ textAlign: "center", py: 8 }}>
           <Typography variant="h6" color="text.secondary">
             此資料夾中沒有圖片
           </Typography>
         </Box>
-      </Container>
-    );
-  }
-
-  return (
-    <Container maxWidth="xl" sx={{ py: 3, height: "100vh", overflow: "auto" }}>
-      <ImageWallTitle folderPathParts={folderPathParts} imageCount={images.length} />
-      <Images images={images} />
+      ) : (
+        <Images />
+      )}
     </Container>
   );
 };

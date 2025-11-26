@@ -1,68 +1,88 @@
 import * as vscode from "vscode";
 import * as path from "path";
 
+import { createWebviewPanel } from "../utils/webviewHelper";
+import { handlePrepareInitialData, handlePreparePageData, imageHandlers } from "../handlers/imageWallHandlers";
+import type { ImageWallInitialData } from "../handlers/imageWallHandlers";
+import type { OneOf } from "../utils/type";
+
 import imageWallLight from "../icons/image-wall-light.svg";
 import imageWallDark from "../icons/image-wall-dark.svg";
-import { generateReactHtml } from "../utils/webviewHelper";
-import type { ImageWallInitialData } from "../commands/imageWallCommands";
 
-/**
- * 該功能對應的 webviewType
- */
-const WEBVIEW_TYPE = "imageWall";
-const WEBVIEW_VIEW_ID = "1ureka" + "." + WEBVIEW_TYPE;
+type ImageWallMessage = OneOf<
+  [
+    { type: "images"; page: number },
+    { type: "image"; request: { type: string; id: string } },
+    { type: "info"; message: string }
+  ]
+>;
 
-/**
- * 建立 WebView 面板
- */
-type CreatePanel = (params: {
-  context: vscode.ExtensionContext;
-  folderPath: string;
-  initialData: ImageWallInitialData;
-}) => vscode.WebviewPanel;
-
-/**
- * 建立 WebView 面板
- */
-const createPanel: CreatePanel = ({ context, folderPath, initialData }) => {
-  const title = `圖片牆 - ${path.basename(folderPath)}`;
-  const showOptions = vscode.ViewColumn.One;
-
-  const panel = vscode.window.createWebviewPanel(WEBVIEW_VIEW_ID, title, showOptions, {
-    enableScripts: true,
-    retainContextWhenHidden: true,
-    localResourceRoots: [vscode.Uri.file(folderPath), context.extensionUri],
-  });
-
-  panel.iconPath = { light: vscode.Uri.parse(imageWallLight), dark: vscode.Uri.parse(imageWallDark) };
-
-  panel.webview.html = generateReactHtml({
-    webviewType: WEBVIEW_TYPE,
-    webview: panel.webview,
-    extensionUri: context.extensionUri,
-    initialData,
-  });
-
-  return panel;
-};
-
-/**
- * 檢查接收到的訊息格式是否正確
- */
-function checkMessage(value: any): { type: string; id: string } | string | null {
+/** 檢查接收到的訊息格式是否正確 */
+function checkMessage(value: any): ImageWallMessage | null {
   if (typeof value !== "object" || value === null) return null;
-  const obj = value as Record<string, unknown>;
 
-  const hasType = "type" in obj && typeof obj.type === "string";
-  const hasId = "id" in obj && typeof obj.id === "string";
+  const { type, id, info, page } = value as Record<string, unknown>;
+  if (typeof type !== "string") return null; // 訊息必須包含 type
 
-  if (hasType && hasId) return value;
-
-  if (hasType && obj.type === "info" && "info" in obj && typeof obj.info === "string") {
-    return obj.info;
-  }
+  // 請求圖片牆某頁的所有圖片
+  if (type === "images" && typeof page === "number") return { type: "images", page };
+  // 圖片相關訊息：包含 type 和 id
+  if (typeof id === "string") return { type: "image", request: { type, id } };
+  // 要求顯示資訊訊息
+  if (type === "info" && typeof info === "string") return { type: "info", message: info };
 
   return null;
 }
 
-export { createPanel, checkMessage };
+/**
+ * 讀取資料夾中的圖片並在 WebView 中顯示
+ */
+async function createImageWallPanel(context: vscode.ExtensionContext, folderPath: string) {
+  const { initialData, images } = await handlePrepareInitialData(folderPath);
+
+  const panel = createWebviewPanel<ImageWallInitialData>({
+    panelId: "1ureka.imageWall",
+    panelTitle: `圖片牆 - ${path.basename(folderPath)}`,
+    webviewType: "imageWall",
+    extensionUri: context.extensionUri,
+    resourceUri: vscode.Uri.file(folderPath),
+    initialData,
+    iconPath: { light: vscode.Uri.parse(imageWallLight), dark: vscode.Uri.parse(imageWallDark) },
+  });
+
+  const webview = panel.webview;
+
+  const messageListener = webview.onDidReceiveMessage(async (event) => {
+    const result = checkMessage(event);
+    if (!result) {
+      console.warn("Image Wall Extension Host: 接收到無效的訊息");
+      return;
+    }
+
+    if (result.type === "info") {
+      vscode.window.showInformationMessage(result.message);
+      return;
+    }
+
+    if (result.type === "images") {
+      handlePreparePageData({ webview, images, page: result.page });
+      return;
+    }
+
+    const { request } = result;
+    const filePath = images.find(({ id }) => id === request.id)?.metadata.filePath;
+    if (!filePath) return;
+
+    const handler = imageHandlers[request.type];
+    if (!handler) return;
+
+    const response = await handler(request.id, filePath);
+    if (response) webview.postMessage(response);
+  });
+
+  context.subscriptions.push(messageListener);
+
+  return panel;
+}
+
+export { createImageWallPanel };

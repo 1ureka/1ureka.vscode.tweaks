@@ -9,7 +9,7 @@ const ImageClickControl = ({ id }: { id: string }) => {
       className="image-click-area"
       sx={{ position: "absolute", inset: 0, zIndex: 1 }}
       onClick={() => {
-        postMessageToExtension({ type: "imageClick", id });
+        postMessageToExtension({ type: "clickImage", id });
       }}
     />
   );
