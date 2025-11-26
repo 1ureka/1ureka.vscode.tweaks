@@ -3,6 +3,7 @@ import { Box, Container, Typography, useMediaQuery } from "@mui/material";
 import { ImageList, ImageListItem } from "@mui/material";
 
 import { ImageWallTitle } from "./ImageWallTitle";
+import { ImageWallPagination } from "./ImageWallPagination";
 import { ImageListItemBar, imageListItemBarClassName } from "./ImageListItemBar";
 import { ImageClickControl } from "./ImageClickControl";
 import { ImageDisplay } from "./ImageDisplay";
@@ -39,7 +40,7 @@ const Images = () => {
   const columnCounts = useColumnCounts();
 
   return (
-    <ImageList variant={variant} cols={columnCounts} gap={8} sx={{ py: 1 }}>
+    <ImageList variant={variant} cols={columnCounts} gap={8} sx={{ pb: 2, m: 0 }}>
       {images.map(({ id, metadata: { fileName, width, height } }) => (
         <ImageListItem
           key={id}
@@ -72,17 +73,20 @@ export const ImageWall: React.FC = () => {
 
   return (
     <Container maxWidth="xl" sx={{ py: 3, height: "100vh", overflow: "auto" }}>
-      <ImageWallTitle />
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+        <ImageWallTitle />
+        <ImageWallPagination />
 
-      {totalImages === 0 ? (
-        <Box sx={{ textAlign: "center", py: 8 }}>
-          <Typography variant="h6" color="text.secondary">
-            此資料夾中沒有圖片
-          </Typography>
-        </Box>
-      ) : (
-        <Images />
-      )}
+        {totalImages === 0 ? (
+          <Box sx={{ textAlign: "center", py: 8 }}>
+            <Typography variant="h6" color="text.secondary">
+              此資料夾中沒有圖片
+            </Typography>
+          </Box>
+        ) : (
+          <Images />
+        )}
+      </Box>
     </Container>
   );
 };

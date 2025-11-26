@@ -7,7 +7,7 @@ const ImageWallTitle = () => {
   const totalImages = imageWallDataStore((state) => state.totalImages);
 
   return (
-    <Box sx={{ pb: 2, display: "flex", gap: 1.5, alignItems: "center", flexWrap: "wrap" }}>
+    <Box sx={{ display: "flex", gap: 1.5, alignItems: "center", flexWrap: "wrap" }}>
       <Breadcrumbs
         aria-label="breadcrumb"
         separator={<span className="codicon codicon-chevron-right" />}
