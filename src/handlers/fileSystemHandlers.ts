@@ -34,6 +34,7 @@ const FILES_PER_PAGE = 100;
 /**
  * 準備檔案系統的任一路徑與任一頁的資料
  * 雖然這等同於每次換頁都重新讀取資料夾內容，但這樣可以確保每次讀取的都是最新的檔案系統狀態，更貼近實際需求
+ * @throws 無法讀取資料夾內容時會拋出錯誤
  */
 const handleFileSystemData = async (panelId: UUID, folderPath: string, page: number): Promise<FileSystemData> => {
   const { data: dirEntries, error } = await tryCatch(() => fs.promises.readdir(folderPath, { withFileTypes: true }));
@@ -81,3 +82,4 @@ const handleFileSystemData = async (panelId: UUID, folderPath: string, page: num
 };
 
 export { handleFileSystemData };
+export type { FileSystemData };
