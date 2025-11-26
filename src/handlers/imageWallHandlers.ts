@@ -26,7 +26,7 @@ type ImageWallPageData = {
 };
 
 /** 一頁圖片牆包含的圖片數量 */
-const IMAGES_PER_PAGE = 120;
+const IMAGES_PER_PAGE = 100;
 
 /**
  * 準備圖片牆開啟所需的初始資料，以及建立圖片牆所有圖片的元資料與 ID 關係，以便後續圖片事件處理能找到對應的圖片
