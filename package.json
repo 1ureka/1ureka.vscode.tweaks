@@ -111,11 +111,11 @@
       },
       {
         "command": "1ureka.openFileSystem",
-        "title": "開啟檔案系統"
+        "title": "開啟檔案系統瀏覽器"
       },
       {
         "command": "1ureka.openFileSystemFromExplorer",
-        "title": "以檔案系統顯示"
+        "title": "以檔案系統瀏覽器顯示"
       }
     ],
     "customEditors": [
