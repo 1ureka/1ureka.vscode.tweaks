@@ -75,9 +75,13 @@ const FileSystemList = () => {
       {/* 每個項目的背景樣式區 */}
       <Box sx={containerSx.itemIsFullWidth}>
         <Box sx={{ bgcolor: "background.paper", borderRadius: 1 }} /> {/* Header background */}
-        {!root && <Box sx={{ borderRadius: 1, bgcolor: "#ffffff07" }} />} {/* Spacer for prev folder navigation */}
+        {!root && <Box sx={{ borderRadius: 1, bgcolor: "table.alternateRowBackground" }} />}{" "}
+        {/* Spacer for prev folder navigation */}
         {files.map(({ fileName }, i) => (
-          <Box key={fileName} sx={{ borderRadius: 1, bgcolor: i % 2 !== 0 ? "#ffffff07" : "transparent" }} />
+          <Box
+            key={fileName}
+            sx={{ borderRadius: 1, bgcolor: i % 2 !== 0 ? "table.alternateRowBackground" : "transparent" }}
+          />
         ))}
       </Box>
 
@@ -150,7 +154,7 @@ const FileSystemList = () => {
         <Box /> {/* Header spacer */}
         {!root && (
           <ButtonBase
-            sx={{ borderRadius: 1, pointerEvents: "auto", "&:hover": { bgcolor: "#ffffff07" } }}
+            sx={{ borderRadius: 1, pointerEvents: "auto", "&:hover": { bgcolor: "table.hoverBackground" } }}
             onClick={() => navigateUp()}
             focusRipple
           />
@@ -158,7 +162,7 @@ const FileSystemList = () => {
         {files.map(({ fileName, filePath, fileType }) => (
           <ButtonBase
             key={fileName}
-            sx={{ borderRadius: 1, pointerEvents: "auto", "&:hover": { bgcolor: "#ffffff07" } }}
+            sx={{ borderRadius: 1, pointerEvents: "auto", "&:hover": { bgcolor: "table.hoverBackground" } }}
             focusRipple
             onClick={() => {
               if (fileType === "folder" || fileType === "file-symlink-directory") {

@@ -11,6 +11,21 @@ const getColorVar = (varName: string) => {
   return value || "#000000";
 };
 
+declare module "@mui/material/styles" {
+  interface Palette {
+    table: {
+      alternateRowBackground: string;
+      hoverBackground: string;
+    };
+  }
+  interface PaletteOptions {
+    table: {
+      alternateRowBackground: string;
+      hoverBackground: string;
+    };
+  }
+}
+
 const theme = createTheme({
   defaultColorScheme: "dark", // 這與實際主題無關，因為是用 var(--vscode-xxx) 來取色，用 dark 是為了只需要定義一組色彩
   colorSchemes: {
@@ -28,6 +43,10 @@ const theme = createTheme({
           primary: getColorVar("foreground"),
           secondary: getColorVar("descriptionForeground"),
           disabled: getColorVar("disabledForeground"),
+        },
+        table: {
+          alternateRowBackground: getColorVar("list-hoverBackground"),
+          hoverBackground: getColorVar("toolbar-hoverBackground"),
         },
         divider: getColorVar("panel-border"),
       },
