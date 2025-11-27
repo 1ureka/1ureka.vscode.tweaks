@@ -5,8 +5,8 @@ import { createWebviewPanel } from "../utils/webviewHelper";
 import { type FileSystemData, handleFileSystemData } from "../handlers/fileSystemHandlers";
 import type { OneOf } from "../utils/type";
 
-import imageWallLight from "../icons/image-wall-light.svg";
-import imageWallDark from "../icons/image-wall-dark.svg";
+import fileSystemLight from "../icons/file-system-light.svg";
+import fileSystemDark from "../icons/file-system-dark.svg";
 
 /** 用於換資料夾、換頁的請求 */
 type FileSystemRequest = { type: "request"; panelId: UUID; folderPath: string; page: number };
@@ -51,7 +51,7 @@ async function createFileSystemPanel(context: vscode.ExtensionContext, folderPat
     extensionUri: context.extensionUri,
     resourceUri: vscode.Uri.file(folderPath),
     initialData,
-    iconPath: { light: vscode.Uri.parse(imageWallLight), dark: vscode.Uri.parse(imageWallDark) },
+    iconPath: { light: vscode.Uri.parse(fileSystemLight), dark: vscode.Uri.parse(fileSystemDark) },
   });
 
   const webview = panel.webview;
