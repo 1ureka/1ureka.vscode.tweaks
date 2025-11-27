@@ -10,35 +10,6 @@ if (!initialData) {
 
 const fileSystemDataStore = create<FileSystemData>(() => ({ ...initialData }));
 
-/** 請求切換頁碼 */
-const navigateToPage = (page: number) => {
-  const { panelId, folderPath } = fileSystemDataStore.getState();
-  postMessageToExtension({ type: "request", panelId, folderPath, page });
-};
-
-/** 請求切換資料夾 */
-const navigateToFolder = (folderPath: string) => {
-  const { panelId } = fileSystemDataStore.getState();
-  postMessageToExtension({ type: "request", panelId, folderPath, page: 1 });
-};
-
-/** 透過麵包屑導航 */
-const navigateToBreadcrumb = (index: number) => {
-  const { folderPathParts } = fileSystemDataStore.getState();
-  const parts = folderPathParts.slice(0, index + 1);
-
-  // 特殊處理：如果只有磁碟機代號（如 'C:'），需要加上斜線變成 'C:/'
-  const targetPath = parts.length === 1 && /^[A-Za-z]:$/.test(parts[0]) ? parts[0] + "/" : parts.join("/");
-  navigateToFolder(targetPath);
-};
-
-/** 往上一層資料夾 */
-const navigateUp = () => {
-  const { root } = fileSystemDataStore.getState();
-  if (root) return; // 已經在根目錄
-  navigateToBreadcrumb(fileSystemDataStore.getState().folderPathParts.length - 2);
-};
-
 /** 註冊後端資料更新事件 */
 const registerDataChangeEvent = () => {
   window.addEventListener("message", (event) => {
@@ -50,4 +21,3 @@ const registerDataChangeEvent = () => {
 };
 
 export { fileSystemDataStore, registerDataChangeEvent };
-export { navigateToPage, navigateToFolder, navigateUp, navigateToBreadcrumb };
