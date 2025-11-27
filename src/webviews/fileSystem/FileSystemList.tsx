@@ -68,8 +68,8 @@ export const FileSystemList: React.FC = () => {
       </Box>
 
       <Box sx={{ position: "absolute", inset: 0, display: "grid", gridTemplateColumns: "1fr", px: 2 }}>
-        {files.map(({ fileName }) => (
-          <ButtonBase key={fileName} sx={{ borderRadius: 1 }}>
+        {files.map(({ fileName }, i) => (
+          <ButtonBase key={fileName} sx={{ borderRadius: 1, bgcolor: i % 2 !== 0 ? "#ffffff07" : "transparent" }}>
             {/* Empty ButtonBase to make the entire row clickable */}
           </ButtonBase>
         ))}
