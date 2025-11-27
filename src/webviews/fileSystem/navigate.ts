@@ -44,14 +44,7 @@ const setSorting = (field: "fileName" | "mtime" | "ctime" | "size") => {
   // 如果點擊的是同一欄位，切換順序；否則使用預設升序
   const newOrder = sortField === field && sortOrder === "asc" ? "desc" : "asc";
 
-  postMessage({
-    type: "request",
-    panelId: panelId,
-    folderPath: folderPath,
-    page: page,
-    sortField: field,
-    sortOrder: newOrder,
-  });
+  postMessage({ type: "request", panelId, folderPath, page, sortField: field, sortOrder: newOrder });
 };
 
 export { navigateToPage, navigateToFolder, navigateUp, navigateToBreadcrumb, navigateToFile, setSorting };
