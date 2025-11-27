@@ -1,8 +1,10 @@
 import React from "react";
 import { Box, ButtonBase, type SxProps, Typography } from "@mui/material";
-import { fileSystemDataStore, navigateToFolder, navigateUp } from "./data";
-import type { FileProperties } from "../../handlers/fileSystemHandlers";
 import { ellipsisSx } from "../utils/Providers";
+
+import { fileSystemDataStore, navigateToFolder, navigateUp } from "./data";
+import { postMessageToExtension } from "../utils/vscodeApi";
+import type { FileProperties } from "../../handlers/fileSystemHandlers";
 
 const fileTypeDisplayMap: Record<FileProperties["fileType"], string> = {
   file: "檔案",
@@ -125,9 +127,13 @@ const FileSystemList = () => {
           <ButtonBase
             key={fileName}
             sx={{ borderRadius: 1, pointerEvents: "auto" }}
-            onClick={() =>
-              fileType === "folder" || fileType === "file-symlink-directory" ? navigateToFolder(filePath) : undefined
-            }
+            onClick={() => {
+              if (fileType === "folder" || fileType === "file-symlink-directory") {
+                navigateToFolder(filePath);
+              } else if (fileType === "file" || fileType === "file-symlink-file") {
+                postMessageToExtension({ type: "openFile", filePath });
+              }
+            }}
           >
             {/* Empty ButtonBase to make the entire row clickable */}
           </ButtonBase>
