@@ -2,7 +2,7 @@ import React from "react";
 import { Box } from "@mui/material";
 import { fileSystemDataStore } from "./data";
 import { FileSystemHeader } from "./FileSystemHeader";
-import { FileSystemList } from "./FileSystemList";
+import { FileSystemTable } from "./FileSystemTable";
 import { FileSystemPagination } from "./FileSystemPagination";
 
 const FileSystem: React.FC = () => {
@@ -11,7 +11,7 @@ const FileSystem: React.FC = () => {
   return (
     <Box sx={{ height: "100vh", display: "flex", flexDirection: "column" }}>
       <FileSystemHeader />
-      <FileSystemList />
+      <FileSystemTable />
       {pages > 1 && <FileSystemPagination />}
       <Box sx={{ py: 1 }} />
     </Box>
