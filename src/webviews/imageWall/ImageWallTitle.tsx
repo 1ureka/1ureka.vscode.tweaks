@@ -7,7 +7,7 @@ const ImageWallTitle = () => {
   const totalImages = imageWallDataStore((state) => state.totalImages);
 
   return (
-    <Box sx={{ display: "flex", gap: 1.5, alignItems: "center", flexWrap: "wrap" }}>
+    <Box sx={{ display: "flex", gap: 1.5, alignItems: "center", flexWrap: "wrap", p: 2 }}>
       <Breadcrumbs
         aria-label="breadcrumb"
         separator={<span className="codicon codicon-chevron-right" />}
@@ -29,7 +29,7 @@ const ImageWallTitle = () => {
 
       <Typography color="text.secondary">•</Typography>
 
-      <Typography>共 {totalImages} 張圖片</Typography>
+      <Typography color="text.secondary">共 {totalImages} 張圖片</Typography>
     </Box>
   );
 };

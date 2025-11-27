@@ -40,7 +40,7 @@ const Images = () => {
   const columnCounts = useColumnCounts();
 
   return (
-    <ImageList variant={variant} cols={columnCounts} gap={8} sx={{ pb: 2, m: 0 }}>
+    <ImageList variant={variant} cols={columnCounts} gap={8} sx={{ p: 2, pt: 0, m: 0 }}>
       {images.map(({ id, metadata: { fileName, width, height } }) => (
         <ImageListItem
           key={id}
@@ -72,21 +72,20 @@ export const ImageWall: React.FC = () => {
   const totalImages = imageWallDataStore((state) => state.totalImages);
 
   return (
-    <Container maxWidth="xl" sx={{ py: 3, height: "100vh", overflow: "auto" }}>
-      <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+    <Container disableGutters maxWidth="xl" sx={{ height: "100vh", overflow: "auto" }}>
+      <Box sx={{ display: "flex", flexDirection: "column" }}>
         <ImageWallTitle />
         <ImageWallPagination />
 
         {totalImages === 0 ? (
           <Box sx={{ textAlign: "center", py: 8 }}>
-            <Typography variant="h6" color="text.secondary">
-              此資料夾中沒有圖片
-            </Typography>
+            <Typography color="text.secondary">此資料夾中沒有圖片</Typography>
           </Box>
         ) : (
           <Images />
         )}
       </Box>
+      <Box sx={{ p: 2 }} />
     </Container>
   );
 };
