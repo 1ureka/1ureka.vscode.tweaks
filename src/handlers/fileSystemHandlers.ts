@@ -25,8 +25,13 @@ type FileSystemData = {
   pages: number;
   fileCount: number;
   folderCount: number;
+  sortField: keyof Pick<FileProperties, "fileName" | "mtime" | "ctime" | "size">;
+  sortOrder: "asc" | "desc";
   files: FileProperties[];
 };
+
+/** 處理檔案系統資料所需的參數型別 */
+type FileSystemDataParams = Pick<FileSystemData, "panelId" | "folderPath" | "page" | "sortField" | "sortOrder">;
 
 /** 一頁檔案系統包含的檔案數量 */
 const FILES_PER_PAGE = 100;
@@ -36,7 +41,9 @@ const FILES_PER_PAGE = 100;
  * 雖然這等同於每次換頁都重新讀取資料夾內容，但這樣可以確保每次讀取的都是最新的檔案系統狀態，更貼近實際需求
  * @throws 無法讀取資料夾內容時會拋出錯誤
  */
-const handleFileSystemData = async (panelId: UUID, folderPath: string, page: number): Promise<FileSystemData> => {
+const handleFileSystemData = async (params: FileSystemDataParams): Promise<FileSystemData> => {
+  const { panelId, folderPath, page, sortField, sortOrder } = params;
+
   const { data: dirEntries, error } = await tryCatch(() => fs.promises.readdir(folderPath, { withFileTypes: true }));
   if (error) throw new Error(`無法讀取資料夾內容: ${error.message}`);
 
@@ -54,11 +61,22 @@ const handleFileSystemData = async (panelId: UUID, folderPath: string, page: num
 
   const files = results.filter((item): item is FileProperties => item !== null);
 
-  // 排序：資料夾優先，然後按名稱排序
+  // 排序：資料夾優先，然後依照 sortField 與 sortOrder 排序
   files.sort((a, b) => {
     if (a.fileType === "folder" && b.fileType !== "folder") return -1;
     if (a.fileType !== "folder" && b.fileType === "folder") return 1;
-    return a.fileName.localeCompare(b.fileName);
+
+    const valA = a[sortField];
+    const valB = b[sortField];
+
+    let compareResult: number;
+    if (typeof valA === "string" && typeof valB === "string") {
+      compareResult = valA.localeCompare(valB);
+    } else {
+      compareResult = Number(valA) - Number(valB);
+    }
+
+    return sortOrder === "asc" ? compareResult : -compareResult;
   });
 
   const folderCount = files.filter((f) => f.fileType === "folder").length;
@@ -77,9 +95,11 @@ const handleFileSystemData = async (panelId: UUID, folderPath: string, page: num
     pages: Math.ceil(files.length / FILES_PER_PAGE),
     fileCount,
     folderCount,
+    sortField,
+    sortOrder,
     files: files.slice(startIndex, endIndex),
   };
 };
 
 export { handleFileSystemData };
-export type { FileSystemData, FileProperties };
+export type { FileSystemDataParams, FileSystemData, FileProperties };
