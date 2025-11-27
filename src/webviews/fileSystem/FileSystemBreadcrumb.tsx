@@ -8,16 +8,7 @@ const FileSystemBreadcrumb: React.FC = () => {
   return (
     <Breadcrumbs aria-label="navigation" separator={<span className="codicon codicon-chevron-right" />} sx={{ p: 2 }}>
       {folderPathParts.map((part, index) => {
-        const isFirst = index === 0;
         const isLast = index === folderPathParts.length - 1;
-
-        if (isFirst) {
-          return (
-            <Typography key={index} sx={{ color: "text.secondary" }}>
-              {part}
-            </Typography>
-          );
-        }
 
         if (isLast) {
           return (
