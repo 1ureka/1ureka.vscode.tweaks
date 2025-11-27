@@ -5,14 +5,16 @@ import { createWebviewPanel } from "../utils/webviewHelper";
 import { type FileSystemData, handleFileSystemData } from "../handlers/fileSystemHandlers";
 import type { OneOf } from "../utils/type";
 
-import imageWallLight from "../icons/image-wall-light.svg";
-import imageWallDark from "../icons/image-wall-dark.svg";
+import fileSystemLight from "../icons/file-system-light.svg";
+import fileSystemDark from "../icons/file-system-dark.svg";
 
 /** 用於換資料夾、換頁的請求 */
 type FileSystemRequest = { type: "request"; panelId: UUID; folderPath: string; page: number };
 
 /** 該延伸主機可以接受的所有訊息種類 */
-type FileSystemMessage = OneOf<[{ type: "info"; message: string }, FileSystemRequest]>;
+type FileSystemMessage = OneOf<
+  [{ type: "info"; message: string }, FileSystemRequest, { type: "openFile"; filePath: string }]
+>;
 
 /** 檢查接收到的訊息格式是否正確 */
 function checkMessage(value: unknown): value is FileSystemMessage {
@@ -26,6 +28,10 @@ function checkMessage(value: unknown): value is FileSystemMessage {
 
   if (msg.type === "request") {
     return typeof msg.panelId === "string" && typeof msg.folderPath === "string" && typeof msg.page === "number";
+  }
+
+  if (msg.type === "openFile") {
+    return typeof msg.filePath === "string";
   }
 
   return false;
@@ -45,7 +51,7 @@ async function createFileSystemPanel(context: vscode.ExtensionContext, folderPat
     extensionUri: context.extensionUri,
     resourceUri: vscode.Uri.file(folderPath),
     initialData,
-    iconPath: { light: vscode.Uri.parse(imageWallLight), dark: vscode.Uri.parse(imageWallDark) },
+    iconPath: { light: vscode.Uri.parse(fileSystemLight), dark: vscode.Uri.parse(fileSystemDark) },
   });
 
   const webview = panel.webview;
@@ -69,6 +75,12 @@ async function createFileSystemPanel(context: vscode.ExtensionContext, folderPat
         const message = error instanceof Error ? error.message : "未知錯誤";
         vscode.window.showErrorMessage(`無法載入檔案系統資料: ${message}`);
       }
+      return;
+    }
+
+    if (event.type === "openFile") {
+      const uri = vscode.Uri.file(event.filePath);
+      vscode.commands.executeCommand("vscode.open", uri, vscode.ViewColumn.Active);
       return;
     }
   });

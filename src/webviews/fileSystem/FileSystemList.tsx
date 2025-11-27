@@ -1,8 +1,10 @@
 import React from "react";
 import { Box, ButtonBase, type SxProps, Typography } from "@mui/material";
-import { fileSystemDataStore, navigateToFolder, navigateUp } from "./data";
-import type { FileProperties } from "../../handlers/fileSystemHandlers";
 import { ellipsisSx } from "../utils/Providers";
+
+import { fileSystemDataStore, navigateToFolder, navigateUp } from "./data";
+import { postMessageToExtension } from "../utils/vscodeApi";
+import type { FileProperties } from "../../handlers/fileSystemHandlers";
 
 const fileTypeDisplayMap: Record<FileProperties["fileType"], string> = {
   file: "檔案",
@@ -37,6 +39,15 @@ const FileSystemListCellText = ({ text, variant = "secondary" }: FileSystemListC
 const FileSystemList = () => {
   const files = fileSystemDataStore((state) => state.files);
   const root = fileSystemDataStore((state) => state.root);
+
+  if (files.length === 0) {
+    return (
+      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", flex: 1 }}>
+        <Typography color="text.secondary">此資料夾是空的</Typography>
+      </Box>
+    );
+  }
+
   const gridTemplateColumns = "auto 1fr repeat(4, auto)";
 
   const headers = [
@@ -125,9 +136,13 @@ const FileSystemList = () => {
           <ButtonBase
             key={fileName}
             sx={{ borderRadius: 1, pointerEvents: "auto" }}
-            onClick={() =>
-              fileType === "folder" || fileType === "file-symlink-directory" ? navigateToFolder(filePath) : undefined
-            }
+            onClick={() => {
+              if (fileType === "folder" || fileType === "file-symlink-directory") {
+                navigateToFolder(filePath);
+              } else if (fileType === "file" || fileType === "file-symlink-file") {
+                postMessageToExtension({ type: "openFile", filePath });
+              }
+            }}
           >
             {/* Empty ButtonBase to make the entire row clickable */}
           </ButtonBase>
