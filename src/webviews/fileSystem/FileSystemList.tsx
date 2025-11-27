@@ -1,9 +1,8 @@
 import React from "react";
-import { Box, ButtonBase, type SxProps, Typography } from "@mui/material";
+import { Box, type BoxProps, ButtonBase, type SxProps, Typography } from "@mui/material";
 import { ellipsisSx } from "../utils/Providers";
-
-import { fileSystemDataStore, navigateToFolder, navigateUp } from "./data";
-import { postMessageToExtension } from "../utils/vscodeApi";
+import { fileSystemDataStore } from "./data";
+import { navigateToFile, navigateToFolder, navigateUp, setSorting } from "./navigate";
 import type { FileProperties } from "../../handlers/fileSystemHandlers";
 
 const fileTypeDisplayMap: Record<FileProperties["fileType"], string> = {
@@ -16,10 +15,14 @@ const fileTypeDisplayMap: Record<FileProperties["fileType"], string> = {
 type FileSystemListCellProps = {
   children: React.ReactNode;
   align?: "left" | "center" | "right";
-};
+} & BoxProps;
 
-const FileSystemListCell = ({ children, align = "right" }: FileSystemListCellProps) => {
-  return <Box sx={{ px: 2, py: 1, display: "grid", alignItems: "center", justifyContent: align }}>{children}</Box>;
+const FileSystemListCell = ({ children, align = "right", sx, ...rest }: FileSystemListCellProps) => {
+  return (
+    <Box sx={{ px: 2, py: 1, display: "grid", alignItems: "center", justifyContent: align, ...sx }} {...rest}>
+      {children}
+    </Box>
+  );
 };
 
 type FileSystemListCellTextProps = {
@@ -39,6 +42,8 @@ const FileSystemListCellText = ({ text, variant = "secondary" }: FileSystemListC
 const FileSystemList = () => {
   const files = fileSystemDataStore((state) => state.files);
   const root = fileSystemDataStore((state) => state.root);
+  const sortField = fileSystemDataStore((state) => state.sortField);
+  const sortOrder = fileSystemDataStore((state) => state.sortOrder);
 
   if (files.length === 0) {
     return (
@@ -51,12 +56,12 @@ const FileSystemList = () => {
   const gridTemplateColumns = "auto 1fr repeat(4, auto)";
 
   const headers = [
-    { align: "left", text: "" },
-    { align: "left", text: "名稱" },
-    { align: "right", text: "類型" },
-    { align: "right", text: "修改日期" },
-    { align: "right", text: "建立日期" },
-    { align: "right", text: "大小" },
+    { align: "left", text: "", sortField: "" },
+    { align: "left", text: "名稱", sortField: "fileName" },
+    { align: "right", text: "類型", sortField: "" },
+    { align: "right", text: "修改日期", sortField: "mtime" },
+    { align: "right", text: "建立日期", sortField: "ctime" },
+    { align: "right", text: "大小", sortField: "size" },
   ] as const;
 
   const containerShareSx: SxProps = { display: "grid", px: 2, gap: 0.5 };
@@ -78,10 +83,17 @@ const FileSystemList = () => {
 
       {/* 每個項目的實際內容，包括 header 的可點擊區 */}
       <Box sx={containerSx.itemIsCell}>
-        {headers.map(({ align, text }) => (
-          // 這裡是可點擊的，有需要可以寫邏輯
-          <FileSystemListCell key={text} align={align}>
-            <FileSystemListCellText text={text} variant="primary" />
+        {headers.map(({ align, text, sortField: headerSortField }) => (
+          <FileSystemListCell
+            key={text}
+            align={align}
+            sx={{ cursor: headerSortField ? "pointer" : "default", gap: 0.5, gridAutoFlow: "column" }}
+            onClick={() => headerSortField && setSorting(headerSortField)}
+          >
+            <FileSystemListCellText text={text} variant={headerSortField ? "primary" : "secondary"} />
+            {sortField === headerSortField && (
+              <span className={`codicon codicon-arrow-${sortOrder === "asc" ? "up" : "down"}`} />
+            )}
           </FileSystemListCell>
         ))}
 
@@ -131,16 +143,19 @@ const FileSystemList = () => {
       {/* 每個 row 的可點擊區，除了 header */}
       <Box sx={{ ...containerSx.itemIsFullWidth, pointerEvents: "none" }}>
         <Box /> {/* Header spacer */}
-        {!root && <ButtonBase sx={{ borderRadius: 1, pointerEvents: "auto" }} onClick={() => navigateUp()} />}
+        {!root && (
+          <ButtonBase sx={{ borderRadius: 1, pointerEvents: "auto" }} onClick={() => navigateUp()} focusRipple />
+        )}
         {files.map(({ fileName, filePath, fileType }) => (
           <ButtonBase
             key={fileName}
             sx={{ borderRadius: 1, pointerEvents: "auto" }}
+            focusRipple
             onClick={() => {
               if (fileType === "folder" || fileType === "file-symlink-directory") {
                 navigateToFolder(filePath);
               } else if (fileType === "file" || fileType === "file-symlink-file") {
-                postMessageToExtension({ type: "openFile", filePath });
+                navigateToFile(filePath);
               }
             }}
           >

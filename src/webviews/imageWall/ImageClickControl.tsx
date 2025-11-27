@@ -7,6 +7,7 @@ const ImageClickControl = ({ id }: { id: string }) => {
     <ButtonBase
       id={id}
       className="image-click-area"
+      focusRipple
       sx={{ position: "absolute", inset: 0, zIndex: 1 }}
       onClick={() => {
         postMessageToExtension({ type: "clickImage", id });

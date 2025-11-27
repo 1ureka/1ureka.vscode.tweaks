@@ -1,6 +1,7 @@
 import React from "react";
 import { Pagination, Box } from "@mui/material";
-import { fileSystemDataStore, navigateToPage } from "./data";
+import { fileSystemDataStore } from "./data";
+import { navigateToPage } from "./navigate";
 
 const FileSystemPagination: React.FC = () => {
   const page = fileSystemDataStore((state) => state.page);

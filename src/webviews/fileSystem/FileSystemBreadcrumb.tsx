@@ -1,6 +1,7 @@
 import React from "react";
 import { Breadcrumbs, Link, Typography } from "@mui/material";
-import { fileSystemDataStore, navigateToBreadcrumb } from "./data";
+import { fileSystemDataStore } from "./data";
+import { navigateToBreadcrumb } from "./navigate";
 
 const FileSystemBreadcrumb: React.FC = () => {
   const folderPathParts = fileSystemDataStore((state) => state.folderPathParts);
