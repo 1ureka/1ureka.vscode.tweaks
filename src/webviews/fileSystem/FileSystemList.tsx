@@ -36,25 +36,59 @@ const FileSystemListCellText = ({ text, variant = "secondary" }: FileSystemListC
 
 const FileSystemList = () => {
   const files = fileSystemDataStore((state) => state.files);
+  const root = fileSystemDataStore((state) => state.root);
   const gridTemplateColumns = "auto 1fr repeat(4, auto)";
 
   const headers = [
     { align: "left", text: "" },
     { align: "left", text: "名稱" },
-    { align: "right", text: "類型" },
-    { align: "right", text: "修改日期" },
-    { align: "right", text: "建立日期" },
-    { align: "right", text: "大小" },
+    { align: "center", text: "類型" },
+    { align: "center", text: "修改日期" },
+    { align: "center", text: "建立日期" },
+    { align: "center", text: "大小" },
   ] as const;
+
+  const containerShareSx: SxProps = { display: "grid", px: 2, gap: 0.5 };
+  const containerSx: Record<string, SxProps> = {
+    itemIsFullWidth: { position: "absolute", inset: 0, gridTemplateColumns: "1fr", ...containerShareSx },
+    itemIsCell: { position: "relative", gridTemplateColumns, placeItems: "stretch", ...containerShareSx },
+  };
 
   return (
     <Box sx={{ position: "relative" }}>
-      <Box sx={{ display: "grid", gridTemplateColumns, px: 2, placeItems: "stretch", gap: 0.5 }}>
+      {/* 每個項目的背景樣式區 */}
+      <Box sx={containerSx.itemIsFullWidth}>
+        <Box sx={{ bgcolor: "background.paper", borderRadius: 1 }} /> {/* Header background */}
+        {!root && <Box sx={{ borderRadius: 1, bgcolor: "#ffffff07" }} />} {/* Spacer for prev folder navigation */}
+        {files.map(({ fileName }, i) => (
+          <Box key={fileName} sx={{ borderRadius: 1, bgcolor: i % 2 !== 0 ? "#ffffff07" : "transparent" }} />
+        ))}
+      </Box>
+
+      {/* 每個項目的實際內容，包括 header 的可點擊區 */}
+      <Box sx={containerSx.itemIsCell}>
         {headers.map(({ align, text }) => (
+          // 這裡是可點擊的，有需要可以寫邏輯
           <FileSystemListCell key={text} align={align}>
             <FileSystemListCellText text={text} variant="primary" />
           </FileSystemListCell>
         ))}
+
+        {/* 回到上層資料夾 */}
+        {!root &&
+          Array(6)
+            .fill(null)
+            .map((_, i) => (
+              <FileSystemListCell key={i} align={i === 0 || i === 1 ? "left" : "right"}>
+                {i === 0 ? (
+                  <span className={"codicon codicon-folder-opened"} style={{ display: "flex", alignItems: "center" }} />
+                ) : i === 1 ? (
+                  <FileSystemListCellText text={".."} variant="primary" />
+                ) : (
+                  <Box />
+                )}
+              </FileSystemListCell>
+            ))}
 
         {files.map(({ icon, fileName, fileType, fileSize, mtime, ctime, size }) => (
           <React.Fragment key={fileName}>
@@ -83,10 +117,12 @@ const FileSystemList = () => {
         ))}
       </Box>
 
-      <Box sx={{ position: "absolute", inset: 0, display: "grid", gridTemplateColumns: "1fr", px: 2, gap: 0.5 }}>
-        <Box sx={{ bgcolor: "background.paper", borderRadius: 1 }} /> {/* Header spacer */}
-        {files.map(({ fileName }, i) => (
-          <ButtonBase key={fileName} sx={{ borderRadius: 1, bgcolor: i % 2 !== 0 ? "#ffffff07" : "transparent" }}>
+      {/* 每個 row 的可點擊區，除了 header */}
+      <Box sx={{ ...containerSx.itemIsFullWidth, pointerEvents: "none" }}>
+        <Box /> {/* Header spacer */}
+        {!root && <ButtonBase sx={{ borderRadius: 1, pointerEvents: "auto" }} />}
+        {files.map(({ fileName }) => (
+          <ButtonBase key={fileName} sx={{ borderRadius: 1, pointerEvents: "auto" }}>
             {/* Empty ButtonBase to make the entire row clickable */}
           </ButtonBase>
         ))}
