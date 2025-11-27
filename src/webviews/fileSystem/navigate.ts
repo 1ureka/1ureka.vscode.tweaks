@@ -38,4 +38,20 @@ const navigateToFile = (filePath: string) => {
   postMessageToExtension({ type: "openFile", filePath });
 };
 
-export { navigateToPage, navigateToFolder, navigateUp, navigateToBreadcrumb, navigateToFile };
+/** 設定排序欄位與順序 */
+const setSorting = (field: "fileName" | "mtime" | "ctime" | "size") => {
+  const { panelId, folderPath, page, sortField, sortOrder } = fileSystemDataStore.getState();
+  // 如果點擊的是同一欄位，切換順序；否則使用預設升序
+  const newOrder = sortField === field && sortOrder === "asc" ? "desc" : "asc";
+
+  postMessage({
+    type: "request",
+    panelId: panelId,
+    folderPath: folderPath,
+    page: page,
+    sortField: field,
+    sortOrder: newOrder,
+  });
+};
+
+export { navigateToPage, navigateToFolder, navigateUp, navigateToBreadcrumb, navigateToFile, setSorting };
