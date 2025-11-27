@@ -66,7 +66,13 @@ const FileSystemListHeaderCell = ({ title, align = "right", sx, ...rest }: FileS
     },
   };
 
-  const cellSx = { ...cellSxMap[variant], gap: 0.5, gridAutoFlow: "column", ...sx } as SxProps;
+  const cellSx = {
+    pointerEvents: "auto",
+    gridAutoFlow: "column",
+    gap: 0.5,
+    ...cellSxMap[variant],
+    ...sx,
+  } as SxProps;
 
   return (
     <FileSystemListCell sx={cellSx} align={align} {...rest}>

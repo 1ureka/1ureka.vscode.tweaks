@@ -6,6 +6,9 @@ import type { FieldDefinition } from "./FileSystemTableRow";
 import { fileSystemDataStore } from "./data";
 import { navigateToFile, navigateToFolder, navigateUp, setSorting } from "./navigate";
 
+/**
+ * 檔案系統表格包含的欄位
+ */
 const fileSystemColumns: FieldDefinition[] = [
   { align: "left", label: "" },
   { align: "left", label: "名稱", dataField: "fileName" },
@@ -15,6 +18,9 @@ const fileSystemColumns: FieldDefinition[] = [
   { align: "right", label: "大小", dataField: "size" },
 ];
 
+/**
+ * 用於顯示檔案系統的表格組件
+ */
 const FileSystemTable = () => {
   const files = fileSystemDataStore((state) => state.files);
   const root = fileSystemDataStore((state) => state.root);
@@ -29,30 +35,63 @@ const FileSystemTable = () => {
     );
   }
 
-  const gridTemplateColumns = "auto 1fr repeat(4, auto)";
   const containerShareSx: SxProps = { display: "grid", px: 2, gap: 0.5 };
   const containerSx: Record<string, SxProps> = {
-    itemIsFullWidth: { position: "absolute", inset: 0, gridTemplateColumns: "1fr", ...containerShareSx },
-    itemIsCell: { position: "relative", gridTemplateColumns, placeItems: "stretch", ...containerShareSx },
+    itemIsFullWidth: {
+      position: "absolute",
+      inset: 0,
+      gridTemplateColumns: "1fr",
+      ...containerShareSx,
+    },
+    itemIsCell: {
+      position: "relative",
+      gridTemplateColumns: "auto 1fr repeat(4, auto)",
+      placeItems: "stretch",
+      pointerEvents: "none",
+      ...containerShareSx,
+    },
+  };
+
+  const borderRadius = 1;
+
+  const createBackgroundSx: (index: number) => SxProps = (index) => ({
+    borderRadius,
+    pointerEvents: "auto",
+    bgcolor: index % 2 === 0 ? "table.alternateRowBackground" : "transparent",
+    "&:hover": { bgcolor: "table.hoverBackground" },
+  });
+
+  const handleDirUpRowClick = () => {
+    navigateUp();
+  };
+
+  const createHandleRowClick = (fileType: string, filePath: string) => () => {
+    if (fileType === "folder" || fileType === "file-symlink-directory") {
+      navigateToFolder(filePath);
+    } else if (fileType === "file" || fileType === "file-symlink-file") {
+      navigateToFile(filePath);
+    }
   };
 
   return (
     <Box sx={{ position: "relative" }}>
-      {/* 每個項目的背景樣式區 */}
+      {/* 每個 row 的點擊區，同時也是背景樣式 */}
       <Box sx={containerSx.itemIsFullWidth}>
-        <Box sx={{ bgcolor: "background.paper", borderRadius: 1 }} />
+        <Box sx={{ bgcolor: "background.paper", borderRadius }} />
 
-        {!root && <Box sx={{ borderRadius: 1, bgcolor: "table.alternateRowBackground" }} />}
+        {!root && <ButtonBase focusRipple sx={createBackgroundSx(0)} onClick={handleDirUpRowClick} />}
 
-        {files.map(({ fileName }, i) => (
-          <Box
+        {files.map(({ fileName, filePath, fileType }, i) => (
+          <ButtonBase
             key={fileName}
-            sx={{ borderRadius: 1, bgcolor: i % 2 !== 0 ? "table.alternateRowBackground" : "transparent" }}
+            focusRipple
+            sx={createBackgroundSx(i + 1)}
+            onClick={createHandleRowClick(fileType, filePath)}
           />
         ))}
       </Box>
 
-      {/* 每個項目的實際內容，包括 header 的可點擊區 */}
+      {/* 每個 row 的實際內容，包括 header 的可點擊區 (header cell 會設 pointerEvents 回來) */}
       <Box sx={containerSx.itemIsCell}>
         <FileSystemTableRowHeader
           fields={fileSystemColumns}
@@ -74,36 +113,6 @@ const FileSystemTable = () => {
             ctime={ctime}
             size={size}
           />
-        ))}
-      </Box>
-
-      {/* 每個 row 的可點擊區，除了 header */}
-      <Box sx={{ ...containerSx.itemIsFullWidth, pointerEvents: "none" }}>
-        <Box />
-
-        {!root && (
-          <ButtonBase
-            sx={{ borderRadius: 1, pointerEvents: "auto", "&:hover": { bgcolor: "table.hoverBackground" } }}
-            onClick={() => navigateUp()}
-            focusRipple
-          />
-        )}
-
-        {files.map(({ fileName, filePath, fileType }) => (
-          <ButtonBase
-            key={fileName}
-            sx={{ borderRadius: 1, pointerEvents: "auto", "&:hover": { bgcolor: "table.hoverBackground" } }}
-            focusRipple
-            onClick={() => {
-              if (fileType === "folder" || fileType === "file-symlink-directory") {
-                navigateToFolder(filePath);
-              } else if (fileType === "file" || fileType === "file-symlink-file") {
-                navigateToFile(filePath);
-              }
-            }}
-          >
-            {/* Empty ButtonBase to make the entire row clickable */}
-          </ButtonBase>
         ))}
       </Box>
     </Box>
