@@ -80,8 +80,8 @@ async function createImageWallPanel(context: vscode.ExtensionContext, folderPath
     if (response) webview.postMessage(response);
   });
 
-  context.subscriptions.push(messageListener);
-
+  panel.onDidDispose(() => messageListener.dispose());
+  context.subscriptions.push(panel);
   return panel;
 }
 

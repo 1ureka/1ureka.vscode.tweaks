@@ -1,16 +1,8 @@
 import React from "react";
 import { ImageListItemBar as MuiImageListItemBar } from "@mui/material";
+import { ellipsisSx } from "../utils/Providers";
 
 const imageListItemBarClassName = "image-list-item-bar" as const;
-
-const ellipsisSx = {
-  display: "-webkit-box",
-  WebkitLineClamp: 1,
-  WebkitBoxOrient: "vertical",
-  overflow: "hidden",
-  textOverflow: "ellipsis",
-  wordBreak: "break-all",
-} as const;
 
 type ImageListItemBarProps = {
   fileName: string;

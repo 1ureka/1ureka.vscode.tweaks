@@ -3,7 +3,7 @@
   "author": "1ureka",
   "publisher": "1ureka",
   "description": "A Visual Studio Code extension developed for personal use.",
-  "version": "0.1.4",
+  "version": "0.2.0",
   "main": "./dist/extension.js",
   "type": "module",
   "engines": {
@@ -108,6 +108,14 @@
       {
         "command": "1ureka.imageViewer.exportAs",
         "title": "導出為..."
+      },
+      {
+        "command": "1ureka.openFileSystem",
+        "title": "開啟檔案系統瀏覽器"
+      },
+      {
+        "command": "1ureka.openFileSystemFromExplorer",
+        "title": "以檔案系統瀏覽器顯示"
       }
     ],
     "customEditors": [
@@ -125,19 +133,24 @@
     "menus": {
       "explorer/context": [
         {
-          "when": "resourceExtname == .blend",
           "command": "1ureka.openWithBlender",
+          "when": "resourceExtname == .blend",
           "group": "navigation@100"
         },
         {
-          "when": "resourceExtname == .spp",
           "command": "1ureka.openWithPainter",
+          "when": "resourceExtname == .spp",
           "group": "navigation@100"
         },
         {
+          "command": "1ureka.openFileSystemFromExplorer",
           "when": "explorerResourceIsFolder",
-          "command": "1ureka.openImageWallFromExplorer",
           "group": "navigation@100"
+        },
+        {
+          "command": "1ureka.openImageWallFromExplorer",
+          "when": "explorerResourceIsFolder",
+          "group": "navigation@101"
         }
       ],
       "webview/context": [
@@ -263,12 +276,18 @@
         {
           "command": "1ureka.imageViewer.exportAs",
           "when": "false"
+        },
+        {
+          "command": "1ureka.openFileSystem"
+        },
+        {
+          "command": "1ureka.openFileSystemFromExplorer",
+          "when": "false"
         }
       ]
     },
     "submenus": [
       {
-
         "id": "imageWall.layout",
         "label": "圖片牆布局"
       },
