@@ -3,7 +3,7 @@
   "author": "1ureka",
   "publisher": "1ureka",
   "description": "A Visual Studio Code extension developed for personal use.",
-  "version": "0.1.4",
+  "version": "0.2.0",
   "main": "./dist/extension.js",
   "type": "module",
   "engines": {
@@ -275,6 +275,13 @@
         },
         {
           "command": "1ureka.imageViewer.exportAs",
+          "when": "false"
+        },
+        {
+          "command": "1ureka.openFileSystem"
+        },
+        {
+          "command": "1ureka.openFileSystemFromExplorer",
           "when": "false"
         }
       ]
