@@ -34,7 +34,11 @@ const navigateUp = () => {
 /** 透過麵包屑導航 */
 const navigateToBreadcrumb = (index: number) => {
   const { folderPathParts } = fileSystemDataStore.getState();
-  const targetPath = folderPathParts.slice(0, index + 1).join("/");
+  const parts = folderPathParts.slice(0, index + 1);
+
+  // 特殊處理：如果只有磁碟機代號（如 'C:'），需要加上斜線變成 'C:/'
+  const targetPath = parts.length === 1 && /^[A-Za-z]:$/.test(parts[0]) ? parts[0] + "/" : parts.join("/");
+
   navigateToFolder(targetPath);
 };
 
