@@ -1,9 +1,8 @@
 import React from "react";
 import { Box, ButtonBase, type SxProps, Typography } from "@mui/material";
 import { ellipsisSx } from "../utils/Providers";
-
-import { fileSystemDataStore, navigateToFolder, navigateUp } from "./data";
-import { postMessageToExtension } from "../utils/vscodeApi";
+import { fileSystemDataStore } from "./data";
+import { navigateToFile, navigateToFolder, navigateUp } from "./navigate";
 import type { FileProperties } from "../../handlers/fileSystemHandlers";
 
 const fileTypeDisplayMap: Record<FileProperties["fileType"], string> = {
@@ -140,7 +139,7 @@ const FileSystemList = () => {
               if (fileType === "folder" || fileType === "file-symlink-directory") {
                 navigateToFolder(filePath);
               } else if (fileType === "file" || fileType === "file-symlink-file") {
-                postMessageToExtension({ type: "openFile", filePath });
+                navigateToFile(filePath);
               }
             }}
           >
