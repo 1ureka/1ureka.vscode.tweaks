@@ -13,6 +13,7 @@ const FileSystem: React.FC = () => {
       <FileSystemHeader />
       <FileSystemList />
       {/* {pages > 1 && <FileSystemPagination />} */}
+      <Box sx={{ py: 1 }} />
     </Box>
   );
 };

@@ -8,7 +8,7 @@ const FileSystemHeader = () => {
   const folderCount = fileSystemDataStore((state) => state.folderCount);
 
   return (
-    <Box sx={{ display: "flex", gap: 1.5, alignItems: "center", flexWrap: "wrap" }}>
+    <Box sx={{ display: "flex", gap: 1.5, alignItems: "center", flexWrap: "wrap", p: 2 }}>
       <FileSystemBreadcrumb />
       <Typography color="text.secondary">•</Typography>
       <Typography color="text.secondary">{folderCount} 個資料夾</Typography>

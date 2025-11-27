@@ -1,6 +1,6 @@
 import React from "react";
 import { Box, ButtonBase, type SxProps, Typography } from "@mui/material";
-import { fileSystemDataStore } from "./data";
+import { fileSystemDataStore, navigateToFolder, navigateUp } from "./data";
 import type { FileProperties } from "../../handlers/fileSystemHandlers";
 import { ellipsisSx } from "../utils/Providers";
 
@@ -42,10 +42,10 @@ const FileSystemList = () => {
   const headers = [
     { align: "left", text: "" },
     { align: "left", text: "名稱" },
-    { align: "center", text: "類型" },
-    { align: "center", text: "修改日期" },
-    { align: "center", text: "建立日期" },
-    { align: "center", text: "大小" },
+    { align: "right", text: "類型" },
+    { align: "right", text: "修改日期" },
+    { align: "right", text: "建立日期" },
+    { align: "right", text: "大小" },
   ] as const;
 
   const containerShareSx: SxProps = { display: "grid", px: 2, gap: 0.5 };
@@ -105,7 +105,7 @@ const FileSystemList = () => {
             </FileSystemListCell>
 
             <FileSystemListCell>
-              <FileSystemListCellText text={new Date(mtime).toLocaleDateString()} />
+              <FileSystemListCellText text={new Date(mtime).toLocaleString()} />
             </FileSystemListCell>
 
             <FileSystemListCell>
@@ -120,9 +120,15 @@ const FileSystemList = () => {
       {/* 每個 row 的可點擊區，除了 header */}
       <Box sx={{ ...containerSx.itemIsFullWidth, pointerEvents: "none" }}>
         <Box /> {/* Header spacer */}
-        {!root && <ButtonBase sx={{ borderRadius: 1, pointerEvents: "auto" }} />}
-        {files.map(({ fileName }) => (
-          <ButtonBase key={fileName} sx={{ borderRadius: 1, pointerEvents: "auto" }}>
+        {!root && <ButtonBase sx={{ borderRadius: 1, pointerEvents: "auto" }} onClick={() => navigateUp()} />}
+        {files.map(({ fileName, filePath, fileType }) => (
+          <ButtonBase
+            key={fileName}
+            sx={{ borderRadius: 1, pointerEvents: "auto" }}
+            onClick={() =>
+              fileType === "folder" || fileType === "file-symlink-directory" ? navigateToFolder(filePath) : undefined
+            }
+          >
             {/* Empty ButtonBase to make the entire row clickable */}
           </ButtonBase>
         ))}

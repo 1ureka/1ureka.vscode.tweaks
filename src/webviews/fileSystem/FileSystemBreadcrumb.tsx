@@ -6,7 +6,7 @@ const FileSystemBreadcrumb: React.FC = () => {
   const folderPathParts = fileSystemDataStore((state) => state.folderPathParts);
 
   return (
-    <Breadcrumbs aria-label="navigation" separator={<span className="codicon codicon-chevron-right" />} sx={{ p: 2 }}>
+    <Breadcrumbs aria-label="navigation" separator={<span className="codicon codicon-chevron-right" />}>
       {folderPathParts.map((part, index) => {
         const isLast = index === folderPathParts.length - 1;
 
