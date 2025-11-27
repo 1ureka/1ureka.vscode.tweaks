@@ -39,6 +39,15 @@ const FileSystemListCellText = ({ text, variant = "secondary" }: FileSystemListC
 const FileSystemList = () => {
   const files = fileSystemDataStore((state) => state.files);
   const root = fileSystemDataStore((state) => state.root);
+
+  if (files.length === 0) {
+    return (
+      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", flex: 1 }}>
+        <Typography color="text.secondary">此資料夾是空的</Typography>
+      </Box>
+    );
+  }
+
   const gridTemplateColumns = "auto 1fr repeat(4, auto)";
 
   const headers = [
