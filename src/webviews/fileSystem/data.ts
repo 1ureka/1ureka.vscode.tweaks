@@ -18,17 +18,9 @@ const navigateToPage = (page: number) => {
 
 /** 請求切換資料夾 */
 const navigateToFolder = (folderPath: string) => {
-  const { panelId } = fileSystemDataStore.getState();
-  postMessageToExtension({ type: "request", panelId, folderPath, page: 1 });
-};
-
-/** 往上一層資料夾 */
-const navigateUp = () => {
-  const { folderPath, root } = fileSystemDataStore.getState();
+  const { panelId, root } = fileSystemDataStore.getState();
   if (root) return; // 已經在根目錄
-
-  const parentPath = folderPath.split(/[/\\]/).slice(0, -1).join("/");
-  navigateToFolder(parentPath);
+  postMessageToExtension({ type: "request", panelId, folderPath, page: 1 });
 };
 
 /** 透過麵包屑導航 */
@@ -38,8 +30,12 @@ const navigateToBreadcrumb = (index: number) => {
 
   // 特殊處理：如果只有磁碟機代號（如 'C:'），需要加上斜線變成 'C:/'
   const targetPath = parts.length === 1 && /^[A-Za-z]:$/.test(parts[0]) ? parts[0] + "/" : parts.join("/");
-
   navigateToFolder(targetPath);
+};
+
+/** 往上一層資料夾 */
+const navigateUp = () => {
+  navigateToBreadcrumb(fileSystemDataStore.getState().folderPathParts.length - 2);
 };
 
 /** 註冊後端資料更新事件 */
