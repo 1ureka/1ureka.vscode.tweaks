@@ -143,11 +143,14 @@ const FileSystemList = () => {
       {/* 每個 row 的可點擊區，除了 header */}
       <Box sx={{ ...containerSx.itemIsFullWidth, pointerEvents: "none" }}>
         <Box /> {/* Header spacer */}
-        {!root && <ButtonBase sx={{ borderRadius: 1, pointerEvents: "auto" }} onClick={() => navigateUp()} />}
+        {!root && (
+          <ButtonBase sx={{ borderRadius: 1, pointerEvents: "auto" }} onClick={() => navigateUp()} focusRipple />
+        )}
         {files.map(({ fileName, filePath, fileType }) => (
           <ButtonBase
             key={fileName}
             sx={{ borderRadius: 1, pointerEvents: "auto" }}
+            focusRipple
             onClick={() => {
               if (fileType === "folder" || fileType === "file-symlink-directory") {
                 navigateToFolder(filePath);
