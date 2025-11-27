@@ -10,8 +10,8 @@ type InspectResult = {
   filePath: string;
   fileType: "file" | "folder" | "symbolic-link-file" | "symbolic-link-folder";
   size: number; // 若為資料夾則為 0
-  mtime: Date;
-  ctime: Date;
+  mtime: number;
+  ctime: number;
 };
 
 /**
@@ -31,7 +31,7 @@ async function inspectFile(filePath: string): Promise<InspectResult | null> {
     else return null;
 
     const size = info.isDirectory() ? 0 : info.size;
-    return { fileName, filePath, fileType, size, mtime: info.mtime, ctime: info.ctime };
+    return { fileName, filePath, fileType, size, mtime: info.mtime.getTime(), ctime: info.ctime.getTime() };
   }
 
   // 處理符號連結
@@ -43,7 +43,7 @@ async function inspectFile(filePath: string): Promise<InspectResult | null> {
   else return null;
 
   const size = fileType === "symbolic-link-folder" ? 0 : target.size;
-  return { fileName, filePath, fileType, size, mtime: target.mtime, ctime: target.ctime };
+  return { fileName, filePath, fileType, size, mtime: target.mtime.getTime(), ctime: target.ctime.getTime() };
 }
 
 /**
