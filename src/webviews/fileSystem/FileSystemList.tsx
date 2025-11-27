@@ -90,7 +90,7 @@ const FileSystemList = () => {
             sx={{ cursor: headerSortField ? "pointer" : "default", gap: 0.5, gridAutoFlow: "column" }}
             onClick={() => headerSortField && setSorting(headerSortField)}
           >
-            <FileSystemListCellText text={text} variant="primary" />
+            <FileSystemListCellText text={text} variant={headerSortField ? "primary" : "secondary"} />
             {sortField === headerSortField && (
               <span className={`codicon codicon-arrow-${sortOrder === "asc" ? "up" : "down"}`} />
             )}
