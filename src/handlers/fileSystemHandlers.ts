@@ -3,7 +3,7 @@ import * as fs from "fs";
 import type { UUID } from "crypto";
 
 import { tryCatch } from "../utils/tryCatch";
-import { formatPath, formatPathToArray } from "../utils/formatter";
+import { formatPathToArray } from "../utils/formatter";
 import { inspectFile, isRootDirectory } from "../utils/system";
 import type { InspectResult } from "../utils/system";
 import type { Prettify } from "../utils/type";
@@ -88,7 +88,7 @@ const handleFileSystemData = async (params: FileSystemDataParams): Promise<FileS
 
   return {
     panelId,
-    folderPath: formatPath(folderPath),
+    folderPath,
     folderPathParts: formatPathToArray(folderPath),
     root: isRootDirectory(folderPath),
     page,
