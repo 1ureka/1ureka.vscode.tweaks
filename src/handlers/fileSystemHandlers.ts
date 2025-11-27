@@ -82,4 +82,4 @@ const handleFileSystemData = async (panelId: UUID, folderPath: string, page: num
 };
 
 export { handleFileSystemData };
-export type { FileSystemData };
+export type { FileSystemData, FileProperties };
