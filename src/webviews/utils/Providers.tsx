@@ -50,3 +50,12 @@ export const Providers: React.FC<ProvidersProps> = ({ children }) => {
     </ThemeProvider>
   );
 };
+
+export const ellipsisSx = {
+  display: "-webkit-box",
+  WebkitLineClamp: 1,
+  WebkitBoxOrient: "vertical",
+  overflow: "hidden",
+  textOverflow: "ellipsis",
+  wordBreak: "break-all",
+} as const;
