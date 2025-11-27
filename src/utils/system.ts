@@ -9,7 +9,7 @@ import { formatFileSize } from "./formatter";
 type InspectResult = {
   fileName: string;
   filePath: string;
-  fileType: "file" | "folder" | "symbolic-link-file" | "symbolic-link-folder";
+  fileType: "file" | "folder" | "file-symlink-file" | "file-symlink-directory";
   fileSize: string;
   size: number; // 若為資料夾則為 0
   mtime: number;
@@ -42,11 +42,11 @@ async function inspectFile(filePath: string): Promise<InspectResult | null> {
   const { data: target, error: targetError } = await tryCatch(() => fs.promises.stat(filePath));
   if (targetError) return null; // 壞掉或目標不存在
 
-  if (target.isDirectory()) fileType = "symbolic-link-folder";
-  else if (target.isFile()) fileType = "symbolic-link-file";
+  if (target.isDirectory()) fileType = "file-symlink-directory";
+  else if (target.isFile()) fileType = "file-symlink-file";
   else return null;
 
-  const size = fileType === "symbolic-link-folder" ? 0 : target.size;
+  const size = fileType === "file-symlink-directory" ? 0 : target.size;
   const fileSize = formatFileSize(size);
   const date = { mtime: info.mtime.getTime(), ctime: info.ctime.getTime() };
   return { fileName, filePath, fileType, fileSize, size, ...date };

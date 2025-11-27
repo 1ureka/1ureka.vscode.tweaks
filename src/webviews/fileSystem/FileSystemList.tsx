@@ -7,8 +7,8 @@ import { ellipsisSx } from "../utils/Providers";
 const fileTypeDisplayMap: Record<FileProperties["fileType"], string> = {
   file: "檔案",
   folder: "資料夾",
-  "symbolic-link-file": "符號連結檔案",
-  "symbolic-link-folder": "符號連結資料夾",
+  "file-symlink-file": "符號連結檔案",
+  "file-symlink-directory": "符號連結資料夾",
 };
 
 type FileSystemListCellProps = {
