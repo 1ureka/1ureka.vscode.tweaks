@@ -18,8 +18,7 @@ const navigateToPage = (page: number) => {
 
 /** 請求切換資料夾 */
 const navigateToFolder = (folderPath: string) => {
-  const { panelId, root } = fileSystemDataStore.getState();
-  if (root) return; // 已經在根目錄
+  const { panelId } = fileSystemDataStore.getState();
   postMessageToExtension({ type: "request", panelId, folderPath, page: 1 });
 };
 
@@ -35,6 +34,8 @@ const navigateToBreadcrumb = (index: number) => {
 
 /** 往上一層資料夾 */
 const navigateUp = () => {
+  const { root } = fileSystemDataStore.getState();
+  if (root) return; // 已經在根目錄
   navigateToBreadcrumb(fileSystemDataStore.getState().folderPathParts.length - 2);
 };
 
