@@ -87,13 +87,18 @@ const FileSystemList = () => {
           <FileSystemListCell
             key={text}
             align={align}
-            sx={{ cursor: headerSortField ? "pointer" : "default", gap: 0.5, gridAutoFlow: "column" }}
             onClick={() => headerSortField && setSorting(headerSortField)}
+            sx={{
+              cursor: headerSortField ? "pointer" : "default",
+              gap: 0.5,
+              gridAutoFlow: "column",
+              userSelect: "none",
+              "&:hover > span.codicon": { color: sortField === headerSortField ? "text.primary" : "text.secondary" },
+              "& > span.codicon": { color: sortField === headerSortField ? "text.secondary" : "transparent" },
+            }}
           >
             <FileSystemListCellText text={text} variant={headerSortField ? "primary" : "secondary"} />
-            {sortField === headerSortField && (
-              <span className={`codicon codicon-arrow-${sortOrder === "asc" ? "up" : "down"}`} />
-            )}
+            {headerSortField && <span className={`codicon codicon-arrow-${sortOrder === "asc" ? "up" : "down"}`} />}
           </FileSystemListCell>
         ))}
 
@@ -144,12 +149,16 @@ const FileSystemList = () => {
       <Box sx={{ ...containerSx.itemIsFullWidth, pointerEvents: "none" }}>
         <Box /> {/* Header spacer */}
         {!root && (
-          <ButtonBase sx={{ borderRadius: 1, pointerEvents: "auto" }} onClick={() => navigateUp()} focusRipple />
+          <ButtonBase
+            sx={{ borderRadius: 1, pointerEvents: "auto", "&:hover": { bgcolor: "#ffffff07" } }}
+            onClick={() => navigateUp()}
+            focusRipple
+          />
         )}
         {files.map(({ fileName, filePath, fileType }) => (
           <ButtonBase
             key={fileName}
-            sx={{ borderRadius: 1, pointerEvents: "auto" }}
+            sx={{ borderRadius: 1, pointerEvents: "auto", "&:hover": { bgcolor: "#ffffff07" } }}
             focusRipple
             onClick={() => {
               if (fileType === "folder" || fileType === "file-symlink-directory") {
