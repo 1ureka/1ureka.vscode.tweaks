@@ -5,7 +5,7 @@ import { OperationButton, GroupContainer } from "./FileSystemOpActionEl";
 
 import { fileSystemDataStore } from "../data";
 import { refresh, setFilter } from "../navigate";
-import { createNewFile, createNewFolder } from "../action";
+import { createNewFile, createNewFolder, openInWorkspace, openInTerminal, openInImageWall } from "../action";
 
 const operationBarContainerSx: SxProps = {
   display: "flex",
@@ -21,6 +21,10 @@ const FilterSystemOperationBar = () => {
   const handleRefresh = () => refresh();
   const handleCreateNewFolder = () => createNewFolder();
   const handleCreateNewFile = () => createNewFile();
+
+  const handleOpenInWorkspace = () => openInWorkspace();
+  const handleOpenInTerminal = () => openInTerminal();
+  const handleOpenInImageWall = () => openInImageWall();
 
   const createHandleFilter = (filter: "all" | "files" | "folders") => {
     return () => setFilter(filter);
@@ -61,9 +65,9 @@ const FilterSystemOperationBar = () => {
       </GroupContainer>
 
       <GroupContainer title="在此開啟...">
-        <OperationButton icon="codicon codicon-window" label="新工作區" />
-        <OperationButton icon="codicon codicon-terminal" label="終端機" />
-        <OperationButton icon="codicon codicon-folder-library" label="圖片牆" />
+        <OperationButton icon="codicon codicon-window" label="新工作區" onClick={handleOpenInWorkspace} />
+        <OperationButton icon="codicon codicon-terminal" label="終端機" onClick={handleOpenInTerminal} />
+        <OperationButton icon="codicon codicon-folder-library" label="圖片牆" onClick={handleOpenInImageWall} />
       </GroupContainer>
     </Box>
   );
