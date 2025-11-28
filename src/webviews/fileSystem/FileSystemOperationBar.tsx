@@ -1,5 +1,6 @@
 import React from "react";
 import { Box, ButtonBase, Typography, type SxProps } from "@mui/material";
+import { refresh } from "./navigate";
 
 const operationBarContainerSx: SxProps = {
   display: "flex",
@@ -12,17 +13,17 @@ const OperationBarContainer = ({ children }: { children: React.ReactNode }) => (
   <Box sx={operationBarContainerSx}>{children}</Box>
 );
 
+const groupContainerSx: SxProps = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 1,
+  borderRadius: 1,
+  p: 1,
+  bgcolor: "table.alternateRowBackground",
+};
+
 const GroupContainer = ({ title, children }: { title?: string; children: React.ReactNode }) => (
-  <Box
-    sx={{
-      display: "flex",
-      flexDirection: "column",
-      gap: 1,
-      borderRadius: 1,
-      p: 1,
-      bgcolor: "table.alternateRowBackground",
-    }}
-  >
+  <Box sx={groupContainerSx}>
     {title && (
       <Typography variant="caption" sx={{ color: "text.secondary" }}>
         {title}
@@ -43,12 +44,29 @@ const expandedButtonSx: SxProps = {
   "&:hover": { bgcolor: "table.hoverBackground" },
 };
 
-const ExpandedButton = ({ icon, label }: { icon: `codicon codicon-${string}`; label: string }) => (
-  <ButtonBase focusRipple sx={expandedButtonSx}>
+type ExpandedButtonProps = {
+  icon: `codicon codicon-${string}`;
+  label: string;
+  onClick?: () => void;
+};
+
+const ExpandedButton = ({ icon, label, onClick }: ExpandedButtonProps) => (
+  <ButtonBase focusRipple sx={expandedButtonSx} onClick={onClick}>
     <i className={icon} />
     <Typography variant="body2">{label}</Typography>
   </ButtonBase>
 );
+
+const operationBarHeaderSx: SxProps = {
+  position: "absolute",
+  inset: 0,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  borderRadius: 1,
+  bgcolor: "background.paper",
+  px: 1,
+};
 
 const OperationBarHeader = () => (
   <Box sx={{ position: "relative" }}>
@@ -59,18 +77,7 @@ const OperationBarHeader = () => (
       </Typography>
     </Box>
 
-    <Box
-      sx={{
-        position: "absolute",
-        inset: 0,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        borderRadius: 1,
-        bgcolor: "background.paper",
-        px: 1,
-      }}
-    >
+    <Box sx={operationBarHeaderSx}>
       <Box sx={{ color: "text.secondary" }}>
         <i className="codicon codicon-menu" style={{ color: "inherit", display: "block" }} />
       </Box>
@@ -83,12 +90,16 @@ const OperationBarHeader = () => (
 );
 
 const FilterSystemOperationBar = () => {
+  const handleRefresh = () => {
+    refresh();
+  };
+
   return (
     <OperationBarContainer>
       <OperationBarHeader />
 
       <GroupContainer>
-        <ExpandedButton icon="codicon codicon-refresh" label="重新整理" />
+        <ExpandedButton icon="codicon codicon-refresh" label="重新整理" onClick={handleRefresh} />
       </GroupContainer>
 
       <GroupContainer title="篩選...">

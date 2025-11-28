@@ -4,6 +4,11 @@ import type { FileSystemRequest } from "../../providers/fileSystemProvider";
 
 const postMessage = (params: FileSystemRequest) => postMessageToExtension(params);
 
+/** 重新整理 */
+const refresh = () => {
+  postMessage({ type: "request", ...fileSystemDataStore.getState() });
+};
+
 /** 請求切換頁碼 */
 const navigateToPage = (page: number) => {
   const { panelId, folderPath, sortField, sortOrder } = fileSystemDataStore.getState();
@@ -47,4 +52,5 @@ const setSorting = (field: "fileName" | "mtime" | "ctime" | "size") => {
   postMessage({ type: "request", panelId, folderPath, page, sortField: field, sortOrder: newOrder });
 };
 
-export { navigateToPage, navigateToFolder, navigateUp, navigateToBreadcrumb, navigateToFile, setSorting };
+export { refresh, setSorting };
+export { navigateToPage, navigateToFolder, navigateUp, navigateToBreadcrumb, navigateToFile };
