@@ -1,7 +1,7 @@
 import React from "react";
 import { Box, ButtonBase, Typography, type SxProps } from "@mui/material";
-import { fileSystemDataStore } from "./data";
-import { refresh } from "./navigate";
+import { fileSystemDataStore } from "../data";
+import { refresh } from "../navigate";
 
 const operationBarContainerSx: SxProps = {
   display: "flex",

@@ -1,10 +1,11 @@
 import React from "react";
 import { Box } from "@mui/material";
+
 import { fileSystemDataStore } from "./data";
 import { FileSystemHeader } from "./FileSystemHeader";
-import { FileSystemTable } from "./FileSystemTable";
-import { FileSystemPagination } from "./FileSystemPagination";
-import { FilterSystemOperationBar } from "./FileSystemOperationBar";
+import { FilterSystemOperationBar } from "./operation/FileSystemOperationBar";
+import { FileSystemPagination } from "./table/FileSystemPagination";
+import { FileSystemTable } from "./table/FileSystemTable";
 
 const FileSystem: React.FC = () => {
   const pages = fileSystemDataStore((state) => state.pages);
