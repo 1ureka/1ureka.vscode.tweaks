@@ -5,6 +5,7 @@ import type { FieldDefinition } from "./FileSystemTableRow";
 
 import { fileSystemDataStore } from "../data/data";
 import { navigateToFile, navigateToFolder, navigateUp, setSorting } from "../data/navigate";
+import { useSelection, selectRow } from "../data/selection";
 
 /**
  * 檔案系統表格包含的欄位
@@ -37,17 +38,24 @@ const containerSx: Record<string, SxProps> = {
 };
 
 /** 用於呈現每一列的背景樣式 */
-const createRowBackgroundSx: (index: number) => SxProps = (index) => ({
-  borderRadius: 1,
-  pointerEvents: "auto",
-  bgcolor: index % 2 === 0 ? "table.alternateRowBackground" : "transparent",
-  "&:hover": { bgcolor: "table.hoverBackground" },
-});
+function createRowBackgroundSx({ index, selected }: { index: number; selected: boolean }): SxProps {
+  let bgcolor = index % 2 === 0 ? "table.alternateRowBackground" : "transparent";
+  let hoverBgcolor = "table.hoverBackground";
+
+  if (selected) {
+    bgcolor = "table.selectedBackground";
+    hoverBgcolor = "table.selectedHoverBackground";
+  }
+
+  return { borderRadius: 1, pointerEvents: "auto", bgcolor, "&:hover": { bgcolor: hoverBgcolor } };
+}
 
 const handleDirUpRowClick = () => navigateUp();
 
 /** 為每列元素創建點擊監聽 */
 const createHandleRowClick = (fileType: string, filePath: string) => (e: React.MouseEvent<HTMLButtonElement>) => {
+  selectRow(filePath);
+
   if (e.detail <= 1) return;
 
   if (fileType === "folder" || fileType === "file-symlink-directory") {
@@ -65,6 +73,7 @@ const FileSystemTable = () => {
   const root = fileSystemDataStore((state) => state.root);
   const sortField = fileSystemDataStore((state) => state.sortField);
   const sortOrder = fileSystemDataStore((state) => state.sortOrder);
+  const { isSelected } = useSelection();
 
   return (
     <Box sx={{ position: "relative" }}>
@@ -72,13 +81,19 @@ const FileSystemTable = () => {
       <Box sx={containerSx.itemIsFullWidth}>
         <Box sx={{ bgcolor: "background.paper", borderRadius: 1 }} />
 
-        {!root && <ButtonBase focusRipple sx={createRowBackgroundSx(0)} onClick={handleDirUpRowClick} />}
+        {!root && (
+          <ButtonBase
+            focusRipple
+            sx={createRowBackgroundSx({ index: 0, selected: false })}
+            onClick={handleDirUpRowClick}
+          />
+        )}
 
         {files.map(({ fileName, filePath, fileType }, i) => (
           <ButtonBase
             key={fileName}
             focusRipple
-            sx={createRowBackgroundSx(i + 1)}
+            sx={createRowBackgroundSx({ index: i + 1, selected: isSelected(filePath) })}
             onClick={createHandleRowClick(fileType, filePath)}
           />
         ))}

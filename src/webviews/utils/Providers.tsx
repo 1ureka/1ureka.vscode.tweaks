@@ -11,12 +11,20 @@ const getColorVar = (varName: string) => {
   return value || "#000000";
 };
 
+/**
+ * 混合兩種顏色，weight 為 color1 的比例 (0-100)
+ */
+const colorMix = (color1: string, color2: string, weight: number) => {
+  return `color-mix(in srgb, var(--mui-palette-${color1}) ${weight}%, var(--mui-palette-${color2}) ${100 - weight}%)`;
+};
+
 declare module "@mui/material/styles" {
   interface Palette {
     table: {
       alternateRowBackground: string;
       hoverBackground: string;
       selectedBackground: string;
+      selectedHoverBackground: string;
     };
   }
   interface PaletteOptions {
@@ -24,6 +32,7 @@ declare module "@mui/material/styles" {
       alternateRowBackground: string;
       hoverBackground: string;
       selectedBackground: string;
+      selectedHoverBackground: string;
     };
   }
 }
@@ -51,6 +60,7 @@ const theme = createTheme({
           alternateRowBackground: getColorVar("list-hoverBackground"),
           hoverBackground: getColorVar("toolbar-hoverBackground"),
           selectedBackground: getColorVar("editor-selectionBackground"),
+          selectedHoverBackground: colorMix("table-selectedBackground", "table-hoverBackground", 50),
         },
         divider: getColorVar("panel-border"),
       },
@@ -82,12 +92,5 @@ const ellipsisSx = {
   textOverflow: "ellipsis",
   wordBreak: "break-all",
 } as const;
-
-/**
- * 混合兩種顏色，weight 為 color1 的比例 (0-100)
- */
-const colorMix = (color1: string, color2: string, weight: number) => {
-  return `color-mix(in srgb, var(--mui-palette-${color1}) ${weight}%, var(--mui-palette-${color2}) ${100 - weight}%)`;
-};
 
 export { Providers, ellipsisSx, colorMix };
