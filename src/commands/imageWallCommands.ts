@@ -29,10 +29,18 @@ export function registerImageWallCommands(context: vscode.ExtensionContext) {
     else openPanel(folders[0].fsPath);
   };
 
+  const openFromFolder = async (folderPath: string) => {
+    openPanel(folderPath);
+  };
+
   const openFromExplorerCommand = vscode.commands.registerCommand("1ureka.openImageWallFromExplorer", openFromExplorer);
   const openFromCommandPaletteCommand = vscode.commands.registerCommand("1ureka.openImageWall", openFromCommandPalette);
+  const openFromFolderCommand = vscode.commands.registerCommand(
+    "1ureka.imageWall.openImageWallFromFolder",
+    openFromFolder
+  );
 
-  context.subscriptions.push(openFromExplorerCommand, openFromCommandPaletteCommand);
+  context.subscriptions.push(openFromExplorerCommand, openFromCommandPaletteCommand, openFromFolderCommand);
 
   // ------------------------------ Preference Commands ------------------------------
 
