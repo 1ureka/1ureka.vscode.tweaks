@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, ButtonBase, type SxProps, Typography } from "@mui/material";
+import { Box, ButtonBase, type SxProps } from "@mui/material";
 import { FileSystemTableRow, FileSystemTableRowDirUp, FileSystemTableRowHeader } from "./FileSystemTableRow";
 import type { FieldDefinition } from "./FileSystemTableRow";
 
@@ -26,14 +26,6 @@ const FileSystemTable = () => {
   const root = fileSystemDataStore((state) => state.root);
   const sortField = fileSystemDataStore((state) => state.sortField);
   const sortOrder = fileSystemDataStore((state) => state.sortOrder);
-
-  if (files.length === 0) {
-    return (
-      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", flex: 1 }}>
-        <Typography color="text.secondary">此資料夾是空的</Typography>
-      </Box>
-    );
-  }
 
   const containerShareSx: SxProps = { display: "grid", gap: 0.5 };
   const containerSx: Record<string, SxProps> = {
