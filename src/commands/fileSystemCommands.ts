@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { createFileSystemPanel } from "../providers/fileSystemProvider";
+import { openFileSystemPanel } from "../providers/fileSystemProvider";
 
 export function registerFileSystemCommands(context: vscode.ExtensionContext) {
   // 從檔案總管右鍵開啟
@@ -7,7 +7,7 @@ export function registerFileSystemCommands(context: vscode.ExtensionContext) {
     if (!uri || !uri.fsPath) {
       vscode.window.showErrorMessage("請選擇一個資料夾來開啟檔案系統");
     } else {
-      createFileSystemPanel(context, uri.fsPath);
+      openFileSystemPanel(context, uri.fsPath);
     }
   };
 
@@ -22,7 +22,7 @@ export function registerFileSystemCommands(context: vscode.ExtensionContext) {
 
     // 不須要顯示錯誤訊息，因為可能使用者只是取消選擇
     if (folders && folders.length > 0) {
-      createFileSystemPanel(context, folders[0].fsPath);
+      openFileSystemPanel(context, folders[0].fsPath);
     }
   };
 
