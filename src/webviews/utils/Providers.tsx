@@ -29,6 +29,7 @@ declare module "@mui/material/styles" {
 }
 
 const theme = createTheme({
+  cssVariables: true,
   defaultColorScheme: "dark", // 這與實際主題無關，因為是用 var(--vscode-xxx) 來取色，用 dark 是為了只需要定義一組色彩
   colorSchemes: {
     dark: {
@@ -64,7 +65,7 @@ interface ProvidersProps {
   children: React.ReactNode;
 }
 
-export const Providers: React.FC<ProvidersProps> = ({ children }) => {
+const Providers: React.FC<ProvidersProps> = ({ children }) => {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
@@ -73,7 +74,7 @@ export const Providers: React.FC<ProvidersProps> = ({ children }) => {
   );
 };
 
-export const ellipsisSx = {
+const ellipsisSx = {
   display: "-webkit-box",
   WebkitLineClamp: 1,
   WebkitBoxOrient: "vertical",
@@ -81,3 +82,12 @@ export const ellipsisSx = {
   textOverflow: "ellipsis",
   wordBreak: "break-all",
 } as const;
+
+/**
+ * 混合兩種顏色，weight 為 color1 的比例 (0-100)
+ */
+const colorMix = (color1: string, color2: string, weight: number) => {
+  return `color-mix(in srgb, var(--mui-palette-${color1}) ${weight}%, var(--mui-palette-${color2}) ${100 - weight}%)`;
+};
+
+export { Providers, ellipsisSx, colorMix };
