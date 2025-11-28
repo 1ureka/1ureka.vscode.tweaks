@@ -30,7 +30,7 @@ function checkMessage(value: unknown): value is FileSystemMessage {
   if (msg.type === "request") {
     const check1 = typeof msg.panelId === "string" && typeof msg.folderPath === "string";
     const check2 = typeof msg.sortField === "string" && typeof msg.sortOrder === "string";
-    const check3 = typeof msg.page === "number";
+    const check3 = typeof msg.page === "number" && typeof msg.filter === "string";
     return check1 && check2 && check3;
   }
 
@@ -52,6 +52,7 @@ async function createFileSystemPanel(context: vscode.ExtensionContext, folderPat
     page: page ?? 1,
     sortField: "fileName" as const,
     sortOrder: "asc" as const,
+    filter: "all" as const,
   };
 
   const initialData = await handleFileSystemData(initialParams);

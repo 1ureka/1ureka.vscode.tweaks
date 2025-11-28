@@ -16,12 +16,14 @@ declare module "@mui/material/styles" {
     table: {
       alternateRowBackground: string;
       hoverBackground: string;
+      selectedBackground: string;
     };
   }
   interface PaletteOptions {
     table: {
       alternateRowBackground: string;
       hoverBackground: string;
+      selectedBackground: string;
     };
   }
 }
@@ -47,6 +49,7 @@ const theme = createTheme({
         table: {
           alternateRowBackground: getColorVar("list-hoverBackground"),
           hoverBackground: getColorVar("toolbar-hoverBackground"),
+          selectedBackground: getColorVar("editor-selectionBackground"),
         },
         divider: getColorVar("panel-border"),
       },

@@ -27,12 +27,16 @@ type FileSystemData = {
   folderCount: number;
   sortField: keyof Pick<FileProperties, "fileName" | "mtime" | "ctime" | "size">;
   sortOrder: "asc" | "desc";
+  filter: "all" | "files" | "folders";
   files: FileProperties[];
   timestamp: number;
 };
 
 /** 處理檔案系統資料所需的參數型別 */
-type FileSystemDataParams = Pick<FileSystemData, "panelId" | "folderPath" | "page" | "sortField" | "sortOrder">;
+type FileSystemDataParams = Pick<
+  FileSystemData,
+  "panelId" | "folderPath" | "page" | "sortField" | "sortOrder" | "filter"
+>;
 
 /** 一頁檔案系統包含的檔案數量 */
 const FILES_PER_PAGE = 100;
@@ -43,7 +47,7 @@ const FILES_PER_PAGE = 100;
  * @throws 無法讀取資料夾內容時會拋出錯誤
  */
 const handleFileSystemData = async (params: FileSystemDataParams): Promise<FileSystemData> => {
-  const { panelId, folderPath, page, sortField, sortOrder } = params;
+  const { panelId, folderPath, page, sortField, sortOrder, filter } = params;
 
   const { data: dirEntries, error } = await tryCatch(() => fs.promises.readdir(folderPath, { withFileTypes: true }));
   if (error) throw new Error(`無法讀取資料夾內容: ${error.message}`);
@@ -60,10 +64,21 @@ const handleFileSystemData = async (params: FileSystemDataParams): Promise<FileS
     })
   );
 
-  const files = results.filter((item): item is FileProperties => item !== null);
+  // 取出有效的資料並計算檔案與資料夾數量
+  const rawFiles = results.filter((item): item is FileProperties => item !== null);
+  const folderCount = rawFiles.filter((f) => f.fileType === "folder").length;
+  const fileCount = rawFiles.filter((f) => f.fileType === "file").length;
+
+  // 篩選
+  const filteredFiles = rawFiles.filter((file) => {
+    if (filter === "all") return true;
+    if (filter === "files") return file.fileType === "file";
+    if (filter === "folders") return file.fileType === "folder";
+    return true;
+  });
 
   // 排序：資料夾優先，然後依照 sortField 與 sortOrder 排序
-  files.sort((a, b) => {
+  filteredFiles.sort((a, b) => {
     if (a.fileType === "folder" && b.fileType !== "folder") return -1;
     if (a.fileType !== "folder" && b.fileType === "folder") return 1;
 
@@ -80,11 +95,11 @@ const handleFileSystemData = async (params: FileSystemDataParams): Promise<FileS
     return sortOrder === "asc" ? compareResult : -compareResult;
   });
 
-  const folderCount = files.filter((f) => f.fileType === "folder").length;
-  const fileCount = files.filter((f) => f.fileType === "file").length;
-
-  // 計算分頁範圍
-  const startIndex = (page - 1) * FILES_PER_PAGE;
+  // 計算分頁
+  const totalPages = Math.ceil(filteredFiles.length / FILES_PER_PAGE);
+  // 修正頁碼：如果請求的頁碼超出範圍，自動修正為最後一頁（或第一頁）
+  const validPage = page > totalPages ? Math.max(1, totalPages) : page;
+  const startIndex = (validPage - 1) * FILES_PER_PAGE;
   const endIndex = startIndex + FILES_PER_PAGE;
 
   return {
@@ -92,13 +107,14 @@ const handleFileSystemData = async (params: FileSystemDataParams): Promise<FileS
     folderPath,
     folderPathParts: formatPathToArray(folderPath),
     root: isRootDirectory(folderPath),
-    page,
-    pages: Math.ceil(files.length / FILES_PER_PAGE),
+    page: validPage,
+    pages: totalPages,
     fileCount,
     folderCount,
     sortField,
     sortOrder,
-    files: files.slice(startIndex, endIndex),
+    filter,
+    files: filteredFiles.slice(startIndex, endIndex),
     timestamp: Date.now(),
   };
 };

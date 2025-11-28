@@ -1,6 +1,6 @@
 import React from "react";
 import { Box, type BoxProps, type SxProps, Typography } from "@mui/material";
-import { ellipsisSx } from "../utils/Providers";
+import { ellipsisSx } from "../../utils/Providers";
 
 type FileSystemListCellProps = {
   align?: "left" | "center" | "right";

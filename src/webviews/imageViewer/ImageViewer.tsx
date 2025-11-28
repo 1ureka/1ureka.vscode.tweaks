@@ -23,6 +23,25 @@ const Controls = () => {
   return null;
 };
 
+/**
+ * 計算圖片在容器中以「包含」方式顯示的寬高，實際效果類似 CSS 的 `object-fit: contain`
+ */
+function getContainLayout(imageWidth: number, imageHeight: number, gutterWidth = 32) {
+  const containerRatio = window.innerWidth / window.innerHeight;
+  const imageRatio = imageWidth / imageHeight;
+
+  let width, height;
+  if (containerRatio > imageRatio) {
+    height = window.innerHeight - gutterWidth; // padding
+    width = height * imageRatio;
+  } else {
+    width = window.innerWidth - gutterWidth;
+    height = width / imageRatio;
+  }
+
+  return { width, height };
+}
+
 type ImageDisplayProps = {
   src: string;
   alt: string;
@@ -41,25 +60,11 @@ const ImageDisplay = ({ src: initialSrc, alt, width, height }: ImageDisplayProps
     <TransformWrapper centerOnInit onPanningStart={handlePanStart} onPanningStop={handlePanStop}>
       {({ resetTransform, ...rest }) => (
         <>
-          <TransformComponent wrapperStyle={{ width: "100%", height: "100dvh" }} contentStyle={{ cursor, padding: 16 }}>
+          <TransformComponent wrapperStyle={{ width: "100%", height: "100dvh" }} contentStyle={{ cursor }}>
             {loaded && src ? (
-              <img
-                src={src}
-                alt={alt}
-                style={{ display: "block", maxWidth: "100%", maxHeight: "100vh", opacity: loaded ? 1 : 0 }}
-              />
+              <img src={src} alt={alt} style={{ display: "block", ...getContainLayout(width, height) }} />
             ) : (
-              <Skeleton
-                variant="rectangular"
-                animation="wave"
-                sx={{
-                  width,
-                  height: "auto",
-                  aspectRatio: `${width} / ${height}`,
-                  maxWidth: "calc(100dvw - 32px)",
-                  maxHeight: "calc(100dvh - 32px)",
-                }}
-              />
+              <Skeleton variant="rectangular" animation="wave" sx={getContainLayout(width, height)} />
             )}
           </TransformComponent>
           <Controls />
