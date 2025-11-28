@@ -16,6 +16,8 @@ import fileSystemDark from "../icons/file-system-dark.svg";
 // 前端往後端傳送的訊息相關型別與檢查
 // ---------------------------------------------
 
+type OpenInTarget = "workspace" | "terminal" | "imageWall";
+
 /** 用於換資料夾、換頁的請求 */
 type FileSystemRequest = { type: "request" } & FileSystemDataParams;
 /** 用於讓前端可以呼叫 showInformationMessage 的訊息 */
@@ -25,10 +27,18 @@ type FileSystemOpenFileMessage = { type: "openFile"; filePath: string };
 /** 用於讓前端呼叫所有需要用到 dialog 的訊息 (比如建立新檔案、建立新資料夾)
  * (雖然架構的確是後端決定狀態，但後端仍是無狀態的，實際儲存在前端，因此該請求必須包含上次的狀態) */
 type FileSystemDialogMessage = { type: "openDialog"; dialogType: "newFile" | "newFolder" } & FileSystemDataParams;
+/** 用於讓前端呼叫 "在此開啟..." 等功能 */
+type FileSystemOpenInMessage = { type: "openIn"; openType: OpenInTarget } & FileSystemDataParams;
 
 /** 該延伸主機可以接受的所有訊息種類 */
 type FileSystemMessage = OneOf<
-  [FileSystemInfoMessage, FileSystemRequest, FileSystemOpenFileMessage, FileSystemDialogMessage]
+  [
+    FileSystemInfoMessage,
+    FileSystemRequest,
+    FileSystemOpenFileMessage,
+    FileSystemDialogMessage,
+    FileSystemOpenInMessage
+  ]
 >;
 
 /** 檢查一個物件是否包含 handleFileSystemData 所需的參數 */
@@ -56,6 +66,12 @@ function checkMessage(value: unknown): value is FileSystemMessage {
   }
   if (msg.type === "openDialog") {
     return (msg.dialogType === "newFile" || msg.dialogType === "newFolder") && isFileSystemDataParams(msg);
+  }
+  if (msg.type === "openIn") {
+    return (
+      (msg.openType === "workspace" || msg.openType === "terminal" || msg.openType === "imageWall") &&
+      isFileSystemDataParams(msg)
+    );
   }
 
   return false;
@@ -163,6 +179,23 @@ const dispatchEvent = async (panelId: UUID, event: FileSystemMessage, webview: v
     await updateState(webview, { ...event });
     return;
   }
+
+  if (event.type === "openIn") {
+    if (event.openType === "workspace") {
+      const uri = vscode.Uri.file(event.folderPath);
+      vscode.commands.executeCommand("vscode.openFolder", uri, true);
+      return;
+    }
+    if (event.openType === "terminal") {
+      const terminal = vscode.window.createTerminal({ cwd: event.folderPath });
+      terminal.show();
+      return;
+    }
+    if (event.openType === "imageWall") {
+      vscode.commands.executeCommand("1ureka.imageWall.openImageWallFromFolder", event.folderPath);
+      return;
+    }
+  }
 };
 
 /**
@@ -181,4 +214,4 @@ async function openFileSystemPanel(context: vscode.ExtensionContext, folderPath:
 }
 
 export { openFileSystemPanel };
-export type { FileSystemRequest, FileSystemDialogMessage };
+export type { FileSystemRequest, FileSystemDialogMessage, FileSystemOpenInMessage };
