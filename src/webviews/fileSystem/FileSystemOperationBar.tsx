@@ -5,21 +5,29 @@ const operationBarContainerSx: SxProps = {
   display: "flex",
   flexDirection: "column",
   alignItems: "stretch",
-  gap: 1.5,
-  borderRadius: 1,
-  p: 1,
-  bgcolor: "background.paper",
+  gap: 1,
 };
 
 const OperationBarContainer = ({ children }: { children: React.ReactNode }) => (
   <Box sx={operationBarContainerSx}>{children}</Box>
 );
 
-const GroupContainer = ({ title, children }: { title: string; children: React.ReactNode }) => (
-  <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-    <Typography variant="caption" sx={{ color: "text.secondary" }}>
-      {title}
-    </Typography>
+const GroupContainer = ({ title, children }: { title?: string; children: React.ReactNode }) => (
+  <Box
+    sx={{
+      display: "flex",
+      flexDirection: "column",
+      gap: 1,
+      borderRadius: 1,
+      p: 1,
+      bgcolor: "table.alternateRowBackground",
+    }}
+  >
+    {title && (
+      <Typography variant="caption" sx={{ color: "text.secondary" }}>
+        {title}
+      </Typography>
+    )}
     <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>{children}</Box>
   </Box>
 );
@@ -42,20 +50,46 @@ const ExpandedButton = ({ icon, label }: { icon: `codicon codicon-${string}`; la
   </ButtonBase>
 );
 
+const OperationBarHeader = () => (
+  <Box sx={{ position: "relative" }}>
+    {/* 只是為了拿到高度 */}
+    <Box sx={{ p: 1, opacity: 0 }}>
+      <Typography variant="body2" sx={{ whiteSpace: "nowrap" }}>
+        操作區
+      </Typography>
+    </Box>
+
+    <Box
+      sx={{
+        position: "absolute",
+        inset: 0,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        borderRadius: 1,
+        bgcolor: "background.paper",
+        px: 1,
+      }}
+    >
+      <Box sx={{ color: "text.secondary" }}>
+        <i className="codicon codicon-menu" style={{ color: "inherit", display: "block" }} />
+      </Box>
+
+      <ButtonBase focusRipple sx={{ borderRadius: 1, p: 0.5, "&:hover": { bgcolor: "table.hoverBackground" } }}>
+        <i className="codicon codicon-layout-sidebar-left-dock" />
+      </ButtonBase>
+    </Box>
+  </Box>
+);
+
 const FilterSystemOperationBar = () => {
   return (
     <OperationBarContainer>
-      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", pl: 0.5 }}>
-        <Box sx={{ color: "text.secondary" }}>
-          <i className="codicon codicon-menu" style={{ color: "inherit", display: "block" }} />
-        </Box>
+      <OperationBarHeader />
 
-        <ButtonBase focusRipple sx={{ borderRadius: 1, p: 0.5, "&:hover": { bgcolor: "table.hoverBackground" } }}>
-          <i className="codicon codicon-layout-sidebar-left-dock" />
-        </ButtonBase>
-      </Box>
-
-      <ExpandedButton icon="codicon codicon-refresh" label="重新整理" />
+      <GroupContainer>
+        <ExpandedButton icon="codicon codicon-refresh" label="重新整理" />
+      </GroupContainer>
 
       <GroupContainer title="篩選...">
         <ExpandedButton icon="codicon codicon-file-submodule" label="全部" />
