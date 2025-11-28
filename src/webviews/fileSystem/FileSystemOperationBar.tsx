@@ -1,5 +1,6 @@
 import React from "react";
 import { Box, ButtonBase, Typography, type SxProps } from "@mui/material";
+import { fileSystemDataStore } from "./data";
 import { refresh } from "./navigate";
 
 const operationBarContainerSx: SxProps = {
@@ -22,11 +23,17 @@ const groupContainerSx: SxProps = {
   bgcolor: "table.alternateRowBackground",
 };
 
-const GroupContainer = ({ title, children }: { title?: string; children: React.ReactNode }) => (
+type GroupContainerProps = {
+  icon?: `codicon codicon-${string}`;
+  title?: string;
+  children: React.ReactNode;
+};
+
+const GroupContainer = ({ icon, title, children }: GroupContainerProps) => (
   <Box sx={groupContainerSx}>
     {title && (
-      <Typography variant="caption" sx={{ color: "text.secondary" }}>
-        {title}
+      <Typography variant="caption" sx={{ color: "text.secondary", display: "flex", alignItems: "center", gap: 0.5 }}>
+        {icon && <i className={icon} style={{ display: "block" }} />} {title}
       </Typography>
     )}
     <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>{children}</Box>
@@ -90,6 +97,8 @@ const OperationBarHeader = () => (
 );
 
 const FilterSystemOperationBar = () => {
+  const timestamp = fileSystemDataStore((state) => state.timestamp);
+
   const handleRefresh = () => {
     refresh();
   };
@@ -98,7 +107,7 @@ const FilterSystemOperationBar = () => {
     <OperationBarContainer>
       <OperationBarHeader />
 
-      <GroupContainer>
+      <GroupContainer icon="codicon codicon-history" title={`${new Date(timestamp).toLocaleTimeString()}`}>
         <ExpandedButton icon="codicon codicon-refresh" label="重新整理" onClick={handleRefresh} />
       </GroupContainer>
 
