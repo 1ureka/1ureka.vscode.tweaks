@@ -1,9 +1,11 @@
 import React from "react";
 import { Box, type SxProps } from "@mui/material";
-import { fileSystemDataStore } from "../data";
-import { refresh, setFilter } from "../navigate";
 import { OperationBarHeader } from "./FileSystemOpHeader";
 import { OperationButton, GroupContainer } from "./FileSystemOpActionEl";
+
+import { fileSystemDataStore } from "../data";
+import { refresh, setFilter } from "../navigate";
+import { createNewFile, createNewFolder, openInWorkspace, openInTerminal, openInImageWall } from "../action";
 
 const operationBarContainerSx: SxProps = {
   display: "flex",
@@ -16,9 +18,13 @@ const FilterSystemOperationBar = () => {
   const timestamp = fileSystemDataStore((state) => state.timestamp);
   const filter = fileSystemDataStore((state) => state.filter);
 
-  const handleRefresh = () => {
-    refresh();
-  };
+  const handleRefresh = () => refresh();
+  const handleCreateNewFolder = () => createNewFolder();
+  const handleCreateNewFile = () => createNewFile();
+
+  const handleOpenInWorkspace = () => openInWorkspace();
+  const handleOpenInTerminal = () => openInTerminal();
+  const handleOpenInImageWall = () => openInImageWall();
 
   const createHandleFilter = (filter: "all" | "files" | "folders") => {
     return () => setFilter(filter);
@@ -54,14 +60,14 @@ const FilterSystemOperationBar = () => {
       </GroupContainer>
 
       <GroupContainer title="操作...">
-        <OperationButton icon="codicon codicon-new-folder" label="新增資料夾" />
-        <OperationButton icon="codicon codicon-new-file" label="新增檔案" />
+        <OperationButton icon="codicon codicon-new-folder" label="新增資料夾" onClick={handleCreateNewFolder} />
+        <OperationButton icon="codicon codicon-new-file" label="新增檔案" onClick={handleCreateNewFile} />
       </GroupContainer>
 
       <GroupContainer title="在此開啟...">
-        <OperationButton icon="codicon codicon-window" label="新工作區" />
-        <OperationButton icon="codicon codicon-terminal" label="終端機" />
-        <OperationButton icon="codicon codicon-folder-library" label="圖片牆" />
+        <OperationButton icon="codicon codicon-window" label="新工作區" onClick={handleOpenInWorkspace} />
+        <OperationButton icon="codicon codicon-terminal" label="終端機" onClick={handleOpenInTerminal} />
+        <OperationButton icon="codicon codicon-folder-library" label="圖片牆" onClick={handleOpenInImageWall} />
       </GroupContainer>
     </Box>
   );
