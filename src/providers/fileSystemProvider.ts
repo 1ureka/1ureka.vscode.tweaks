@@ -181,4 +181,4 @@ async function openFileSystemPanel(context: vscode.ExtensionContext, folderPath:
 }
 
 export { openFileSystemPanel };
-export type { FileSystemRequest };
+export type { FileSystemRequest, FileSystemDialogMessage };
