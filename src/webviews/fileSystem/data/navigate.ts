@@ -1,4 +1,5 @@
 import { fileSystemDataStore } from "./data";
+import { clearSelection } from "./selection";
 import { postMessageToExtension } from "../../utils/vscodeApi";
 import type { FileSystemRequest } from "../../../providers/fileSystemProvider";
 
@@ -11,11 +12,13 @@ const refresh = () => {
 
 /** 請求切換頁碼 */
 const navigateToPage = (page: number) => {
+  clearSelection();
   postMessage({ type: "request", ...fileSystemDataStore.getState(), page });
 };
 
 /** 請求切換資料夾 */
 const navigateToFolder = (folderPath: string) => {
+  clearSelection();
   postMessage({ type: "request", ...fileSystemDataStore.getState(), folderPath, page: 1 });
 };
 
@@ -52,6 +55,7 @@ const setSorting = (field: FileSystemRequest["sortField"]) => {
 
 /** 設定篩選條件 */
 const setFilter = (filter: "all" | "files" | "folders") => {
+  clearSelection(); // 避免使用者忘記篩選掉的項目可能還被選取著
   postMessage({ type: "request", ...fileSystemDataStore.getState(), filter, page: 1 });
 };
 
