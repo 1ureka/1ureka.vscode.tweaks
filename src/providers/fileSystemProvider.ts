@@ -100,7 +100,7 @@ const createFileSystemPanel = async (context: vscode.ExtensionContext, folderPat
 
   const panel = createWebviewPanel<FileSystemData>({
     panelId: "1ureka.fileSystem", // 這與 panelId 無關，只是註冊用的識別字串，實際溝通會使用 initialData.panelId
-    panelTitle: "檔案系統瀏覽器",
+    panelTitle: "檔案系統",
     webviewType: "fileSystem",
     extensionUri: context.extensionUri,
     resourceUri: vscode.Uri.file(folderPath),

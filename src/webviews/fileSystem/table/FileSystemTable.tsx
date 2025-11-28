@@ -18,6 +18,45 @@ const fileSystemColumns: FieldDefinition[] = [
   { align: "right", label: "大小", dataField: "size" },
 ];
 
+const containerShareSx: SxProps = { display: "grid", gap: 0.5 };
+/** 用於呈現虛擬 + 實際表格的容器樣式 */
+const containerSx: Record<string, SxProps> = {
+  itemIsFullWidth: {
+    position: "absolute",
+    inset: 0,
+    gridTemplateColumns: "1fr",
+    ...containerShareSx,
+  },
+  itemIsCells: {
+    position: "relative",
+    gridTemplateColumns: "auto 1fr repeat(4, auto)",
+    placeItems: "stretch",
+    pointerEvents: "none",
+    ...containerShareSx,
+  },
+};
+
+/** 用於呈現每一列的背景樣式 */
+const createRowBackgroundSx: (index: number) => SxProps = (index) => ({
+  borderRadius: 1,
+  pointerEvents: "auto",
+  bgcolor: index % 2 === 0 ? "table.alternateRowBackground" : "transparent",
+  "&:hover": { bgcolor: "table.hoverBackground" },
+});
+
+const handleDirUpRowClick = () => navigateUp();
+
+/** 為每列元素創建點擊監聽 */
+const createHandleRowClick = (fileType: string, filePath: string) => (e: React.MouseEvent<HTMLButtonElement>) => {
+  if (e.detail <= 1) return;
+
+  if (fileType === "folder" || fileType === "file-symlink-directory") {
+    navigateToFolder(filePath);
+  } else if (fileType === "file" || fileType === "file-symlink-file") {
+    navigateToFile(filePath);
+  }
+};
+
 /**
  * 用於顯示檔案系統的表格組件
  */
@@ -27,64 +66,26 @@ const FileSystemTable = () => {
   const sortField = fileSystemDataStore((state) => state.sortField);
   const sortOrder = fileSystemDataStore((state) => state.sortOrder);
 
-  const containerShareSx: SxProps = { display: "grid", gap: 0.5 };
-  const containerSx: Record<string, SxProps> = {
-    itemIsFullWidth: {
-      position: "absolute",
-      inset: 0,
-      gridTemplateColumns: "1fr",
-      ...containerShareSx,
-    },
-    itemIsCell: {
-      position: "relative",
-      gridTemplateColumns: "auto 1fr repeat(4, auto)",
-      placeItems: "stretch",
-      pointerEvents: "none",
-      ...containerShareSx,
-    },
-  };
-
-  const borderRadius = 1;
-
-  const createBackgroundSx: (index: number) => SxProps = (index) => ({
-    borderRadius,
-    pointerEvents: "auto",
-    bgcolor: index % 2 === 0 ? "table.alternateRowBackground" : "transparent",
-    "&:hover": { bgcolor: "table.hoverBackground" },
-  });
-
-  const handleDirUpRowClick = () => {
-    navigateUp();
-  };
-
-  const createHandleRowClick = (fileType: string, filePath: string) => () => {
-    if (fileType === "folder" || fileType === "file-symlink-directory") {
-      navigateToFolder(filePath);
-    } else if (fileType === "file" || fileType === "file-symlink-file") {
-      navigateToFile(filePath);
-    }
-  };
-
   return (
     <Box sx={{ position: "relative" }}>
       {/* 每個 row 的點擊區，同時也是背景樣式 */}
       <Box sx={containerSx.itemIsFullWidth}>
-        <Box sx={{ bgcolor: "background.paper", borderRadius }} />
+        <Box sx={{ bgcolor: "background.paper", borderRadius: 1 }} />
 
-        {!root && <ButtonBase focusRipple sx={createBackgroundSx(0)} onClick={handleDirUpRowClick} />}
+        {!root && <ButtonBase focusRipple sx={createRowBackgroundSx(0)} onClick={handleDirUpRowClick} />}
 
         {files.map(({ fileName, filePath, fileType }, i) => (
           <ButtonBase
             key={fileName}
             focusRipple
-            sx={createBackgroundSx(i + 1)}
+            sx={createRowBackgroundSx(i + 1)}
             onClick={createHandleRowClick(fileType, filePath)}
           />
         ))}
       </Box>
 
       {/* 每個 row 的實際內容，包括 header 的可點擊區 (header cell 會設 pointerEvents 回來) */}
-      <Box sx={containerSx.itemIsCell}>
+      <Box sx={containerSx.itemIsCells}>
         <FileSystemTableRowHeader
           fields={fileSystemColumns}
           sortField={sortField}
