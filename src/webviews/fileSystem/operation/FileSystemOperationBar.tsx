@@ -3,9 +3,9 @@ import { Box, type SxProps } from "@mui/material";
 import { OperationBarHeader } from "./FileSystemOpHeader";
 import { OperationButton, GroupContainer } from "./FileSystemOpActionEl";
 
-import { fileSystemDataStore } from "../data";
-import { refresh, setFilter } from "../navigate";
-import { createNewFile, createNewFolder, openInWorkspace, openInTerminal, openInImageWall } from "../action";
+import { fileSystemDataStore } from "../data/data";
+import { refresh, setFilter } from "../data/navigate";
+import { createNewFile, createNewFolder, openInWorkspace, openInTerminal, openInImageWall } from "../data/action";
 
 const operationBarContainerSx: SxProps = {
   display: "flex",

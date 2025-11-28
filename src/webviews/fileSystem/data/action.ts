@@ -1,6 +1,6 @@
 import { fileSystemDataStore } from "./data";
-import { postMessageToExtension } from "../utils/vscodeApi";
-import type { FileSystemDialogMessage, FileSystemOpenInMessage } from "../../providers/fileSystemProvider";
+import { postMessageToExtension } from "../../utils/vscodeApi";
+import type { FileSystemDialogMessage, FileSystemOpenInMessage } from "../../../providers/fileSystemProvider";
 
 const postDialogMessage = (params: FileSystemDialogMessage) => postMessageToExtension(params);
 

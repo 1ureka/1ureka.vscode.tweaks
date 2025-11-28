@@ -3,8 +3,8 @@ import { Box, ButtonBase, type SxProps } from "@mui/material";
 import { FileSystemTableRow, FileSystemTableRowDirUp, FileSystemTableRowHeader } from "./FileSystemTableRow";
 import type { FieldDefinition } from "./FileSystemTableRow";
 
-import { fileSystemDataStore } from "../data";
-import { navigateToFile, navigateToFolder, navigateUp, setSorting } from "../navigate";
+import { fileSystemDataStore } from "../data/data";
+import { navigateToFile, navigateToFolder, navigateUp, setSorting } from "../data/navigate";
 
 /**
  * 檔案系統表格包含的欄位

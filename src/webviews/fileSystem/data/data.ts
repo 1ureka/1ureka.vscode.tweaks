@@ -1,6 +1,6 @@
 import { create } from "zustand";
-import { postMessageToExtension, getInitialData } from "../utils/vscodeApi";
-import type { FileSystemData } from "../../handlers/fileSystemHandlers";
+import { postMessageToExtension, getInitialData } from "../../utils/vscodeApi";
+import type { FileSystemData } from "../../../handlers/fileSystemHandlers";
 
 const initialData = getInitialData<FileSystemData>();
 if (!initialData) {

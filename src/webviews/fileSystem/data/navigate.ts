@@ -1,6 +1,6 @@
 import { fileSystemDataStore } from "./data";
-import { postMessageToExtension } from "../utils/vscodeApi";
-import type { FileSystemRequest } from "../../providers/fileSystemProvider";
+import { postMessageToExtension } from "../../utils/vscodeApi";
+import type { FileSystemRequest } from "../../../providers/fileSystemProvider";
 
 const postMessage = (params: FileSystemRequest) => postMessageToExtension(params);
 

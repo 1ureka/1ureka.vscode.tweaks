@@ -2,7 +2,7 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import { FileSystem } from "./FileSystem";
 import { Providers } from "../utils/Providers";
-import { registerDataChangeEvent } from "./data";
+import { registerDataChangeEvent } from "./data/data";
 
 const App = () => {
   return (

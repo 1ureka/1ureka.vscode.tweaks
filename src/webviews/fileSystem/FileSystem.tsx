@@ -1,8 +1,8 @@
 import React from "react";
 import { Box, Typography } from "@mui/material";
 
-import { fileSystemDataStore } from "./data";
-import { FileSystemHeader } from "./FileSystemHeader";
+import { fileSystemDataStore } from "./data/data";
+import { FileSystemHeader } from "./header/FileSystemHeader";
 import { FilterSystemOperationBar } from "./operation/FileSystemOperationBar";
 import { FileSystemPagination } from "./table/FileSystemPagination";
 import { FileSystemTable } from "./table/FileSystemTable";
