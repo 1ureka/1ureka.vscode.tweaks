@@ -10,7 +10,7 @@ const FileSystemPagination: React.FC = () => {
   if (pages <= 1) return null;
 
   return (
-    <Box sx={{ px: 2, pb: 1.5, pt: 0.5 }}>
+    <Box sx={{ pb: 1.5, pt: 0.5 }}>
       <Box sx={{ display: "grid", placeItems: "center", borderRadius: 1, bgcolor: "background.paper", p: 0.75 }}>
         <Pagination
           size="small"

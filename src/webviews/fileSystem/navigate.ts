@@ -50,5 +50,10 @@ const setSorting = (field: FileSystemRequest["sortField"]) => {
   postMessage({ type: "request", ...fileSystemDataStore.getState(), sortField: field, sortOrder: newOrder });
 };
 
-export { refresh, setSorting };
+/** 設定篩選條件 */
+const setFilter = (filter: "all" | "files" | "folders") => {
+  postMessage({ type: "request", ...fileSystemDataStore.getState(), filter, page: 1 });
+};
+
+export { refresh, setSorting, setFilter };
 export { navigateToPage, navigateToFolder, navigateUp, navigateToBreadcrumb, navigateToFile };
