@@ -28,6 +28,7 @@ type FileSystemData = {
   sortField: keyof Pick<FileProperties, "fileName" | "mtime" | "ctime" | "size">;
   sortOrder: "asc" | "desc";
   files: FileProperties[];
+  timestamp: number;
 };
 
 /** 處理檔案系統資料所需的參數型別 */
@@ -98,6 +99,7 @@ const handleFileSystemData = async (params: FileSystemDataParams): Promise<FileS
     sortField,
     sortOrder,
     files: files.slice(startIndex, endIndex),
+    timestamp: Date.now(),
   };
 };
 

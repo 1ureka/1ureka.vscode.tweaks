@@ -35,7 +35,7 @@ const FileSystemTable = () => {
     );
   }
 
-  const containerShareSx: SxProps = { display: "grid", px: 2, gap: 0.5 };
+  const containerShareSx: SxProps = { display: "grid", gap: 0.5 };
   const containerSx: Record<string, SxProps> = {
     itemIsFullWidth: {
       position: "absolute",

@@ -4,6 +4,7 @@ import { fileSystemDataStore } from "./data";
 import { FileSystemHeader } from "./FileSystemHeader";
 import { FileSystemTable } from "./FileSystemTable";
 import { FileSystemPagination } from "./FileSystemPagination";
+import { FilterSystemOperationBar } from "./FileSystemOperationBar";
 
 const FileSystem: React.FC = () => {
   const pages = fileSystemDataStore((state) => state.pages);
@@ -11,8 +12,15 @@ const FileSystem: React.FC = () => {
   return (
     <Box sx={{ height: "100vh", display: "flex", flexDirection: "column" }}>
       <FileSystemHeader />
-      <FileSystemTable />
-      {pages > 1 && <FileSystemPagination />}
+
+      <Box sx={{ display: "grid", gridTemplateColumns: "auto 1fr", alignItems: "start", gap: 1, px: 2 }}>
+        <FilterSystemOperationBar />
+        <Box>
+          <FileSystemTable />
+          {pages > 1 && <FileSystemPagination />}
+        </Box>
+      </Box>
+
       <Box sx={{ py: 1 }} />
     </Box>
   );

@@ -4,16 +4,19 @@ import type { FileSystemRequest } from "../../providers/fileSystemProvider";
 
 const postMessage = (params: FileSystemRequest) => postMessageToExtension(params);
 
+/** 重新整理 */
+const refresh = () => {
+  postMessage({ type: "request", ...fileSystemDataStore.getState() });
+};
+
 /** 請求切換頁碼 */
 const navigateToPage = (page: number) => {
-  const { panelId, folderPath, sortField, sortOrder } = fileSystemDataStore.getState();
-  postMessage({ type: "request", panelId, folderPath, page, sortField, sortOrder });
+  postMessage({ type: "request", ...fileSystemDataStore.getState(), page });
 };
 
 /** 請求切換資料夾 */
 const navigateToFolder = (folderPath: string) => {
-  const { panelId, sortField, sortOrder } = fileSystemDataStore.getState();
-  postMessage({ type: "request", panelId, folderPath, page: 1, sortField, sortOrder });
+  postMessage({ type: "request", ...fileSystemDataStore.getState(), folderPath, page: 1 });
 };
 
 /** 透過麵包屑導航 */
@@ -39,12 +42,13 @@ const navigateToFile = (filePath: string) => {
 };
 
 /** 設定排序欄位與順序 */
-const setSorting = (field: "fileName" | "mtime" | "ctime" | "size") => {
-  const { panelId, folderPath, page, sortField, sortOrder } = fileSystemDataStore.getState();
+const setSorting = (field: FileSystemRequest["sortField"]) => {
+  const { sortField, sortOrder } = fileSystemDataStore.getState();
   // 如果點擊的是同一欄位，切換順序；否則使用預設升序
   const newOrder = sortField === field && sortOrder === "asc" ? "desc" : "asc";
 
-  postMessage({ type: "request", panelId, folderPath, page, sortField: field, sortOrder: newOrder });
+  postMessage({ type: "request", ...fileSystemDataStore.getState(), sortField: field, sortOrder: newOrder });
 };
 
-export { navigateToPage, navigateToFolder, navigateUp, navigateToBreadcrumb, navigateToFile, setSorting };
+export { refresh, setSorting };
+export { navigateToPage, navigateToFolder, navigateUp, navigateToBreadcrumb, navigateToFile };
