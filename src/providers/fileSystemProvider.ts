@@ -94,6 +94,7 @@ const createFileSystemPanel = async (context: vscode.ExtensionContext, folderPat
     sortField: "fileName" as const,
     sortOrder: "asc" as const,
     filter: "all" as const,
+    selection: { isDefaultSelected: false, overrides: {} },
   };
 
   const initialData = await handleFileSystemData(initialParams);
