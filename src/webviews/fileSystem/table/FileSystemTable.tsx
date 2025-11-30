@@ -57,7 +57,7 @@ const handleDirUpRowClick = () => navigateUp();
 const createHandleRowClick = (fileType: string, filePath: string) => (e: React.MouseEvent<HTMLButtonElement>) => {
   selectRow(filePath);
 
-  if (e.detail <= 1) return;
+  if (e.detail !== 2) return;
 
   if (fileType === "folder" || fileType === "file-symlink-directory") {
     navigateToFolder(filePath);
