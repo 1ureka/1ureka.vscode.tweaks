@@ -74,16 +74,23 @@ const requestQueue = createRequestQueue((loading) => {
 
 const requestFileSystemHost: RequestFileSystemHost = ({ panelId, type, params }) => {
   return requestQueue.add(() => {
+    const requestId = crypto.randomUUID();
     const { promise, resolve } = defer<any>();
 
     const handleMessage = (event: MessageEvent) => {
-      if (event.data && event.data.panelId === panelId && event.data.type === type + "Result") {
+      if (
+        event.data &&
+        event.data.panelId === panelId &&
+        event.data.type === type + "Result" &&
+        event.data.requestId === requestId
+      ) {
         resolve(event.data.result);
+        window.removeEventListener("message", handleMessage);
       }
     };
 
-    window.addEventListener("message", handleMessage, { once: true });
-    postMessageToExtension({ panelId, type, params });
+    window.addEventListener("message", handleMessage);
+    postMessageToExtension({ panelId, type, params, requestId });
 
     return promise;
   });

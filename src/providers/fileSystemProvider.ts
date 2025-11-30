@@ -26,7 +26,7 @@ type FileSystemAPI = {
 };
 
 /** 由延伸主機來規定前端在通訊時，應怎樣實作其 postMessage 函數 */
-interface RequestFileSystemTypeInFrontend {
+interface RequestFileSystemInFrontend {
   <K extends keyof FileSystemAPI>(params: {
     panelId: UUID;
     type: K;
@@ -39,7 +39,7 @@ type FileSystemInitialData = Prettify<
   { panelId: UUID } & Pick<Awaited<ReturnType<typeof handleReadDirectory>>, "currentPath" | "currentPathParts">
 >;
 
-export type { RequestFileSystemTypeInFrontend as RequestFileSystemHost, FileSystemInitialData };
+export type { RequestFileSystemInFrontend as RequestFileSystemHost, FileSystemInitialData };
 
 // ---------------------------------------------
 // 與 vscode 介面交互並協調 handler 相關的邏輯
@@ -88,16 +88,12 @@ const fileSystemAPI: FileSystemAPI = {
 const dispatchEvent = async (
   panelId: UUID,
   webview: vscode.Webview,
-  event: { panelId: UUID; type: keyof FileSystemAPI; params: any }
+  event: { panelId: UUID; requestId?: string; type: keyof FileSystemAPI; params: any }
 ) => {
   if (event.panelId !== panelId) return;
-
   const apiFunction = fileSystemAPI[event.type];
   const result = await apiFunction(event.params);
-
-  if (result) {
-    webview.postMessage({ panelId, type: event.type + "Result", result });
-  }
+  webview.postMessage({ panelId, requestId: event.requestId, type: event.type + "Result", result });
 };
 
 /**
