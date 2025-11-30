@@ -1,7 +1,7 @@
 import React from "react";
 import { Box } from "@mui/material";
 import { FileSystemListCell, FileSystemListCellText, FileSystemListHeaderCell } from "./FileSystemTableCell";
-import type { FileProperties } from "../../../handlers/fileSystemHandlers";
+import type { FileProperties } from "../data/view";
 
 type RowDirUpProps = {
   columns: number;

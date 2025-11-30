@@ -4,8 +4,9 @@ import { FileSystemTableRow, FileSystemTableRowDirUp, FileSystemTableRowHeader }
 import type { FieldDefinition } from "./FileSystemTableRow";
 
 import { fileSystemDataStore } from "../data/data";
-import { navigateToFile, navigateToFolder, navigateUp, setSorting } from "../data/navigate";
-import { useSelection, selectRow } from "../data/selection";
+import { navigateToFolder, navigateUp } from "../data/navigate";
+import { fileSystemViewDataStore, fileSystemViewStore, selectRow, setSorting, useIsSelected } from "../data/view";
+import { openFile } from "../data/action";
 
 /**
  * 檔案系統表格包含的欄位
@@ -61,7 +62,7 @@ const createHandleRowClick = (fileType: string, filePath: string) => (e: React.M
   if (fileType === "folder" || fileType === "file-symlink-directory") {
     navigateToFolder(filePath);
   } else if (fileType === "file" || fileType === "file-symlink-file") {
-    navigateToFile(filePath);
+    openFile(filePath);
   }
 };
 
@@ -69,11 +70,11 @@ const createHandleRowClick = (fileType: string, filePath: string) => (e: React.M
  * 用於顯示檔案系統的表格組件
  */
 const FileSystemTable = () => {
-  const files = fileSystemDataStore((state) => state.files);
-  const root = fileSystemDataStore((state) => state.root);
-  const sortField = fileSystemDataStore((state) => state.sortField);
-  const sortOrder = fileSystemDataStore((state) => state.sortOrder);
-  const { isSelected } = useSelection();
+  const viewEntries = fileSystemViewDataStore((state) => state.entries);
+  const isCurrentRoot = fileSystemDataStore((state) => state.isCurrentRoot);
+  const sortField = fileSystemViewStore((state) => state.sortField);
+  const sortOrder = fileSystemViewStore((state) => state.sortOrder);
+  const isSelected = useIsSelected();
 
   return (
     <Box sx={{ position: "relative" }}>
@@ -81,7 +82,7 @@ const FileSystemTable = () => {
       <Box sx={containerSx.itemIsFullWidth}>
         <Box sx={{ bgcolor: "background.paper", borderRadius: 1 }} />
 
-        {!root && (
+        {!isCurrentRoot && (
           <ButtonBase
             focusRipple
             sx={createRowBackgroundSx({ index: 0, selected: false })}
@@ -89,7 +90,7 @@ const FileSystemTable = () => {
           />
         )}
 
-        {files.map(({ fileName, filePath, fileType }, i) => (
+        {viewEntries.map(({ fileName, filePath, fileType }, i) => (
           <ButtonBase
             key={fileName}
             focusRipple
@@ -108,9 +109,9 @@ const FileSystemTable = () => {
           onSortChange={(field) => setSorting(field)}
         />
 
-        {!root && <FileSystemTableRowDirUp columns={6} icon="codicon codicon-folder-opened" text=".." />}
+        {!isCurrentRoot && <FileSystemTableRowDirUp columns={6} icon="codicon codicon-folder-opened" text=".." />}
 
-        {files.map(({ icon, fileName, fileType, fileSize, mtime, ctime, size }) => (
+        {viewEntries.map(({ icon, fileName, fileType, fileSize, mtime, ctime, size }) => (
           <FileSystemTableRow
             key={fileName}
             icon={icon}

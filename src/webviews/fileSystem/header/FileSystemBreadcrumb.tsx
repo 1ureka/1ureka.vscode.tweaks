@@ -4,7 +4,7 @@ import { fileSystemDataStore } from "../data/data";
 import { navigateToBreadcrumb } from "../data/navigate";
 
 const FileSystemBreadcrumb: React.FC = () => {
-  const folderPathParts = fileSystemDataStore((state) => state.folderPathParts);
+  const currentPathParts = fileSystemDataStore((state) => state.currentPathParts);
 
   return (
     <Breadcrumbs
@@ -12,8 +12,8 @@ const FileSystemBreadcrumb: React.FC = () => {
       separator={<span className="codicon codicon-chevron-right" />}
       sx={{ "& .MuiBreadcrumbs-separator": { mx: 0.5 } }}
     >
-      {folderPathParts.map((part, index) => {
-        const isLast = index === folderPathParts.length - 1;
+      {currentPathParts.map((part, index) => {
+        const isLast = index === currentPathParts.length - 1;
 
         if (isLast) {
           return (
