@@ -2,54 +2,98 @@ import * as fs from "fs";
 import * as path from "path";
 import { tryCatch } from "./tryCatch";
 import { formatFileSize } from "./formatter";
+import type { Prettify } from "./type";
 
-/**
- * 檔案或資料夾檢查結果型別
- */
-type InspectResult = {
+type ReadDirectoryEntry = {
   fileName: string;
   filePath: string;
-  fileType: "file" | "folder" | "file-symlink-file" | "file-symlink-directory";
-  fileSize: string;
-  size: number; // 若為資料夾則為 0
-  mtime: number;
-  ctime: number;
+  fileType: "file" | "folder" | "symlink";
 };
 
+type InspectDirectoryEntry = Prettify<
+  Omit<ReadDirectoryEntry, "fileType"> & {
+    fileType: "file" | "folder" | "file-symlink-file" | "file-symlink-directory";
+    fileSize: string;
+    size: number; // 若為資料夾則為 0
+    mtime: number;
+    ctime: number;
+  }
+>;
+
 /**
- * 檢查指定路徑的檔案或資料夾資訊
+ * 讀取指定目錄的內容，並回傳包含檔案名稱、路徑與型別的陣列。如果讀取失敗則回傳 null。
  */
-async function inspectFile(filePath: string): Promise<InspectResult | null> {
-  const { data: info, error: infoError } = await tryCatch(() => fs.promises.lstat(filePath));
-  if (infoError) return null;
+async function readDirectory(dirPath: string): Promise<ReadDirectoryEntry[] | null> {
+  const { data, error } = await tryCatch(() => fs.promises.readdir(dirPath, { withFileTypes: true }));
+  if (error) return null;
 
-  const fileName = path.basename(filePath);
-  let fileType: InspectResult["fileType"];
+  const formatted = data.map((dirent) => {
+    const fileName = dirent.name;
+    const filePath = path.join(dirPath, fileName);
 
-  // 針對非符號連結的檔案或資料夾進行處理
-  if (!info.isSymbolicLink()) {
-    if (info.isFile()) fileType = "file";
-    else if (info.isDirectory()) fileType = "folder";
+    if (dirent.isFile()) {
+      return { fileName, filePath, fileType: "file" } as const;
+    } else if (dirent.isDirectory()) {
+      return { fileName, filePath, fileType: "folder" } as const;
+    } else if (dirent.isSymbolicLink()) {
+      return { fileName, filePath, fileType: "symlink" } as const;
+    } else {
+      return null;
+    }
+  });
+
+  return formatted.filter((entry) => entry !== null);
+}
+
+/**
+ * 檢查並擴展讀取到的目錄條目，取得每個條目的詳細資訊，包括符號連結的解析。
+ */
+async function inspectDirectory(entries: ReadDirectoryEntry[]): Promise<InspectDirectoryEntry[]> {
+  /** 針對非符號連結的檔案或資料夾進行處理 */
+  const lstat = async ({ fileName, filePath, fileType }: ReadDirectoryEntry) => {
+    if (fileType === "symlink") return null;
+
+    const { data } = await tryCatch(() => fs.promises.lstat(filePath));
+    if (!data) return null;
+
+    const size = fileType === "folder" ? 0 : data.size;
+    const fileSize = formatFileSize(size);
+    const date = { mtime: data.mtime.getTime(), ctime: data.ctime.getTime() };
+    return { fileName, filePath, fileType, fileSize, size, ...date };
+  };
+
+  /** 針對符號連結的檔案或資料夾進行處理 */
+  const stat = async ({ fileName, filePath }: ReadDirectoryEntry) => {
+    const { data: self } = await tryCatch(() => fs.promises.lstat(filePath));
+    if (!self) return null;
+
+    const { data: target } = await tryCatch(() => fs.promises.stat(filePath));
+    if (!target) return null;
+
+    let fileType: InspectDirectoryEntry["fileType"];
+    if (target.isDirectory()) fileType = "file-symlink-directory";
+    else if (target.isFile()) fileType = "file-symlink-file";
     else return null;
 
-    const size = info.isDirectory() ? 0 : info.size;
+    const size = fileType === "file-symlink-directory" ? 0 : target.size;
     const fileSize = formatFileSize(size);
-    const date = { mtime: info.mtime.getTime(), ctime: info.ctime.getTime() };
+    const date = { mtime: self.mtime.getTime(), ctime: self.ctime.getTime() };
     return { fileName, filePath, fileType, fileSize, size, ...date };
-  }
+  };
 
-  // 處理符號連結
-  const { data: target, error: targetError } = await tryCatch(() => fs.promises.stat(filePath));
-  if (targetError) return null; // 壞掉或目標不存在
+  const promises = entries.map(async (entry) => {
+    const { fileType } = entry;
 
-  if (target.isDirectory()) fileType = "file-symlink-directory";
-  else if (target.isFile()) fileType = "file-symlink-file";
-  else return null;
+    if (fileType === "file" || fileType === "folder") {
+      return lstat(entry);
+    } else if (fileType === "symlink") {
+      return stat(entry);
+    } else {
+      return null;
+    }
+  });
 
-  const size = fileType === "file-symlink-directory" ? 0 : target.size;
-  const fileSize = formatFileSize(size);
-  const date = { mtime: info.mtime.getTime(), ctime: info.ctime.getTime() };
-  return { fileName, filePath, fileType, fileSize, size, ...date };
+  return (await Promise.all(promises)).filter((entry) => entry !== null);
 }
 
 /**
@@ -61,5 +105,5 @@ function isRootDirectory(dirPath: string): boolean {
   return path.normalize(absolutePath) === path.normalize(parentPath);
 }
 
-export { inspectFile, isRootDirectory };
-export type { InspectResult };
+export { readDirectory, inspectDirectory, isRootDirectory };
+export type { ReadDirectoryEntry, InspectDirectoryEntry };

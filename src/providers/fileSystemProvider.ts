@@ -1,81 +1,45 @@
 import * as vscode from "vscode";
-import * as path from "path";
-import * as fs from "fs";
 import { randomUUID, type UUID } from "crypto";
 
-import { tryCatch } from "../utils/tryCatch";
+import { formatPathToArray } from "../utils/formatter";
 import { createWebviewPanel } from "../utils/webviewHelper";
-import { handleFileSystemData } from "../handlers/fileSystemHandlers";
-import type { FileSystemData, FileSystemDataParams } from "../handlers/fileSystemHandlers";
-import type { OneOf } from "../utils/type";
+import type { Prettify } from "../utils/type";
+
+import { handleShowInformationMessage } from "../handlers/fileSystemHandlers";
+import { handleReadDirectory, handleOpenFile, handleOpenInTarget } from "../handlers/fileSystemHandlers";
+import { handleCreateFile, handleCreateDir } from "../handlers/fileSystemHandlers";
 
 import fileSystemLight from "../icons/file-system-light.svg";
 import fileSystemDark from "../icons/file-system-dark.svg";
 
 // ---------------------------------------------
-// 前端往後端傳送的訊息相關型別與檢查
+// 前端往後端雙方的訊息相關型別
 // ---------------------------------------------
 
-type OpenInTarget = "workspace" | "terminal" | "imageWall";
+type FileSystemAPI = {
+  showInformationMessage: typeof handleShowInformationMessage;
+  readDirectory: typeof handleReadDirectory;
+  createFile: typeof handleCreateFile;
+  createDir: typeof handleCreateDir;
+  openFile: typeof handleOpenFile;
+  openInTarget: typeof handleOpenInTarget;
+};
 
-/** 用於換資料夾、換頁的請求 */
-type FileSystemRequest = { type: "request" } & FileSystemDataParams;
-/** 用於讓前端可以呼叫 showInformationMessage 的訊息 */
-type FileSystemInfoMessage = { type: "info"; message: string };
-/** 用於讓前端呼叫開啟檔案的訊息 */
-type FileSystemOpenFileMessage = { type: "openFile"; filePath: string };
-/** 用於讓前端呼叫所有需要用到 dialog 的訊息 (比如建立新檔案、建立新資料夾)
- * (雖然架構的確是後端決定狀態，但後端仍是無狀態的，實際儲存在前端，因此該請求必須包含上次的狀態) */
-type FileSystemDialogMessage = { type: "openDialog"; dialogType: "newFile" | "newFolder" } & FileSystemDataParams;
-/** 用於讓前端呼叫 "在此開啟..." 等功能 */
-type FileSystemOpenInMessage = { type: "openIn"; openType: OpenInTarget } & FileSystemDataParams;
+/** 由延伸主機來規定前端在通訊時，應怎樣實作其 postMessage 函數 */
+interface RequestFileSystemTypeInFrontend {
+  <K extends keyof FileSystemAPI>(params: {
+    panelId: UUID;
+    type: K;
+    params: Prettify<Parameters<FileSystemAPI[K]>[0]>;
+  }): Promise<Awaited<ReturnType<FileSystemAPI[K]>>>;
+}
 
-/** 該延伸主機可以接受的所有訊息種類 */
-type FileSystemMessage = OneOf<
-  [
-    FileSystemInfoMessage,
-    FileSystemRequest,
-    FileSystemOpenFileMessage,
-    FileSystemDialogMessage,
-    FileSystemOpenInMessage
-  ]
+/** 由延伸主機在一開始就注入到 html 的資料 */
+type FileSystemInitialData = Prettify<
+  { panelId: UUID } & Pick<Awaited<ReturnType<typeof handleReadDirectory>>, "currentPath" | "currentPathParts">
 >;
 
-/** 檢查一個物件是否包含 handleFileSystemData 所需的參數 */
-function isFileSystemDataParams(value: Record<string, unknown>): value is FileSystemDataParams {
-  const check1 = typeof value.panelId === "string" && typeof value.folderPath === "string";
-  const check2 = typeof value.sortField === "string" && typeof value.sortOrder === "string";
-  const check3 = typeof value.page === "number" && typeof value.filter === "string";
-  return check1 && check2 && check3;
-}
-
-/** 檢查接收到的訊息格式是否正確 */
-function checkMessage(value: unknown): value is FileSystemMessage {
-  if (typeof value !== "object" || value === null) return false;
-
-  const msg = value as Record<string, unknown>;
-
-  if (msg.type === "info") {
-    return typeof msg.message === "string";
-  }
-  if (msg.type === "request") {
-    return isFileSystemDataParams(msg);
-  }
-  if (msg.type === "openFile") {
-    return typeof msg.filePath === "string";
-  }
-  if (msg.type === "openDialog") {
-    return (msg.dialogType === "newFile" || msg.dialogType === "newFolder") && isFileSystemDataParams(msg);
-  }
-  if (msg.type === "openIn") {
-    return (
-      (msg.openType === "workspace" || msg.openType === "terminal" || msg.openType === "imageWall") &&
-      isFileSystemDataParams(msg)
-    );
-  }
-
-  return false;
-}
+export type { RequestFileSystemTypeInFrontend as RequestFileSystemHost, FileSystemInitialData };
 
 // ---------------------------------------------
 // 與 vscode 介面交互並協調 handler 相關的邏輯
@@ -87,18 +51,13 @@ function checkMessage(value: unknown): value is FileSystemMessage {
 const createFileSystemPanel = async (context: vscode.ExtensionContext, folderPath: string) => {
   const panelId = randomUUID();
 
-  const initialParams = {
+  const initialData: FileSystemInitialData = {
     panelId,
-    folderPath,
-    page: 1,
-    sortField: "fileName" as const,
-    sortOrder: "asc" as const,
-    filter: "all" as const,
+    currentPath: folderPath,
+    currentPathParts: formatPathToArray(folderPath),
   };
 
-  const initialData = await handleFileSystemData(initialParams);
-
-  const panel = createWebviewPanel<FileSystemData>({
+  const panel = createWebviewPanel<FileSystemInitialData>({
     panelId: "1ureka.fileSystem", // 這與 panelId 無關，只是註冊用的識別字串，實際溝通會使用 initialData.panelId
     panelTitle: "檔案系統",
     webviewType: "fileSystem",
@@ -112,89 +71,32 @@ const createFileSystemPanel = async (context: vscode.ExtensionContext, folderPat
 };
 
 /**
- * 重新呼叫 handleFileSystemData 並更新前端狀態
+ * 檔案系統相關 API 映射
  */
-const updateState = async (webview: vscode.Webview, params: FileSystemDataParams) => {
-  try {
-    const data = await handleFileSystemData(params);
-    webview.postMessage({ type: "fileSystemData", data });
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "未知錯誤";
-    vscode.window.showErrorMessage(`無法載入檔案系統資料: ${message}`);
-  }
+const fileSystemAPI: FileSystemAPI = {
+  showInformationMessage: handleShowInformationMessage,
+  readDirectory: handleReadDirectory,
+  createFile: handleCreateFile,
+  createDir: handleCreateDir,
+  openFile: handleOpenFile,
+  openInTarget: handleOpenInTarget,
 };
 
 /**
  * 處理並回應檔案系統面板的請求
  */
-const dispatchEvent = async (panelId: UUID, event: FileSystemMessage, webview: vscode.Webview) => {
-  if (event.type === "info") {
-    vscode.window.showInformationMessage(event.message);
-    return;
-  }
+const dispatchEvent = async (
+  panelId: UUID,
+  webview: vscode.Webview,
+  event: { panelId: UUID; type: keyof FileSystemAPI; params: any }
+) => {
+  if (event.panelId !== panelId) return;
 
-  if (event.type === "openFile") {
-    const uri = vscode.Uri.file(event.filePath);
-    vscode.commands.executeCommand("vscode.open", uri, vscode.ViewColumn.Active);
-    return;
-  }
+  const apiFunction = fileSystemAPI[event.type];
+  const result = await apiFunction(event.params);
 
-  if (event.panelId !== panelId) return; // 剩下的請求都需要比對 panelId
-
-  if (event.type === "request") {
-    await updateState(webview, { ...event });
-    return;
-  }
-
-  if (event.type === "openDialog" && event.dialogType === "newFile") {
-    // 先試試看 EAFP 原則
-    const fileName = await vscode.window.showInputBox({ prompt: "輸入新檔案名稱", placeHolder: "檔案名稱" });
-    if (!fileName) return;
-
-    const newFilePath = path.join(event.folderPath, fileName);
-
-    const { error } = await tryCatch(() => fs.promises.writeFile(newFilePath, ""));
-    if (error) {
-      vscode.window.showErrorMessage(`無法建立新檔案: ${error instanceof Error ? error.message : "未知錯誤"}`);
-      return;
-    }
-
-    const uri = vscode.Uri.file(newFilePath);
-    vscode.commands.executeCommand("vscode.open", uri);
-
-    await updateState(webview, { ...event });
-    return;
-  }
-
-  if (event.type === "openDialog" && event.dialogType === "newFolder") {
-    const folderName = await vscode.window.showInputBox({ prompt: "輸入新資料夾名稱", placeHolder: "資料夾名稱" });
-    if (!folderName) return;
-
-    const { error } = await tryCatch(() => fs.promises.mkdir(path.join(event.folderPath, folderName)));
-    if (error) {
-      vscode.window.showErrorMessage(`無法建立新資料夾: ${error instanceof Error ? error.message : "未知錯誤"}`);
-      return;
-    }
-
-    await updateState(webview, { ...event });
-    return;
-  }
-
-  if (event.type === "openIn") {
-    if (event.openType === "workspace") {
-      const uri = vscode.Uri.file(event.folderPath);
-      vscode.commands.executeCommand("vscode.openFolder", uri, true);
-      return;
-    }
-    if (event.openType === "terminal") {
-      const terminal = vscode.window.createTerminal({ cwd: event.folderPath });
-      terminal.show();
-      return;
-    }
-    if (event.openType === "imageWall") {
-      vscode.commands.executeCommand("1ureka.imageWall.openImageWallFromFolder", event.folderPath);
-      return;
-    }
+  if (result) {
+    webview.postMessage({ panelId, type: event.type + "Result", result });
   }
 };
 
@@ -204,8 +106,8 @@ const dispatchEvent = async (panelId: UUID, event: FileSystemMessage, webview: v
 async function openFileSystemPanel(context: vscode.ExtensionContext, folderPath: string) {
   const { panelId, panel } = await createFileSystemPanel(context, folderPath);
 
-  const messageListener = panel.webview.onDidReceiveMessage(async (event) => {
-    if (checkMessage(event)) await dispatchEvent(panelId, event, panel.webview);
+  const messageListener = panel.webview.onDidReceiveMessage((event) => {
+    dispatchEvent(panelId, panel.webview, event);
   });
 
   panel.onDidDispose(() => messageListener.dispose());
@@ -214,4 +116,3 @@ async function openFileSystemPanel(context: vscode.ExtensionContext, folderPath:
 }
 
 export { openFileSystemPanel };
-export type { FileSystemRequest, FileSystemDialogMessage, FileSystemOpenInMessage };
