@@ -8,15 +8,19 @@ const openFile = (filePath: string) => {
 };
 
 /** 建立新資料夾 */
-const createNewFolder = () => {
+const createNewFolder = async () => {
   const { currentPath, panelId } = fileSystemDataStore.getState();
-  requestFileSystemHost({ panelId, type: "createDir", params: { dirPath: currentPath } });
+  const result = await requestFileSystemHost({ panelId, type: "createDir", params: { dirPath: currentPath } });
+  if (!result) return;
+  fileSystemDataStore.setState({ ...result });
 };
 
 /** 建立新檔案 */
-const createNewFile = () => {
+const createNewFile = async () => {
   const { currentPath, panelId } = fileSystemDataStore.getState();
-  requestFileSystemHost({ panelId, type: "createFile", params: { dirPath: currentPath } });
+  const result = await requestFileSystemHost({ panelId, type: "createFile", params: { dirPath: currentPath } });
+  if (!result) return;
+  fileSystemDataStore.setState({ ...result });
 };
 
 /** 以該資料夾開啟工作區 */

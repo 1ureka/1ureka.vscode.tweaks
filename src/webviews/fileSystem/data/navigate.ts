@@ -7,8 +7,8 @@ import { requestFileSystemHost } from "./message";
  */
 const refresh = async () => {
   const { currentPath, panelId } = fileSystemDataStore.getState();
-  const { entries } = await requestFileSystemHost({ panelId, type: "readDirectory", params: { dirPath: currentPath } });
-  fileSystemDataStore.setState({ entries });
+  const result = await requestFileSystemHost({ panelId, type: "readDirectory", params: { dirPath: currentPath } });
+  fileSystemDataStore.setState({ ...result });
 };
 
 /**
@@ -17,8 +17,8 @@ const refresh = async () => {
 const navigateToFolder = async (folderPath: string) => {
   clearSelection();
   const { panelId } = fileSystemDataStore.getState();
-  const { entries } = await requestFileSystemHost({ panelId, type: "readDirectory", params: { dirPath: folderPath } });
-  fileSystemDataStore.setState({ entries });
+  const result = await requestFileSystemHost({ panelId, type: "readDirectory", params: { dirPath: folderPath } });
+  fileSystemDataStore.setState({ ...result });
   setPage(1);
 };
 

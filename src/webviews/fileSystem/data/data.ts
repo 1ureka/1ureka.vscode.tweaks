@@ -17,13 +17,13 @@ const fileSystemDataStore = create<FileSystemInitialData & { loading: boolean }>
 
 /** 初始化 */
 const registerDataInitEvent = async () => {
-  const { entries } = await requestFileSystemHost({
+  const result = await requestFileSystemHost({
     panelId: initialData.panelId,
     type: "readDirectory",
     params: { dirPath: initialData.currentPath },
   });
 
-  fileSystemDataStore.setState({ entries });
+  fileSystemDataStore.setState({ ...result });
 };
 
 export { fileSystemDataStore, registerDataInitEvent };
