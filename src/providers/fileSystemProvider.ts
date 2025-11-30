@@ -1,13 +1,11 @@
 import * as vscode from "vscode";
 import { randomUUID, type UUID } from "crypto";
 
-import { formatPathToArray } from "../utils/formatter";
 import { createWebviewPanel } from "../utils/webviewHelper";
-import type { Prettify } from "../utils/type";
-
-import { handleShowInformationMessage } from "../handlers/fileSystemHandlers";
+import { handleInitialData, handleShowInformationMessage } from "../handlers/fileSystemHandlers";
 import { handleReadDirectory, handleOpenFile, handleOpenInTarget } from "../handlers/fileSystemHandlers";
 import { handleCreateFile, handleCreateDir } from "../handlers/fileSystemHandlers";
+import type { Prettify } from "../utils/type";
 
 import fileSystemLight from "../icons/file-system-light.svg";
 import fileSystemDark from "../icons/file-system-dark.svg";
@@ -35,9 +33,7 @@ interface RequestFileSystemInFrontend {
 }
 
 /** 由延伸主機在一開始就注入到 html 的資料 */
-type FileSystemInitialData = Prettify<
-  { panelId: UUID } & Pick<Awaited<ReturnType<typeof handleReadDirectory>>, "currentPath" | "currentPathParts">
->;
+type FileSystemInitialData = Prettify<{ panelId: UUID } & Awaited<ReturnType<typeof handleReadDirectory>>>;
 
 export type { RequestFileSystemInFrontend as RequestFileSystemHost, FileSystemInitialData };
 
@@ -48,21 +44,17 @@ export type { RequestFileSystemInFrontend as RequestFileSystemHost, FileSystemIn
 /**
  * 建立檔案系統檢視面板，用 SSR 方式注入第一頁資料
  */
-const createFileSystemPanel = async (context: vscode.ExtensionContext, folderPath: string) => {
+const createFileSystemPanel = async (context: vscode.ExtensionContext, dirPath: string) => {
   const panelId = randomUUID();
 
-  const initialData: FileSystemInitialData = {
-    panelId,
-    currentPath: folderPath,
-    currentPathParts: formatPathToArray(folderPath),
-  };
+  const initialData = { panelId, ...handleInitialData({ dirPath }) };
 
   const panel = createWebviewPanel<FileSystemInitialData>({
     panelId: "1ureka.fileSystem", // 這與 panelId 無關，只是註冊用的識別字串，實際溝通會使用 initialData.panelId
     panelTitle: "檔案系統",
     webviewType: "fileSystem",
     extensionUri: context.extensionUri,
-    resourceUri: vscode.Uri.file(folderPath),
+    resourceUri: vscode.Uri.file(dirPath),
     initialData,
     iconPath: { light: vscode.Uri.parse(fileSystemLight), dark: vscode.Uri.parse(fileSystemDark) },
   });
@@ -99,8 +91,8 @@ const dispatchEvent = async (
 /**
  * 創建並開啟檔案系統瀏覽器面板
  */
-async function openFileSystemPanel(context: vscode.ExtensionContext, folderPath: string) {
-  const { panelId, panel } = await createFileSystemPanel(context, folderPath);
+async function openFileSystemPanel(context: vscode.ExtensionContext, dirPath: string) {
+  const { panelId, panel } = await createFileSystemPanel(context, dirPath);
 
   const messageListener = panel.webview.onDidReceiveMessage((event) => {
     dispatchEvent(panelId, panel.webview, event);

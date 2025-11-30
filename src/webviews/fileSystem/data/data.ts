@@ -1,7 +1,6 @@
 import { create } from "zustand";
 import { postMessageToExtension, getInitialData } from "../../utils/vscodeApi";
 import type { FileSystemInitialData, RequestFileSystemHost } from "../../../providers/fileSystemProvider";
-import type { InspectDirectoryEntry } from "../../../utils/system";
 import { tryCatch } from "../../../utils/tryCatch";
 import { defer } from "../../../utils/promise";
 
@@ -15,9 +14,10 @@ if (!initialData) {
   throw new Error("無法取得檔案系統初始資料");
 }
 
-const fileSystemDataStore = create<FileSystemInitialData & { entries: InspectDirectoryEntry[]; loading: boolean }>(
-  () => ({ ...initialData, entries: [], loading: true })
-);
+const fileSystemDataStore = create<FileSystemInitialData & { loading: boolean }>(() => ({
+  ...initialData,
+  loading: true,
+}));
 
 // ------------------------------------------------------------------------------------------
 // 用於避免 race condition 的請求佇列，同時也可以實現精準的 loading 狀態判斷，給 UI 使用

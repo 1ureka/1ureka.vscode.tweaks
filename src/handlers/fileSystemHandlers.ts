@@ -21,6 +21,21 @@ type ReadDirectoryResult = {
 };
 
 /**
+ * 處理初始資料注入
+ */
+const handleInitialData = (params: { dirPath: string }): ReadDirectoryResult => {
+  return {
+    currentPath: params.dirPath,
+    currentPathParts: formatPathToArray(params.dirPath),
+    isCurrentRoot: isRootDirectory(params.dirPath),
+    fileCount: 0,
+    folderCount: 0,
+    entries: [],
+    timestamp: Date.now(),
+  };
+};
+
+/**
  * 掃描資料夾內容，讀取檔案系統資訊並回傳
  */
 const handleReadDirectory = async (params: { dirPath: string }): Promise<ReadDirectoryResult> => {
@@ -136,6 +151,6 @@ const handleOpenInTarget = async (params: { dirPath: string; target: "workspace"
   }
 };
 
-export { handleShowInformationMessage };
+export { handleShowInformationMessage, handleInitialData };
 export { handleCreateFile, handleCreateDir };
 export { handleReadDirectory, handleOpenFile, handleOpenInTarget };
