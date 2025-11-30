@@ -3,40 +3,121 @@ import { fileSystemDataStore } from "./data";
 import type { InspectDirectoryEntry } from "../../../utils/system";
 import type { Prettify } from "../../../utils/type";
 
+// ----------------------------------------------------------------------------
+// 定義檔案系統可以如何被檢視的狀態
+// ----------------------------------------------------------------------------
+
 const FILES_PER_PAGE = 50;
 
 type FileProperties = Prettify<InspectDirectoryEntry & { icon: `codicon codicon-${string}` }>;
 
-type TableViewStore = {
+type ViewStateStore = {
   page: number;
   pages: number;
   sortField: keyof Pick<FileProperties, "fileName" | "mtime" | "ctime" | "size">;
   sortOrder: "asc" | "desc";
   filter: "all" | "file" | "folder";
   selection: { isDefaultSelected: boolean; overrides: { [filePath: string]: boolean } };
+  selectionCount: number;
+  timestamp: number; // 用於將 fileSystemData 的更新繼續向下傳遞給 fileSystemViewData
 };
 
-const initialViewState: TableViewStore = {
+const initialViewState: ViewStateStore = {
   page: 1,
   pages: 1,
   sortField: "fileName",
   sortOrder: "asc",
   filter: "all",
   selection: { isDefaultSelected: false, overrides: {} },
+  selectionCount: 0,
+  timestamp: Date.now(),
 };
 
-const fileSystemViewStore = create<TableViewStore>(() => initialViewState);
+const fileSystemViewStore = create<ViewStateStore>(() => initialViewState);
 
-export { fileSystemViewStore as useView };
+export { fileSystemViewStore as useViewState };
 
 // ----------------------------------------------------------------------------
+// 當檔案系統資料更新時，驗證檢視狀態的合理性，並在驗證完成後確保將更新鏈繼續傳遞下去
+// ----------------------------------------------------------------------------
 
+/**
+ * 驗證選取狀態與選取數量
+ */
+const validateSelection = (entries: InspectDirectoryEntry[]) => {
+  const { selection } = fileSystemViewStore.getState();
+  const { isDefaultSelected, overrides } = selection;
+
+  const entryPaths = new Set(entries.map((entry) => entry.filePath));
+  const validOverrides: { [filePath: string]: boolean } = {};
+
+  for (const [filePath, selected] of Object.entries(overrides)) {
+    if (entryPaths.has(filePath)) {
+      validOverrides[filePath] = selected;
+    }
+  }
+
+  let selectedCount = 0;
+  if (isDefaultSelected) {
+    // 計算未選取的數量，再用總數扣除，排除已不在目前檔案列表中的路徑
+    const deselectedCount = Object.values(validOverrides).filter((selected) => !selected).length;
+    selectedCount = entries.length - deselectedCount;
+  } else {
+    // 計算被選取的數量，排除已不在目前檔案列表中的路徑
+    selectedCount = Object.values(validOverrides).filter((selected) => selected).length;
+  }
+
+  fileSystemViewStore.setState({
+    selection: { isDefaultSelected: selection.isDefaultSelected, overrides: validOverrides },
+    selectionCount: selectedCount,
+  });
+};
+
+/**
+ * 驗證分頁是否合理
+ */
+const validatePagination = (entries: InspectDirectoryEntry[]) => {
+  const { page } = fileSystemViewStore.getState();
+
+  const totalPages = Math.ceil(entries.length / FILES_PER_PAGE);
+  const validPage = page > totalPages ? Math.max(1, totalPages) : page;
+
+  fileSystemViewStore.setState({ page: validPage, pages: totalPages });
+};
+
+/** 確保當檔案系統更新時，選取狀態與分頁是合理的 */
+fileSystemDataStore.subscribe(({ entries }) => {
+  validateSelection(entries);
+  validatePagination(entries);
+  fileSystemViewStore.setState({ timestamp: Date.now() }); // 觸發 viewData 的更新
+});
+
+// ----------------------------------------------------------------------------
+// 定義用於實際呈現在表格中的檔案系統資料狀態
+// ----------------------------------------------------------------------------
+
+type ViewDataStore = { entries: FileProperties[] };
+
+const initialViewData: ViewDataStore = { entries: [] };
+
+const fileSystemViewDataStore = create<ViewDataStore>(() => initialViewData);
+
+// ----------------------------------------------------------------------------
+// 當檢視條件或檔案系統資料(透過更新鏈)任一更新時，重新計算用於呈現的檔案系統資料
+// ----------------------------------------------------------------------------
+
+/**
+ * 將檔案屬性陣列擴展成帶有圖示的檔案屬性陣列
+ */
 const assignIconToEntries = (entries: InspectDirectoryEntry[]): FileProperties[] => {
   return entries.map((entry) => ({ ...entry, icon: `codicon codicon-${entry.fileType}` }));
 };
 
-const useFilterEntries = (entries: FileProperties[]) => {
-  const filter = fileSystemViewStore((state) => state.filter);
+/**
+ * 根據目前的篩選條件回傳篩選後的檔案屬性陣列
+ */
+const filterEntries = (entries: FileProperties[]) => {
+  const { filter } = fileSystemViewStore.getState();
 
   let filteredEntries: FileProperties[] = [];
   if (filter === "all") {
@@ -48,9 +129,11 @@ const useFilterEntries = (entries: FileProperties[]) => {
   return filteredEntries;
 };
 
-const useSortEntries = (entries: FileProperties[]) => {
-  const sortField = fileSystemViewStore((state) => state.sortField);
-  const sortOrder = fileSystemViewStore((state) => state.sortOrder);
+/**
+ * 根據目前的排序欄位與順序回傳排序後的檔案屬性陣列
+ */
+const sortEntries = (entries: FileProperties[]) => {
+  const { sortField, sortOrder } = fileSystemViewStore.getState();
 
   const sortedEntries = [...entries];
   sortedEntries.sort((a, b) => {
@@ -74,36 +157,60 @@ const useSortEntries = (entries: FileProperties[]) => {
   return sortedEntries;
 };
 
-const usePaginateEntries = (entries: FileProperties[]) => {
-  const page = fileSystemViewStore((state) => state.page);
+/**
+ * 根據目前的頁碼回傳分頁後的檔案屬性陣列
+ */
+const paginateEntries = (entries: FileProperties[]) => {
+  const { page } = fileSystemViewStore.getState();
 
-  const totalPages = Math.ceil(entries.length / FILES_PER_PAGE);
-  const validPage = page > totalPages ? Math.max(1, totalPages) : page;
-
-  const startIndex = (validPage - 1) * FILES_PER_PAGE;
+  const startIndex = (page - 1) * FILES_PER_PAGE;
   const endIndex = startIndex + FILES_PER_PAGE;
   const paginatedEntries = entries.slice(startIndex, endIndex);
 
-  fileSystemViewStore.setState({ page: validPage, pages: totalPages });
   return paginatedEntries;
 };
 
-const useViewEntries = () => {
-  const entries = fileSystemDataStore((state) => state.entries);
+/**
+ * 當檢視條件或檔案系統任一更新時，重新計算 viewData
+ */
+fileSystemViewStore.subscribe(() => {
+  const entries = fileSystemDataStore.getState().entries;
+  const entriesWithIcons = assignIconToEntries(entries);
+  const entriesFiltered = filterEntries(entriesWithIcons);
+  const entriesSorted = sortEntries(entriesFiltered);
+  const entriesPaginated = paginateEntries(entriesSorted);
 
-  const entriesFiltered = useFilterEntries(assignIconToEntries(entries));
-  const entriesSorted = useSortEntries(entriesFiltered);
-  const entriesPaginated = usePaginateEntries(entriesSorted);
-
-  return entriesPaginated;
-};
-
-export { useViewEntries };
+  fileSystemViewDataStore.setState({ entries: entriesPaginated });
+});
 
 // ----------------------------------------------------------------------------
+// 定義用於更改檔案系統檢視狀態的行為
+// ----------------------------------------------------------------------------
 
-const changeView = (view: Partial<TableViewStore>) => {
-  fileSystemViewStore.setState(view);
+/** 換頁 */
+const setPage = (page: number) => {
+  fileSystemViewStore.setState({ page });
 };
 
-export { changeView };
+/** 清空選取 */
+const clearSelection = () => {
+  fileSystemViewStore.setState({ selection: { isDefaultSelected: false, overrides: {} } });
+};
+
+/** 設定排序欄位與順序 */
+const setSorting = (field: ViewStateStore["sortField"]) => {
+  const { sortField, sortOrder } = fileSystemViewStore.getState();
+  // 如果點擊的是同一欄位，切換順序；否則使用預設升序
+  const newOrder = sortField === field && sortOrder === "asc" ? "desc" : "asc";
+
+  fileSystemViewStore.setState({ sortField: field, sortOrder: newOrder });
+};
+
+/** 設定篩選條件 */
+const setFilter = (filter: ViewStateStore["filter"]) => {
+  clearSelection(); // 避免使用者忘記篩選掉的項目可能還被選取著
+
+  fileSystemViewStore.setState({ filter, page: 1 });
+};
+
+export { setPage, clearSelection, setSorting, setFilter };
