@@ -1,7 +1,7 @@
 import { create } from "zustand";
-import { getInitialData } from "../../utils/vscodeApi";
+import { getInitialData } from "@/webviews/utils/vscodeApi";
 import { requestFileSystemHost } from "./message";
-import type { FileSystemInitialData } from "../../../providers/fileSystemProvider";
+import type { FileSystemInitialData } from "@/providers/fileSystemProvider";
 
 // ------------------------------------------------------------------------------------------
 // 建立前端用於儲存檔案系統資料的容器

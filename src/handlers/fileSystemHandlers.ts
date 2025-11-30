@@ -2,10 +2,10 @@ import * as vscode from "vscode";
 import * as fs from "fs";
 import * as path from "path";
 
-import { tryCatch } from "../utils/tryCatch";
-import { formatPathToArray } from "../utils/formatter";
-import { readDirectory, inspectDirectory, isRootDirectory } from "../utils/system";
-import type { InspectDirectoryEntry } from "../utils/system";
+import { tryCatch } from "@/utils/tryCatch";
+import { formatPathToArray } from "@/utils/formatter";
+import { readDirectory, inspectDirectory, isRootDirectory } from "@/utils/system";
+import type { InspectDirectoryEntry } from "@/utils/system";
 
 type ReadDirectoryResult = {
   // 有關當前目錄的資訊

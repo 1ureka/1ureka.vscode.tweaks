@@ -1,14 +1,14 @@
 import * as vscode from "vscode";
 import { randomUUID, type UUID } from "crypto";
 
-import { createWebviewPanel } from "../utils/webviewHelper";
-import { handleInitialData, handleShowInformationMessage } from "../handlers/fileSystemHandlers";
-import { handleReadDirectory, handleOpenFile, handleOpenInTarget } from "../handlers/fileSystemHandlers";
-import { handleCreateFile, handleCreateDir } from "../handlers/fileSystemHandlers";
-import type { Prettify } from "../utils/type";
+import { createWebviewPanel } from "@/utils/webviewHelper";
+import { handleInitialData, handleShowInformationMessage } from "@/handlers/fileSystemHandlers";
+import { handleReadDirectory, handleOpenFile, handleOpenInTarget } from "@/handlers/fileSystemHandlers";
+import { handleCreateFile, handleCreateDir } from "@/handlers/fileSystemHandlers";
+import type { Prettify } from "@/utils/type";
 
-import fileSystemLight from "../icons/file-system-light.svg";
-import fileSystemDark from "../icons/file-system-dark.svg";
+import fileSystemLight from "@/icons/file-system-light.svg";
+import fileSystemDark from "@/icons/file-system-dark.svg";
 
 // ---------------------------------------------
 // 前端往後端雙方的訊息相關型別
