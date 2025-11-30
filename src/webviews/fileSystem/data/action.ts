@@ -1,34 +1,40 @@
 import { fileSystemDataStore } from "./data";
-import { postMessageToExtension } from "../../utils/vscodeApi";
-import type { FileSystemDialogMessage, FileSystemOpenInMessage } from "../../../providers/fileSystemProvider";
+import { requestFileSystemHost } from "./message";
 
-const postDialogMessage = (params: FileSystemDialogMessage) => postMessageToExtension(params);
+/** 開啟檔案 */
+const openFile = (filePath: string) => {
+  const { panelId } = fileSystemDataStore.getState();
+  requestFileSystemHost({ panelId, type: "openFile", params: { filePath } });
+};
 
 /** 建立新資料夾 */
 const createNewFolder = () => {
-  postDialogMessage({ type: "openDialog", dialogType: "newFolder", ...fileSystemDataStore.getState() });
+  const { currentPath, panelId } = fileSystemDataStore.getState();
+  requestFileSystemHost({ panelId, type: "createDir", params: { dirPath: currentPath } });
 };
 
 /** 建立新檔案 */
 const createNewFile = () => {
-  postDialogMessage({ type: "openDialog", dialogType: "newFile", ...fileSystemDataStore.getState() });
+  const { currentPath, panelId } = fileSystemDataStore.getState();
+  requestFileSystemHost({ panelId, type: "createFile", params: { dirPath: currentPath } });
 };
-
-const postOpenInMessage = (params: FileSystemOpenInMessage) => postMessageToExtension(params);
 
 /** 以該資料夾開啟工作區 */
 const openInWorkspace = () => {
-  postOpenInMessage({ type: "openIn", openType: "workspace", ...fileSystemDataStore.getState() });
+  const { currentPath, panelId } = fileSystemDataStore.getState();
+  requestFileSystemHost({ panelId, type: "openInTarget", params: { target: "workspace", dirPath: currentPath } });
 };
 
 /** 以該資料夾開啟終端機 */
 const openInTerminal = () => {
-  postOpenInMessage({ type: "openIn", openType: "terminal", ...fileSystemDataStore.getState() });
+  const { currentPath, panelId } = fileSystemDataStore.getState();
+  requestFileSystemHost({ panelId, type: "openInTarget", params: { target: "terminal", dirPath: currentPath } });
 };
 
 /** 以該資料夾開啟圖片牆 */
 const openInImageWall = () => {
-  postOpenInMessage({ type: "openIn", openType: "imageWall", ...fileSystemDataStore.getState() });
+  const { currentPath, panelId } = fileSystemDataStore.getState();
+  requestFileSystemHost({ panelId, type: "openInTarget", params: { target: "imageWall", dirPath: currentPath } });
 };
 
-export { createNewFolder, createNewFile, openInWorkspace, openInTerminal, openInImageWall };
+export { openFile, createNewFolder, createNewFile, openInWorkspace, openInTerminal, openInImageWall };

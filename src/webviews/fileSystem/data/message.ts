@@ -1,8 +1,8 @@
 import { defer } from "../../../utils/promise";
 import { tryCatch } from "../../../utils/tryCatch";
+import { fileSystemDataStore } from "./data";
 import { postMessageToExtension } from "../../utils/vscodeApi";
 import type { RequestFileSystemHost } from "../../../providers/fileSystemProvider";
-import { fileSystemDataStore } from "./data";
 
 // ------------------------------------------------------------------------------------------
 // 用於避免 race condition 的請求佇列，同時也可以實現精準的 loading 狀態判斷，給 UI 使用

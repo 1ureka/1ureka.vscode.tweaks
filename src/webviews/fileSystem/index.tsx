@@ -2,7 +2,7 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import { FileSystem } from "./FileSystem";
 import { Providers } from "../utils/Providers";
-import { registerDataChangeEvent } from "./data/data";
+import { registerDataInitEvent } from "./data/data";
 
 const App = () => {
   return (
@@ -14,7 +14,7 @@ const App = () => {
 
 const container = document.getElementById("root");
 if (container) {
-  registerDataChangeEvent();
+  registerDataInitEvent();
   createRoot(container).render(<App />);
 }
 
