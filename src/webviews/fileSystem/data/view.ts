@@ -34,6 +34,7 @@ const initialViewState: ViewStateStore = {
 const fileSystemViewStore = create<ViewStateStore>(() => initialViewState);
 
 export { fileSystemViewStore };
+export type { FileProperties };
 
 // ----------------------------------------------------------------------------
 // 當檔案系統資料更新時，驗證檢視狀態的合理性，並在驗證完成後確保將更新鏈繼續傳遞下去
@@ -108,15 +109,18 @@ const useSelectionCount = () => {
 /**
  * 判斷某個項目是否被選取
  */
-const useIsSelected = (filePath: string) => {
+const useIsSelected = () => {
   const selection = fileSystemViewStore((state) => state.selection);
-  const { isDefaultSelected, overrides } = selection;
 
-  if (filePath in overrides) {
-    return overrides[filePath];
-  }
+  return (filePath: string) => {
+    const { isDefaultSelected, overrides } = selection;
 
-  return isDefaultSelected;
+    if (filePath in overrides) {
+      return overrides[filePath];
+    }
+
+    return isDefaultSelected;
+  };
 };
 
 export { useSelectionCount, useIsSelected };
