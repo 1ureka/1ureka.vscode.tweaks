@@ -65,9 +65,16 @@ const validateSelection = (entries: InspectDirectoryEntry[]) => {
  * 驗證分頁是否合理
  */
 const validatePagination = (entries: InspectDirectoryEntry[]) => {
-  const { page } = fileSystemViewStore.getState();
+  const { page, filter } = fileSystemViewStore.getState();
 
-  const totalPages = Math.ceil(entries.length / FILES_PER_PAGE);
+  let filteredEntries: InspectDirectoryEntry[] = [];
+  if (filter === "all") {
+    filteredEntries = [...entries];
+  } else {
+    filteredEntries = entries.filter(({ fileType }) => fileType === filter);
+  }
+
+  const totalPages = Math.ceil(filteredEntries.length / FILES_PER_PAGE);
   const validPage = page > totalPages ? Math.max(1, totalPages) : page;
 
   fileSystemViewStore.setState({ page: validPage, pages: totalPages });
@@ -149,10 +156,10 @@ const assignIconToEntries = (entries: InspectDirectoryEntry[]): FileProperties[]
 /**
  * 根據目前的篩選條件回傳篩選後的檔案屬性陣列
  */
-const filterEntries = (entries: FileProperties[]) => {
+const filterEntries = (entries: InspectDirectoryEntry[]) => {
   const { filter } = fileSystemViewStore.getState();
 
-  let filteredEntries: FileProperties[] = [];
+  let filteredEntries: InspectDirectoryEntry[] = [];
   if (filter === "all") {
     filteredEntries = [...entries];
   } else {
@@ -165,7 +172,7 @@ const filterEntries = (entries: FileProperties[]) => {
 /**
  * 根據目前的排序欄位與順序回傳排序後的檔案屬性陣列
  */
-const sortEntries = (entries: FileProperties[]) => {
+const sortEntries = (entries: InspectDirectoryEntry[]) => {
   const { sortField, sortOrder } = fileSystemViewStore.getState();
 
   const sortedEntries = [...entries];
@@ -193,7 +200,7 @@ const sortEntries = (entries: FileProperties[]) => {
 /**
  * 根據目前的頁碼回傳分頁後的檔案屬性陣列
  */
-const paginateEntries = (entries: FileProperties[]) => {
+const paginateEntries = (entries: InspectDirectoryEntry[]) => {
   const { page } = fileSystemViewStore.getState();
 
   const startIndex = (page - 1) * FILES_PER_PAGE;
@@ -208,12 +215,13 @@ const paginateEntries = (entries: FileProperties[]) => {
  */
 fileSystemViewStore.subscribe(() => {
   const entries = fileSystemDataStore.getState().entries;
-  const entriesWithIcons = assignIconToEntries(entries);
-  const entriesFiltered = filterEntries(entriesWithIcons);
+
+  const entriesFiltered = filterEntries(entries);
   const entriesSorted = sortEntries(entriesFiltered);
   const entriesPaginated = paginateEntries(entriesSorted);
+  const entriesWithIcons = assignIconToEntries(entriesPaginated);
 
-  fileSystemViewDataStore.setState({ entries: entriesPaginated });
+  fileSystemViewDataStore.setState({ entries: entriesWithIcons });
 });
 
 export { fileSystemViewDataStore };
@@ -263,6 +271,8 @@ const setFilter = (filter: ViewStateStore["filter"]) => {
   clearSelection(); // 避免使用者忘記篩選掉的項目可能還被選取著
 
   fileSystemViewStore.setState({ filter, page: 1 });
+
+  validatePagination(fileSystemDataStore.getState().entries);
 };
 
 export { setPage, selectRow, clearSelection, setSorting, setFilter };
