@@ -212,6 +212,8 @@ fileSystemViewStore.subscribe(() => {
   fileSystemViewDataStore.setState({ entries: entriesPaginated });
 });
 
+export { fileSystemViewDataStore };
+
 // ----------------------------------------------------------------------------
 // 定義用於更改檔案系統檢視狀態的行為
 // ----------------------------------------------------------------------------
@@ -219,6 +221,23 @@ fileSystemViewStore.subscribe(() => {
 /** 換頁 */
 const setPage = (page: number) => {
   fileSystemViewStore.setState({ page });
+};
+
+/** 選取某個項目 */
+const selectRow = (filePath: string, selected?: boolean) => {
+  fileSystemViewStore.setState(({ selection }) => {
+    const { isDefaultSelected, overrides } = selection;
+    const currentState = overrides[filePath] ?? isDefaultSelected;
+    const nextState = selected ?? !currentState;
+
+    // 若 nextState 與 isDefaultSelected 相同，表示與預設值相同，則不需在 overrides 中記錄
+    if (nextState === isDefaultSelected) {
+      const { [filePath]: _, ...rest } = overrides;
+      return { selection: { isDefaultSelected, overrides: rest } };
+    } else {
+      return { selection: { isDefaultSelected, overrides: { ...overrides, [filePath]: nextState } } };
+    }
+  });
 };
 
 /** 清空選取 */
@@ -242,4 +261,4 @@ const setFilter = (filter: ViewStateStore["filter"]) => {
   fileSystemViewStore.setState({ filter, page: 1 });
 };
 
-export { setPage, clearSelection, setSorting, setFilter };
+export { setPage, selectRow, clearSelection, setSorting, setFilter };
