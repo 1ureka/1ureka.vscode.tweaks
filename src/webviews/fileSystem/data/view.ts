@@ -18,7 +18,6 @@ type ViewStateStore = {
   sortOrder: "asc" | "desc";
   filter: "all" | "file" | "folder";
   selection: { isDefaultSelected: boolean; overrides: { [filePath: string]: boolean } };
-  selectionCount: number;
   timestamp: number; // 用於將 fileSystemData 的更新繼續向下傳遞給 fileSystemViewData
 };
 
@@ -29,13 +28,12 @@ const initialViewState: ViewStateStore = {
   sortOrder: "asc",
   filter: "all",
   selection: { isDefaultSelected: false, overrides: {} },
-  selectionCount: 0,
   timestamp: Date.now(),
 };
 
 const fileSystemViewStore = create<ViewStateStore>(() => initialViewState);
 
-export { fileSystemViewStore as useViewState };
+export { fileSystemViewStore };
 
 // ----------------------------------------------------------------------------
 // 當檔案系統資料更新時，驗證檢視狀態的合理性，並在驗證完成後確保將更新鏈繼續傳遞下去
@@ -46,7 +44,7 @@ export { fileSystemViewStore as useViewState };
  */
 const validateSelection = (entries: InspectDirectoryEntry[]) => {
   const { selection } = fileSystemViewStore.getState();
-  const { isDefaultSelected, overrides } = selection;
+  const { overrides } = selection;
 
   const entryPaths = new Set(entries.map((entry) => entry.filePath));
   const validOverrides: { [filePath: string]: boolean } = {};
@@ -57,19 +55,8 @@ const validateSelection = (entries: InspectDirectoryEntry[]) => {
     }
   }
 
-  let selectedCount = 0;
-  if (isDefaultSelected) {
-    // 計算未選取的數量，再用總數扣除，排除已不在目前檔案列表中的路徑
-    const deselectedCount = Object.values(validOverrides).filter((selected) => !selected).length;
-    selectedCount = entries.length - deselectedCount;
-  } else {
-    // 計算被選取的數量，排除已不在目前檔案列表中的路徑
-    selectedCount = Object.values(validOverrides).filter((selected) => selected).length;
-  }
-
   fileSystemViewStore.setState({
     selection: { isDefaultSelected: selection.isDefaultSelected, overrides: validOverrides },
-    selectionCount: selectedCount,
   });
 };
 
@@ -91,6 +78,48 @@ fileSystemDataStore.subscribe(({ entries }) => {
   validatePagination(entries);
   fileSystemViewStore.setState({ timestamp: Date.now() }); // 觸發 viewData 的更新
 });
+
+// ----------------------------------------------------------------------------
+// 一些輔助提供更直觀的 viewState 的 selector 函數，由於更新鏈的存在，
+// 我認為這裡都可以相信 viewState 是合理的 (比如 overrides 裡面一定是正確的，因此選取數量不會算錯)
+// ----------------------------------------------------------------------------
+
+/**
+ * 計算目前選取的項目數量
+ */
+const useSelectionCount = () => {
+  const selection = fileSystemViewStore((state) => state.selection);
+  const entries = fileSystemDataStore((state) => state.entries);
+  const { isDefaultSelected, overrides } = selection;
+
+  let selectionCount = 0;
+  if (isDefaultSelected) {
+    // 計算未選取的數量，再用總數扣除
+    const deselectedCount = Object.values(overrides).filter((selected) => !selected).length;
+    selectionCount = entries.length - deselectedCount;
+  } else {
+    // 計算被選取的數量
+    selectionCount = Object.values(overrides).filter((selected) => selected).length;
+  }
+
+  return selectionCount;
+};
+
+/**
+ * 判斷某個項目是否被選取
+ */
+const useIsSelected = (filePath: string) => {
+  const selection = fileSystemViewStore((state) => state.selection);
+  const { isDefaultSelected, overrides } = selection;
+
+  if (filePath in overrides) {
+    return overrides[filePath];
+  }
+
+  return isDefaultSelected;
+};
+
+export { useSelectionCount, useIsSelected };
 
 // ----------------------------------------------------------------------------
 // 定義用於實際呈現在表格中的檔案系統資料狀態
