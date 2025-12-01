@@ -19,6 +19,19 @@ type OneOf<TypesArray extends any[], Res = never, AllProps = MergeTypes<TypesArr
   ? OneOf<Rem, Res | OnlyFirst<Head, AllProps>, AllProps>
   : Prettify<Res>;
 
+/**
+ * 將可能同步或非同步的函式回傳型別統一轉換為單層的 Promise 型別
+ * @example
+ * type SyncFn = () => number;
+ * type AsyncFn = () => Promise<string>;
+ *
+ * type Result1 = Promised<SyncFn>; // Result1 的類型是 Promise<number>
+ * type Result2 = Promised<AsyncFn>; // Result2 的類型是 Promise<string>
+ */
+type Promised<T extends (...args: any) => any> = Promise<Awaited<ReturnType<T>>>;
+
+// ------------------------------------------------------------------------------
+
 type Success<T> = { data: T; error: null };
 type Failure = { data: null; error: Error };
 type Result<T> = Success<T> | Failure;
@@ -50,4 +63,5 @@ function defer<T>() {
   return { promise, resolve, reject };
 }
 
-export { Prettify, OneOf, tryCatch, defer };
+export type { Prettify, OneOf, Promised };
+export { tryCatch, defer };
