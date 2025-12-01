@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import * as vscode from "vscode";
 import type { InvokeMessage } from "@/utils/message_client";
 
