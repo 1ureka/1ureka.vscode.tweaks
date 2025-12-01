@@ -2,10 +2,11 @@ import React from "react";
 import { useWindowVirtualizer } from "@tanstack/react-virtual";
 import { Box, type SxProps } from "@mui/material";
 import { TableHeadRow, TableNavigateUpRow, TableRow, tableRowHeight } from "./FileSystemTableRow";
+import { NoItemDisplay } from "./NoItemDisplay";
 
 import { fileSystemDataStore } from "../data/data";
 import { navigateToFolder, navigateUp } from "../data/navigate";
-import { fileSystemViewDataStore, selectRow, useIsSelected } from "../data/view";
+import { fileSystemViewDataStore, selectRow } from "../data/view";
 import { openFile } from "../data/action";
 
 /**
@@ -26,18 +27,22 @@ function createRowBackgroundSx({ index, selected }: { index: number; selected: b
 /**
  * 為每列元素創建點擊監聽
  */
-const createHandleRowClick = (fileType: string, filePath: string) => (e: React.MouseEvent<HTMLButtonElement>) => {
-  selectRow(filePath);
+const createHandleRowClick =
+  (fileType: string, filePath: string, index: number) => (e: React.MouseEvent<HTMLButtonElement>) => {
+    selectRow(index);
 
-  if (e.detail !== 2) return;
+    if (e.detail !== 2) return;
 
-  if (fileType === "folder" || fileType === "file-symlink-directory") {
-    navigateToFolder(filePath);
-  } else if (fileType === "file" || fileType === "file-symlink-file") {
-    openFile(filePath);
-  }
-};
+    if (fileType === "folder" || fileType === "file-symlink-directory") {
+      navigateToFolder(filePath);
+    } else if (fileType === "file" || fileType === "file-symlink-file") {
+      openFile(filePath);
+    }
+  };
 
+/**
+ * 檔案類型標籤對應表
+ */
 const fileTypeLabels: Record<string, string> = {
   file: "檔案",
   folder: "資料夾",
@@ -51,7 +56,7 @@ const fileTypeLabels: Record<string, string> = {
 const TableBody = () => {
   const isCurrentRoot = fileSystemDataStore((state) => state.isCurrentRoot);
   const viewEntries = fileSystemViewDataStore((state) => state.entries);
-  const isSelected = useIsSelected();
+  const selected = fileSystemViewDataStore((state) => state.selected);
 
   const rows = viewEntries.map(({ fileType, mtime, ctime, fileSize, size, ...rest }) => ({
     ...rest,
@@ -76,11 +81,8 @@ const TableBody = () => {
         <Box key={key} sx={{ ...virtualItemWrapperSx, height: `${size}px`, transform: `translateY(${start}px)` }}>
           <TableRow
             row={rows[index]}
-            onClick={createHandleRowClick(rows[index].rawFileType, rows[index].filePath)}
-            sx={createRowBackgroundSx({
-              index: isCurrentRoot ? index : index + 1,
-              selected: isSelected(rows[index].filePath),
-            })}
+            onClick={createHandleRowClick(rows[index].rawFileType, rows[index].filePath, index)}
+            sx={createRowBackgroundSx({ index: isCurrentRoot ? index : index + 1, selected: Boolean(selected[index]) })}
           />
         </Box>
       ))}
@@ -103,6 +105,8 @@ const FileSystemTable = () => {
       ) : null}
 
       <TableBody />
+
+      <NoItemDisplay />
     </Box>
   );
 };
