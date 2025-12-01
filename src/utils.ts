@@ -5,6 +5,7 @@
  */
 type Prettify<T> = { [K in keyof T]: T[K] } & {};
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 type MergeTypes<TypesArray extends any[], Res = {}> = TypesArray extends [infer Head, ...infer Rem]
   ? MergeTypes<Rem, Res | Head>
   : Res;

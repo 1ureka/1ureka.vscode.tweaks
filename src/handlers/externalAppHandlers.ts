@@ -44,6 +44,7 @@ const findAppPath = (config: AppSearchConfig): string | null => {
           if (fs.existsSync(versionPath)) return versionPath;
         }
       }
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       continue;
     }

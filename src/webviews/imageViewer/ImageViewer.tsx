@@ -58,6 +58,7 @@ const ImageDisplay = ({ src: initialSrc, alt, width, height }: ImageDisplayProps
 
   return (
     <TransformWrapper centerOnInit onPanningStart={handlePanStart} onPanningStop={handlePanStop}>
+      {/* eslint-disable-next-line @typescript-eslint/no-unused-vars */}
       {({ resetTransform, ...rest }) => (
         <>
           <TransformComponent wrapperStyle={{ width: "100%", height: "100dvh" }} contentStyle={{ cursor }}>

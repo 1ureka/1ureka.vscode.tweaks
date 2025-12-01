@@ -4,6 +4,7 @@ import type { OneOf } from "@/utils";
 /**
  * 將資料序列化為適合插入 HTML 的字串
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function serializeForHtml(data: any): string {
   return JSON.stringify(data)
     .replace(/\\/g, "\\\\")
@@ -18,7 +19,7 @@ type generateReactHtmlParams = {
   webviewType: string;
   webview: vscode.Webview;
   extensionUri: vscode.Uri;
-  initialData?: any;
+  initialData?: any; // eslint-disable-line @typescript-eslint/no-explicit-any
 };
 
 /**
