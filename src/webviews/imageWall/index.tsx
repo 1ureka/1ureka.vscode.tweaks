@@ -1,7 +1,7 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
 import { ImageWall } from "./ImageWall";
-import { Providers } from "../utils/Providers";
+import { Providers } from "@/utils/ui";
 import { registerClipboardEvent, registerPreferenceEvent } from "./events";
 import { registerDataChangeEvent } from "./data";
 

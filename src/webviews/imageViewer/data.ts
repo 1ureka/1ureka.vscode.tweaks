@@ -1,5 +1,5 @@
-import type { ImageViewerInitialData } from "../../providers/imageViewerProvider";
-import { getInitialData, postMessageToExtension } from "../utils/vscodeApi";
+import type { ImageViewerInitialData } from "@/providers/imageViewerProvider";
+import { getInitialData, postMessageToExtension } from "@/utils/message_client";
 
 const imageViewerInitialData = getInitialData<ImageViewerInitialData>();
 if (!imageViewerInitialData || !imageViewerInitialData.metadata) {

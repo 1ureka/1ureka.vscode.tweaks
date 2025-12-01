@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Box, Skeleton } from "@mui/material";
-import { postMessageToExtension } from "../utils/vscodeApi";
+import { postMessageToExtension } from "@/utils/message_client";
 
 type ImageDisplayProps = {
   id: string;

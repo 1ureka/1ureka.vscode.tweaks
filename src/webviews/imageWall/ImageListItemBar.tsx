@@ -1,6 +1,6 @@
 import React from "react";
 import { ImageListItemBar as MuiImageListItemBar } from "@mui/material";
-import { ellipsisSx } from "../utils/Providers";
+import { ellipsisSx } from "@/utils/ui";
 
 const imageListItemBarClassName = "image-list-item-bar" as const;
 

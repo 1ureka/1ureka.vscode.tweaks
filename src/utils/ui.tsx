@@ -96,4 +96,4 @@ const ellipsisSx = {
   wordBreak: "break-all",
 } as const;
 
-export { Providers, ellipsisSx, colorMix };
+export { Providers, ellipsisSx };

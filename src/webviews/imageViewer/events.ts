@@ -1,4 +1,4 @@
-import { postMessageToExtension } from "../utils/vscodeApi";
+import { postMessageToExtension } from "@/utils/message_client";
 
 const registerClipboardEvent = () => {
   const handleCopy = (e: ClipboardEvent) => {

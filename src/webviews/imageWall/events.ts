@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { postMessageToExtension } from "../utils/vscodeApi";
+import { postMessageToExtension } from "@/utils/message_client";
 
 type ImageWallPreferenceState = {
   mode: "standard" | "woven" | "masonry";

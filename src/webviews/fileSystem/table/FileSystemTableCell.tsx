@@ -2,7 +2,7 @@ import React from "react";
 import { Typography, Box } from "@mui/material";
 import type { SxProps, BoxProps } from "@mui/material";
 
-import { ellipsisSx } from "@/webviews/utils/Providers";
+import { ellipsisSx } from "@/utils/ui";
 import type { TableIconColumn, TableTextColumn } from "./fileSystemTableColumns";
 
 // ----------------------------------------------------------------------------

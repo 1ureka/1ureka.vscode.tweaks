@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { postMessageToExtension } from "../utils/vscodeApi";
+import { postMessageToExtension } from "@/utils/message_client";
 
 /** 收到訊息後啟動取色工具 */
 const useEyeDropper = () => {

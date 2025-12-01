@@ -1,7 +1,7 @@
 import { tryCatch, defer } from "@/utils";
 import { refresh } from "./navigate";
 import { fileSystemDataStore } from "./data";
-import { postMessageToExtension } from "@/webviews/utils/vscodeApi";
+import { postMessageToExtension } from "@/utils/message_client";
 import type { ListenFileSystemCommand, RequestFileSystemHost } from "@/providers/fileSystemProvider";
 
 // ------------------------------------------------------------------------------------------

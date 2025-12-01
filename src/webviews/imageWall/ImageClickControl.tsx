@@ -1,6 +1,6 @@
 import React from "react";
 import { ButtonBase } from "@mui/material";
-import { postMessageToExtension } from "../utils/vscodeApi";
+import { postMessageToExtension } from "@/utils/message_client";
 
 const ImageClickControl = ({ id }: { id: string }) => {
   return (

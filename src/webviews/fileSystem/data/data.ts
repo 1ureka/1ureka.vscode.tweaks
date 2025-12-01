@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { getInitialData } from "@/webviews/utils/vscodeApi";
+import { getInitialData } from "@/utils/message_client";
 import { requestFileSystemHost } from "./message";
 import type { FileSystemInitialData } from "@/providers/fileSystemProvider";
 
