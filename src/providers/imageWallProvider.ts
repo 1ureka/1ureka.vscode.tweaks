@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import * as path from "path";
 
-import { createWebviewPanel } from "../utils/webviewHelper";
+import { createWebviewPanel } from "@/utils/webview";
 import { handlePrepareInitialData, handlePreparePageData, imageHandlers } from "../handlers/imageWallHandlers";
 import type { ImageWallInitialData } from "../handlers/imageWallHandlers";
 import type { OneOf } from "@/utils";

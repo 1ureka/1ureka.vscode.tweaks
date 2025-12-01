@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import { randomUUID, type UUID } from "crypto";
 
-import { createWebviewPanel } from "@/utils/webviewHelper";
+import { createWebviewPanel } from "@/utils/webview";
 import { handleInitialData, handleShowInformationMessage } from "@/handlers/fileSystemHandlers";
 import { handleReadDirectory, handleOpenFile, handleOpenInTarget } from "@/handlers/fileSystemHandlers";
 import { handleCreateFile, handleCreateDir } from "@/handlers/fileSystemHandlers";

@@ -3,7 +3,7 @@ import * as path from "path";
 import type { CustomDocument, CustomDocumentOpenContext, WebviewPanel, CancellationToken } from "vscode";
 
 import { handleCopyImage, handleExportImage, handleEyeDropper } from "../handlers/imageViewerHandler";
-import { createWebviewPanel } from "../utils/webviewHelper";
+import { createWebviewPanel } from "@/utils/webview";
 import { type ExportFormat, openImage } from "@/utils/image";
 import type { OneOf } from "@/utils";
 
