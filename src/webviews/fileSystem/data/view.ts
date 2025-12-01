@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { fileSystemDataStore } from "./data";
 import type { InspectDirectoryEntry } from "@/utils/system";
-import type { Prettify } from "@/utils/type";
+import type { Prettify } from "@/utils";
 
 // ----------------------------------------------------------------------------
 // 定義檔案系統可以如何被檢視的狀態

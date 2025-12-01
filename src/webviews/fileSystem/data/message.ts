@@ -1,5 +1,4 @@
-import { defer } from "@/utils/promise";
-import { tryCatch } from "@/utils/tryCatch";
+import { tryCatch, defer } from "@/utils";
 import { fileSystemDataStore } from "./data";
 import { postMessageToExtension } from "@/webviews/utils/vscodeApi";
 import type { RequestFileSystemHost } from "@/providers/fileSystemProvider";

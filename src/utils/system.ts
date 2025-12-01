@@ -1,8 +1,7 @@
 import * as fs from "fs";
 import * as path from "path";
-import { tryCatch } from "./tryCatch";
 import { formatFileSize } from "./formatter";
-import type { Prettify } from "./type";
+import { tryCatch, type Prettify } from "@/utils";
 
 type ReadDirectoryEntry = {
   fileName: string;

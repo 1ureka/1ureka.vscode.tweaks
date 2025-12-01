@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import type { OneOf } from "./type";
+import type { OneOf } from "@/utils";
 
 /**
  * 將資料序列化為適合插入 HTML 的字串

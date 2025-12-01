@@ -5,7 +5,7 @@ import { createWebviewPanel } from "@/utils/webviewHelper";
 import { handleInitialData, handleShowInformationMessage } from "@/handlers/fileSystemHandlers";
 import { handleReadDirectory, handleOpenFile, handleOpenInTarget } from "@/handlers/fileSystemHandlers";
 import { handleCreateFile, handleCreateDir } from "@/handlers/fileSystemHandlers";
-import type { Prettify } from "@/utils/type";
+import type { Prettify } from "@/utils";
 
 import fileSystemLight from "@/icons/file-system-light.svg";
 import fileSystemDark from "@/icons/file-system-dark.svg";

@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 import * as fs from "fs";
 import * as path from "path";
 
-import { tryCatch } from "@/utils/tryCatch";
+import { tryCatch } from "@/utils";
 import { formatPathToArray } from "@/utils/formatter";
 import { readDirectory, inspectDirectory, isRootDirectory } from "@/utils/system";
 import type { InspectDirectoryEntry } from "@/utils/system";
