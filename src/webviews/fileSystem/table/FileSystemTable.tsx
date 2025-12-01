@@ -1,6 +1,7 @@
 import React from "react";
+import { useWindowVirtualizer } from "@tanstack/react-virtual";
 import { Box, type SxProps } from "@mui/material";
-import { TableHeadRow, TableNavigateUpRow, TableRow } from "./FileSystemTableRow";
+import { TableHeadRow, TableNavigateUpRow, TableRow, tableRowHeight } from "./FileSystemTableRow";
 
 import { fileSystemDataStore } from "../data/data";
 import { navigateToFolder, navigateUp } from "../data/navigate";
@@ -45,11 +46,10 @@ const fileTypeLabels: Record<string, string> = {
 };
 
 /**
- * 用於顯示檔案系統的表格組件
+ * 用於呈現表格主體的組件
  */
-const FileSystemTable = () => {
+const TableBody = () => {
   const isCurrentRoot = fileSystemDataStore((state) => state.isCurrentRoot);
-
   const viewEntries = fileSystemViewDataStore((state) => state.entries);
   const isSelected = useIsSelected();
 
@@ -62,6 +62,38 @@ const FileSystemTable = () => {
     size: size > 0 ? fileSize : "",
   }));
 
+  const rowVirtualizer = useWindowVirtualizer({
+    count: viewEntries.length,
+    estimateSize: () => tableRowHeight + 8,
+    overscan: 10,
+  });
+
+  const virtualItemWrapperSx: SxProps = { position: "absolute", top: 0, left: 0, width: 1, pb: 0.5 };
+
+  return (
+    <Box sx={{ position: "relative", height: `${rowVirtualizer.getTotalSize()}px`, width: 1 }}>
+      {rowVirtualizer.getVirtualItems().map(({ key, size, start, index }) => (
+        <Box key={key} sx={{ ...virtualItemWrapperSx, height: `${size}px`, transform: `translateY(${start}px)` }}>
+          <TableRow
+            row={rows[index]}
+            onClick={createHandleRowClick(rows[index].rawFileType, rows[index].filePath)}
+            sx={createRowBackgroundSx({
+              index: isCurrentRoot ? index : index + 1,
+              selected: isSelected(rows[index].filePath),
+            })}
+          />
+        </Box>
+      ))}
+    </Box>
+  );
+};
+
+/**
+ * 用於顯示檔案系統的表格組件
+ */
+const FileSystemTable = () => {
+  const isCurrentRoot = fileSystemDataStore((state) => state.isCurrentRoot);
+
   return (
     <Box sx={{ position: "relative", display: "flex", flexDirection: "column", gap: 0.5 }}>
       <TableHeadRow />
@@ -70,14 +102,7 @@ const FileSystemTable = () => {
         <TableNavigateUpRow sx={createRowBackgroundSx({ index: 0, selected: false })} onClick={navigateUp} />
       ) : null}
 
-      {rows.map((row, index) => (
-        <TableRow
-          key={row.fileName}
-          row={row}
-          sx={createRowBackgroundSx({ index: isCurrentRoot ? index : index + 1, selected: isSelected(row.filePath) })}
-          onClick={createHandleRowClick(row.rawFileType, row.filePath)}
-        />
-      ))}
+      <TableBody />
     </Box>
   );
 };
