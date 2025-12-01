@@ -1,21 +1,21 @@
 import { fileSystemDataStore } from "./data";
-import { requestFileSystemHost } from "./message";
+import { requestQueue } from "./queue";
+import { invoke } from "@/utils/message_client";
+import type { ReadDirAPI } from "@/providers/fileSystemProvider";
 
 /**
  * 重新整理
  */
-const refresh = async () => {
-  const { currentPath, panelId } = fileSystemDataStore.getState();
-  const result = await requestFileSystemHost({ panelId, type: "readDirectory", params: { dirPath: currentPath } });
-  fileSystemDataStore.setState({ ...result });
+const refresh = () => {
+  const { currentPath } = fileSystemDataStore.getState();
+  navigateToFolder({ dirPath: currentPath });
 };
 
 /**
  * 請求切換資料夾
  */
-const navigateToFolder = async (folderPath: string) => {
-  const { panelId } = fileSystemDataStore.getState();
-  const result = await requestFileSystemHost({ panelId, type: "readDirectory", params: { dirPath: folderPath } });
+const navigateToFolder = async ({ dirPath }: { dirPath: string }) => {
+  const result = await requestQueue.add(() => invoke<ReadDirAPI>("readDirectory", { dirPath }));
   fileSystemDataStore.setState({ ...result });
 };
 
@@ -28,7 +28,7 @@ const navigateToBreadcrumb = (index: number) => {
 
   // 特殊處理：如果只有磁碟機代號（如 'C:'），需要加上斜線變成 'C:/'
   const targetPath = parts.length === 1 && /^[A-Za-z]:$/.test(parts[0]) ? parts[0] + "/" : parts.join("/");
-  navigateToFolder(targetPath);
+  navigateToFolder({ dirPath: targetPath });
 };
 
 /**

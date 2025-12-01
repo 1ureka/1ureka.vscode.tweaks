@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
-import { openFileSystemPanel, sendCommandMessageToWebview } from "@/providers/fileSystemProvider";
+import { openFileSystemPanel, ReadDirAPI } from "@/providers/fileSystemProvider";
+import { forwardCommandToWebview } from "@/utils/message_host";
 
 /**
  * 註冊檔案系統面板的生命週期管理
@@ -63,9 +64,11 @@ type GetActivePanel = ReturnType<typeof registerPanelsLifecycle>;
  * 註冊檔案系統用於右鍵選單的命令
  */
 const registerContextMenuCommands = (context: vscode.ExtensionContext, getActivePanel: GetActivePanel) => {
-  const refreshFromContext = vscode.commands.registerCommand("1ureka.fileSystem.refresh", () =>
-    sendCommandMessageToWebview(getActivePanel(), "readDirectory")
-  );
+  const refreshFromContext = vscode.commands.registerCommand("1ureka.fileSystem.refresh", () => {
+    const panel = getActivePanel();
+    if (!panel) return;
+    forwardCommandToWebview<ReadDirAPI>(panel, "readDirectory");
+  });
 
   context.subscriptions.push(refreshFromContext);
 };
