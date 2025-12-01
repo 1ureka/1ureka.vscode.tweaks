@@ -1,7 +1,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import * as vscode from "vscode";
-import customStyle from "../utils/customStyle.css";
+import customStyle from "@/assets/customStyle.css";
 import { parse as parseHtml } from "node-html-parser";
 
 function getConfiguredPath(): string | undefined {

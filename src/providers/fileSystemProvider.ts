@@ -7,8 +7,8 @@ import { handleReadDirectory, handleOpenFile, handleOpenInTarget } from "@/handl
 import { handleCreateFile, handleCreateDir } from "@/handlers/fileSystemHandlers";
 import type { Prettify } from "@/utils";
 
-import fileSystemLight from "@/icons/file-system-light.svg";
-import fileSystemDark from "@/icons/file-system-dark.svg";
+import fileSystemLight from "@/assets/file-system-light.svg";
+import fileSystemDark from "@/assets/file-system-dark.svg";
 
 // ---------------------------------------------
 // 前端往後端雙方的訊息相關型別

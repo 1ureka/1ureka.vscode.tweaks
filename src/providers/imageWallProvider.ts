@@ -6,8 +6,8 @@ import { handlePrepareInitialData, handlePreparePageData, imageHandlers } from "
 import type { ImageWallInitialData } from "../handlers/imageWallHandlers";
 import type { OneOf } from "@/utils";
 
-import imageWallLight from "../icons/image-wall-light.svg";
-import imageWallDark from "../icons/image-wall-dark.svg";
+import imageWallLight from "@/assets/image-wall-light.svg";
+import imageWallDark from "@/assets/image-wall-dark.svg";
 
 type ImageWallMessage = OneOf<
   [
