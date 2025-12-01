@@ -8,6 +8,11 @@ import { TableHeadCell, TableIconCell, TableTextCell } from "./FileSystemTableCe
 import { fileSystemViewStore, setSorting } from "../data/view";
 
 /**
+ * 表格列的固定高度
+ */
+const tableRowHeight = 36;
+
+/**
  * 用於表格中每一列的基礎樣式
  */
 const tableRowBaseSx: SxProps = {
@@ -17,9 +22,11 @@ const tableRowBaseSx: SxProps = {
   width: 1,
   alignItems: "stretch",
   justifyContent: "stretch",
-  height: 36,
+  height: tableRowHeight,
   borderRadius: 1,
 };
+
+export { tableRowHeight };
 
 // ----------------------------------------------------------------------------
 

@@ -7,7 +7,7 @@ import type { Prettify } from "@/utils";
 // 定義檔案系統可以如何被檢視的狀態
 // ----------------------------------------------------------------------------
 
-const FILES_PER_PAGE = 50;
+const FILES_PER_PAGE = 500;
 
 type FileProperties = Prettify<InspectDirectoryEntry & { icon: `codicon codicon-${string}` }>;
 
