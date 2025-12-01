@@ -38,6 +38,22 @@ type FileSystemInitialData = Prettify<{ panelId: UUID } & Awaited<ReturnType<typ
 export type { RequestFileSystemInFrontend as RequestFileSystemHost, FileSystemInitialData };
 
 // ---------------------------------------------
+// menu/webview/context (vscode command) 要求前端執行某 FileSystemAPI 的相關邏輯
+// 由於前端沒有任何方式監聽其自身的右鍵選單，因此必須由延伸主機來協助轉發這些事件
+// ---------------------------------------------
+
+type CommandMessage = { type: "command"; action: keyof FileSystemAPI };
+
+/** 由延伸主機規定前端必須實作的監聽，確保前端可以接收 command 的要求並帶入自身儲存的狀態來呼叫 FileSystemAPI */
+type ListenCommandMessageInFrontend = (event: MessageEvent<CommandMessage>) => void;
+
+const sendCommandMessageToWebview = (panel: vscode.WebviewPanel | null, action: keyof FileSystemAPI) => {
+  panel?.webview.postMessage({ type: "command", action });
+};
+
+export { ListenCommandMessageInFrontend as ListenFileSystemCommand, sendCommandMessageToWebview };
+
+// ---------------------------------------------
 // 與 vscode 介面交互並協調 handler 相關的邏輯
 // ---------------------------------------------
 
@@ -100,7 +116,7 @@ async function openFileSystemPanel(context: vscode.ExtensionContext, dirPath: st
 
   panel.onDidDispose(() => messageListener.dispose());
   context.subscriptions.push(panel);
-  return panel;
+  return { panelId, panel };
 }
 
 export { openFileSystemPanel };

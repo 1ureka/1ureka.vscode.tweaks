@@ -1,7 +1,8 @@
 import { tryCatch, defer } from "@/utils";
+import { refresh } from "./navigate";
 import { fileSystemDataStore } from "./data";
 import { postMessageToExtension } from "@/webviews/utils/vscodeApi";
-import type { RequestFileSystemHost } from "@/providers/fileSystemProvider";
+import type { ListenFileSystemCommand, RequestFileSystemHost } from "@/providers/fileSystemProvider";
 
 // ------------------------------------------------------------------------------------------
 // 用於避免 race condition 的請求佇列，同時也可以實現精準的 loading 狀態判斷，給 UI 使用
@@ -83,4 +84,20 @@ const requestFileSystemHost: RequestFileSystemHost = ({ panelId, type, params })
   });
 };
 
-export { requestFileSystemHost };
+/**
+ * 註冊用於處理來自 Extension Host 的右鍵選單的 command 訊息
+ */
+const registerContextCommandEvents = () => {
+  const listenCommandMessage: ListenFileSystemCommand = (event) => {
+    const message = event.data;
+    if (message.type !== "command") return;
+
+    const { action } = message;
+
+    if (action === "readDirectory") refresh();
+  };
+
+  window.addEventListener("message", listenCommandMessage);
+};
+
+export { requestFileSystemHost, registerContextCommandEvents };

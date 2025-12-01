@@ -116,6 +116,10 @@
       {
         "command": "1ureka.openFileSystemFromExplorer",
         "title": "以檔案系統瀏覽器顯示"
+      },
+      {
+        "command": "1ureka.fileSystem.refresh",
+        "title": "重新整理"
       }
     ],
     "customEditors": [
@@ -178,6 +182,11 @@
           "submenu": "imageWall.size",
           "when": "webviewId == '1ureka.imageWall'",
           "group": "0_preferences"
+        },
+        {
+          "command": "1ureka.fileSystem.refresh",
+          "when": "webviewId == '1ureka.fileSystem'",
+          "group": "navigation@100"
         }
       ],
       "imageWall.layout": [
@@ -282,6 +291,10 @@
         },
         {
           "command": "1ureka.openFileSystemFromExplorer",
+          "when": "false"
+        },
+        {
+          "command": "1ureka.fileSystem.refresh",
           "when": "false"
         }
       ]
