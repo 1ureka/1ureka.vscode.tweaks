@@ -4,7 +4,7 @@ import * as path from "path";
 import { createWebviewPanel } from "../utils/webviewHelper";
 import { handlePrepareInitialData, handlePreparePageData, imageHandlers } from "../handlers/imageWallHandlers";
 import type { ImageWallInitialData } from "../handlers/imageWallHandlers";
-import type { OneOf } from "../utils/type";
+import type { OneOf } from "@/utils";
 
 import imageWallLight from "../icons/image-wall-light.svg";
 import imageWallDark from "../icons/image-wall-dark.svg";

@@ -11,6 +11,7 @@ async function buildExtension() {
     external: ["vscode", "sharp"],
     outfile: "dist/extension.js",
     loader: { ".svg": "dataurl", ".css": "text" },
+    alias: { "@": "./src" },
   });
 
   console.log("✓ Extension bundle built successfully");
@@ -31,6 +32,7 @@ async function buildWebviews() {
       format: "iife",
       outfile: `dist/webviews/${dir}.js`,
       minify: true,
+      alias: { "@": "./src" },
     });
 
     console.log(`✓ Built WebView bundle: ${dir}`);

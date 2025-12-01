@@ -5,7 +5,7 @@ import type { CustomDocument, CustomDocumentOpenContext, WebviewPanel, Cancellat
 import { handleCopyImage, handleExportImage, handleEyeDropper } from "../handlers/imageViewerHandler";
 import { createWebviewPanel } from "../utils/webviewHelper";
 import { type ExportFormat, openImage } from "../utils/imageOpener";
-import type { OneOf } from "../utils/type";
+import type { OneOf } from "@/utils";
 
 /**
  * 由插件主機一開始就注入 html (類似 SSR) 的資料型別

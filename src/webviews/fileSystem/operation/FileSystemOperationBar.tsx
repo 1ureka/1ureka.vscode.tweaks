@@ -3,9 +3,10 @@ import { Box, type SxProps } from "@mui/material";
 import { OperationBarHeader } from "./FileSystemOpHeader";
 import { OperationButton, GroupContainer } from "./FileSystemOpActionEl";
 
-import { fileSystemDataStore } from "../data";
-import { refresh, setFilter } from "../navigate";
-import { createNewFile, createNewFolder, openInWorkspace, openInTerminal, openInImageWall } from "../action";
+import { fileSystemDataStore } from "../data/data";
+import { refresh } from "../data/navigate";
+import { fileSystemViewStore, setFilter } from "../data/view";
+import { createNewFile, createNewFolder, openInWorkspace, openInTerminal, openInImageWall } from "../data/action";
 
 const operationBarContainerSx: SxProps = {
   display: "flex",
@@ -16,7 +17,7 @@ const operationBarContainerSx: SxProps = {
 
 const FilterSystemOperationBar = () => {
   const timestamp = fileSystemDataStore((state) => state.timestamp);
-  const filter = fileSystemDataStore((state) => state.filter);
+  const filter = fileSystemViewStore((state) => state.filter);
 
   const handleRefresh = () => refresh();
   const handleCreateNewFolder = () => createNewFolder();
@@ -26,7 +27,7 @@ const FilterSystemOperationBar = () => {
   const handleOpenInTerminal = () => openInTerminal();
   const handleOpenInImageWall = () => openInImageWall();
 
-  const createHandleFilter = (filter: "all" | "files" | "folders") => {
+  const createHandleFilter = (filter: "all" | "file" | "folder") => {
     return () => setFilter(filter);
   };
 
@@ -46,16 +47,16 @@ const FilterSystemOperationBar = () => {
           onClick={createHandleFilter("all")}
         />
         <OperationButton
-          active={filter === "files"}
+          active={filter === "file"}
           icon="codicon codicon-file"
           label="僅限檔案"
-          onClick={createHandleFilter("files")}
+          onClick={createHandleFilter("file")}
         />
         <OperationButton
-          active={filter === "folders"}
+          active={filter === "folder"}
           icon="codicon codicon-folder"
           label="僅限資料夾"
-          onClick={createHandleFilter("folders")}
+          onClick={createHandleFilter("folder")}
         />
       </GroupContainer>
 

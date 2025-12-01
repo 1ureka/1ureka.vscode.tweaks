@@ -1,7 +1,7 @@
 import React from "react";
 import { FileSystemBreadcrumb } from "./FileSystemBreadcrumb";
 import { Box, Typography } from "@mui/material";
-import { fileSystemDataStore } from "./data";
+import { fileSystemDataStore } from "../data/data";
 
 const FileSystemHeader = () => {
   const fileCount = fileSystemDataStore((state) => state.fileCount);

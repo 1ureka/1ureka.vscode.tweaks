@@ -1,12 +1,10 @@
 import React from "react";
 import { Pagination, Box } from "@mui/material";
-import { fileSystemDataStore } from "../data";
-import { navigateToPage } from "../navigate";
+import { fileSystemViewStore, setPage } from "../data/view";
 
 const FileSystemPagination: React.FC = () => {
-  const page = fileSystemDataStore((state) => state.page);
-  const pages = fileSystemDataStore((state) => state.pages);
-
+  const page = fileSystemViewStore((state) => state.page);
+  const pages = fileSystemViewStore((state) => state.pages);
   if (pages <= 1) return null;
 
   return (
@@ -19,7 +17,7 @@ const FileSystemPagination: React.FC = () => {
           page={page}
           showFirstButton
           showLastButton
-          onChange={(_, value) => navigateToPage(value)}
+          onChange={(_, value) => setPage(value)}
         />
       </Box>
     </Box>

@@ -1,123 +1,156 @@
-import * as path from "path";
+import * as vscode from "vscode";
 import * as fs from "fs";
-import type { UUID } from "crypto";
+import * as path from "path";
 
-import { tryCatch } from "../utils/tryCatch";
-import { formatPathToArray } from "../utils/formatter";
-import { inspectFile, isRootDirectory } from "../utils/system";
-import type { InspectResult } from "../utils/system";
-import type { Prettify } from "../utils/type";
+import { tryCatch } from "@/utils";
+import { formatPathToArray } from "@/utils/formatter";
+import { readDirectory, inspectDirectory, isRootDirectory } from "@/utils/system";
+import type { InspectDirectoryEntry } from "@/utils/system";
 
-/**
- * 檔案屬性型別，包含圖示資訊
- */
-type FileProperties = Prettify<InspectResult & { icon: `codicon codicon-${string}` }>;
-
-/**
- * 由插件主機一開始就注入 html (類似 SSR) 的資料型別，同時也是後續每一頁資料的型別
- */
-type FileSystemData = {
-  panelId: UUID;
-  folderPath: string;
-  folderPathParts: string[];
-  root: boolean;
-  page: number;
-  pages: number;
+type ReadDirectoryResult = {
+  // 有關當前目錄的資訊
+  currentPath: string;
+  currentPathParts: string[];
+  isCurrentRoot: boolean;
   fileCount: number;
   folderCount: number;
-  sortField: keyof Pick<FileProperties, "fileName" | "mtime" | "ctime" | "size">;
-  sortOrder: "asc" | "desc";
-  filter: "all" | "files" | "folders";
-  files: FileProperties[];
+  // 實際的檔案資料
+  entries: InspectDirectoryEntry[];
+  // 資料最後更新的時間戳記
   timestamp: number;
 };
 
-/** 處理檔案系統資料所需的參數型別 */
-type FileSystemDataParams = Pick<
-  FileSystemData,
-  "panelId" | "folderPath" | "page" | "sortField" | "sortOrder" | "filter"
->;
-
-/** 一頁檔案系統包含的檔案數量 */
-const FILES_PER_PAGE = 100;
-
 /**
- * 準備檔案系統的任一路徑與任一頁的資料
- * 雖然這等同於每次換頁都重新讀取資料夾內容，但這樣可以確保每次讀取的都是最新的檔案系統狀態，更貼近實際需求
- * @throws 無法讀取資料夾內容時會拋出錯誤
+ * 處理初始資料注入
  */
-const handleFileSystemData = async (params: FileSystemDataParams): Promise<FileSystemData> => {
-  const { panelId, folderPath, page, sortField, sortOrder, filter } = params;
-
-  const { data: dirEntries, error } = await tryCatch(() => fs.promises.readdir(folderPath, { withFileTypes: true }));
-  if (error) throw new Error(`無法讀取資料夾內容: ${error.message}`);
-
-  const results: (FileProperties | null)[] = await Promise.all(
-    dirEntries.map(async (dirent) => {
-      const fullPath = path.join(folderPath, dirent.name);
-      const inspectResult = await inspectFile(fullPath);
-
-      if (!inspectResult) return null;
-
-      const icon: FileProperties["icon"] = `codicon codicon-${inspectResult.fileType}`;
-      return { ...inspectResult, icon };
-    })
-  );
-
-  // 取出有效的資料並計算檔案與資料夾數量
-  const rawFiles = results.filter((item): item is FileProperties => item !== null);
-  const folderCount = rawFiles.filter((f) => f.fileType === "folder").length;
-  const fileCount = rawFiles.filter((f) => f.fileType === "file").length;
-
-  // 篩選
-  const filteredFiles = rawFiles.filter((file) => {
-    if (filter === "all") return true;
-    if (filter === "files") return file.fileType === "file";
-    if (filter === "folders") return file.fileType === "folder";
-    return true;
-  });
-
-  // 排序：資料夾優先，然後依照 sortField 與 sortOrder 排序
-  filteredFiles.sort((a, b) => {
-    if (a.fileType === "folder" && b.fileType !== "folder") return -1;
-    if (a.fileType !== "folder" && b.fileType === "folder") return 1;
-
-    const valA = a[sortField];
-    const valB = b[sortField];
-
-    let compareResult: number;
-    if (typeof valA === "string" && typeof valB === "string") {
-      compareResult = valA.localeCompare(valB);
-    } else {
-      compareResult = Number(valA) - Number(valB);
-    }
-
-    return sortOrder === "asc" ? compareResult : -compareResult;
-  });
-
-  // 計算分頁
-  const totalPages = Math.ceil(filteredFiles.length / FILES_PER_PAGE);
-  // 修正頁碼：如果請求的頁碼超出範圍，自動修正為最後一頁（或第一頁）
-  const validPage = page > totalPages ? Math.max(1, totalPages) : page;
-  const startIndex = (validPage - 1) * FILES_PER_PAGE;
-  const endIndex = startIndex + FILES_PER_PAGE;
-
+const handleInitialData = (params: { dirPath: string }): ReadDirectoryResult => {
   return {
-    panelId,
-    folderPath,
-    folderPathParts: formatPathToArray(folderPath),
-    root: isRootDirectory(folderPath),
-    page: validPage,
-    pages: totalPages,
-    fileCount,
-    folderCount,
-    sortField,
-    sortOrder,
-    filter,
-    files: filteredFiles.slice(startIndex, endIndex),
+    currentPath: params.dirPath,
+    currentPathParts: formatPathToArray(params.dirPath),
+    isCurrentRoot: isRootDirectory(params.dirPath),
+    fileCount: 0,
+    folderCount: 0,
+    entries: [],
     timestamp: Date.now(),
   };
 };
 
-export { handleFileSystemData };
-export type { FileSystemDataParams, FileSystemData, FileProperties };
+/**
+ * 掃描資料夾內容，讀取檔案系統資訊並回傳
+ */
+const handleReadDirectory = async (params: { dirPath: string }): Promise<ReadDirectoryResult> => {
+  const currentPath = params.dirPath;
+  const currentPathParts = formatPathToArray(currentPath);
+  const isCurrentRoot = isRootDirectory(currentPath);
+  const entries = await readDirectory(currentPath);
+
+  if (!entries) {
+    return {
+      currentPath,
+      currentPathParts,
+      isCurrentRoot,
+      entries: [],
+      fileCount: 0,
+      folderCount: 0,
+      timestamp: Date.now(),
+    };
+  }
+
+  let folderCount = 0;
+  let fileCount = 0;
+
+  entries.forEach(({ fileType }) => {
+    if (fileType === "folder") folderCount++;
+    else if (fileType === "file") fileCount++;
+  });
+
+  const inspectedEntries = await inspectDirectory(entries);
+
+  return {
+    currentPath,
+    currentPathParts,
+    isCurrentRoot,
+    entries: inspectedEntries,
+    folderCount,
+    fileCount,
+    timestamp: Date.now(),
+  };
+};
+
+/**
+ * 在通知欄顯示資訊訊息
+ */
+const handleShowInformationMessage = async (params: { message: string }) => {
+  vscode.window.showInformationMessage(params.message);
+};
+
+/**
+ * 開啟指定的檔案
+ */
+const handleOpenFile = async (params: { filePath: string }) => {
+  const uri = vscode.Uri.file(params.filePath);
+  vscode.commands.executeCommand("vscode.open", uri, vscode.ViewColumn.Active);
+};
+
+/**
+ * 建立新檔案並回傳該新檔案所在目錄的最新內容
+ */
+const handleCreateFile = async (params: { dirPath: string }): Promise<ReadDirectoryResult | null> => {
+  const fileName = await vscode.window.showInputBox({ prompt: "輸入新檔案名稱", placeHolder: "檔案名稱" });
+  if (!fileName) return null;
+
+  const filePath = path.join(params.dirPath, fileName);
+
+  const { error } = await tryCatch(() => fs.promises.writeFile(filePath, ""));
+  if (error) {
+    vscode.window.showErrorMessage(`無法建立新檔案: ${error instanceof Error ? error.message : "未知錯誤"}`);
+    return null;
+  }
+
+  const uri = vscode.Uri.file(filePath);
+  vscode.commands.executeCommand("vscode.open", uri);
+
+  return await handleReadDirectory({ dirPath: params.dirPath });
+};
+
+/**
+ * 建立新資料夾並回傳該新資料夾所在目錄的最新內容
+ */
+const handleCreateDir = async (params: { dirPath: string }): Promise<ReadDirectoryResult | null> => {
+  const folderName = await vscode.window.showInputBox({ prompt: "輸入新資料夾名稱", placeHolder: "資料夾名稱" });
+  if (!folderName) return null;
+
+  const { error } = await tryCatch(() => fs.promises.mkdir(path.join(params.dirPath, folderName)));
+  if (error) {
+    vscode.window.showErrorMessage(`無法建立新資料夾: ${error instanceof Error ? error.message : "未知錯誤"}`);
+    return null;
+  }
+
+  return await handleReadDirectory({ dirPath: params.dirPath });
+};
+
+/**
+ * 以指定的路徑在目標環境中打開
+ */
+const handleOpenInTarget = async (params: { dirPath: string; target: "workspace" | "terminal" | "imageWall" }) => {
+  const { dirPath, target } = params;
+
+  if (target === "workspace") {
+    const uri = vscode.Uri.file(dirPath);
+    vscode.commands.executeCommand("vscode.openFolder", uri, true);
+    return;
+  }
+  if (target === "terminal") {
+    const terminal = vscode.window.createTerminal({ cwd: dirPath });
+    terminal.show();
+    return;
+  }
+  if (target === "imageWall") {
+    vscode.commands.executeCommand("1ureka.imageWall.openImageWallFromFolder", dirPath);
+    return;
+  }
+};
+
+export { handleShowInformationMessage, handleInitialData };
+export { handleCreateFile, handleCreateDir };
+export { handleReadDirectory, handleOpenFile, handleOpenInTarget };
