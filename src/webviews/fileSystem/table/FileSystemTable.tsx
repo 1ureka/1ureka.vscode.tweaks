@@ -1,44 +1,15 @@
 import React from "react";
-import { Box, ButtonBase, type SxProps } from "@mui/material";
-import { FileSystemTableRow, FileSystemTableRowDirUp, FileSystemTableRowHeader } from "./FileSystemTableRow";
-import type { FieldDefinition } from "./FileSystemTableRow";
+import { Box, type SxProps } from "@mui/material";
+import { TableHeadRow, TableNavigateUpRow, TableRow } from "./FileSystemTableRow";
 
 import { fileSystemDataStore } from "../data/data";
 import { navigateToFolder, navigateUp } from "../data/navigate";
-import { fileSystemViewDataStore, fileSystemViewStore, selectRow, setSorting, useIsSelected } from "../data/view";
+import { fileSystemViewDataStore, selectRow, useIsSelected } from "../data/view";
 import { openFile } from "../data/action";
 
 /**
- * 檔案系統表格包含的欄位
+ * 用於呈現每一列的背景樣式
  */
-const fileSystemColumns: FieldDefinition[] = [
-  { align: "left", label: "" },
-  { align: "left", label: "名稱", dataField: "fileName" },
-  { align: "right", label: "類型" },
-  { align: "right", label: "修改日期", dataField: "mtime" },
-  { align: "right", label: "建立日期", dataField: "ctime" },
-  { align: "right", label: "大小", dataField: "size" },
-];
-
-const containerShareSx: SxProps = { display: "grid", gap: 0.5 };
-/** 用於呈現虛擬 + 實際表格的容器樣式 */
-const containerSx: Record<string, SxProps> = {
-  itemIsFullWidth: {
-    position: "absolute",
-    inset: 0,
-    gridTemplateColumns: "1fr",
-    ...containerShareSx,
-  },
-  itemIsCells: {
-    position: "relative",
-    gridTemplateColumns: "auto 1fr repeat(4, auto)",
-    placeItems: "stretch",
-    pointerEvents: "none",
-    ...containerShareSx,
-  },
-};
-
-/** 用於呈現每一列的背景樣式 */
 function createRowBackgroundSx({ index, selected }: { index: number; selected: boolean }): SxProps {
   let bgcolor = index % 2 === 0 ? "table.alternateRowBackground" : "transparent";
   let hoverBgcolor = "table.hoverBackground";
@@ -51,9 +22,9 @@ function createRowBackgroundSx({ index, selected }: { index: number; selected: b
   return { borderRadius: 1, pointerEvents: "auto", bgcolor, "&:hover": { bgcolor: hoverBgcolor } };
 }
 
-const handleDirUpRowClick = () => navigateUp();
-
-/** 為每列元素創建點擊監聽 */
+/**
+ * 為每列元素創建點擊監聽
+ */
 const createHandleRowClick = (fileType: string, filePath: string) => (e: React.MouseEvent<HTMLButtonElement>) => {
   selectRow(filePath);
 
@@ -66,64 +37,47 @@ const createHandleRowClick = (fileType: string, filePath: string) => (e: React.M
   }
 };
 
+const fileTypeLabels: Record<string, string> = {
+  file: "檔案",
+  folder: "資料夾",
+  "file-symlink-file": "符號連結檔案",
+  "file-symlink-directory": "符號連結資料夾",
+};
+
 /**
  * 用於顯示檔案系統的表格組件
  */
 const FileSystemTable = () => {
-  const viewEntries = fileSystemViewDataStore((state) => state.entries);
   const isCurrentRoot = fileSystemDataStore((state) => state.isCurrentRoot);
-  const sortField = fileSystemViewStore((state) => state.sortField);
-  const sortOrder = fileSystemViewStore((state) => state.sortOrder);
+
+  const viewEntries = fileSystemViewDataStore((state) => state.entries);
   const isSelected = useIsSelected();
 
+  const rows = viewEntries.map(({ fileType, mtime, ctime, fileSize, size, ...rest }) => ({
+    ...rest,
+    rawFileType: fileType,
+    fileType: fileTypeLabels[fileType],
+    mtime: new Date(mtime).toLocaleString(),
+    ctime: new Date(ctime).toLocaleDateString(),
+    size: size > 0 ? fileSize : "",
+  }));
+
   return (
-    <Box sx={{ position: "relative" }}>
-      {/* 每個 row 的點擊區，同時也是背景樣式 */}
-      <Box sx={containerSx.itemIsFullWidth}>
-        <Box sx={{ bgcolor: "background.paper", borderRadius: 1 }} />
+    <Box sx={{ position: "relative", display: "flex", flexDirection: "column", gap: 0.5 }}>
+      <TableHeadRow />
 
-        {!isCurrentRoot && (
-          <ButtonBase
-            focusRipple
-            sx={createRowBackgroundSx({ index: 0, selected: false })}
-            onClick={handleDirUpRowClick}
-          />
-        )}
+      {!isCurrentRoot ? (
+        <TableNavigateUpRow sx={createRowBackgroundSx({ index: 0, selected: false })} onClick={navigateUp} />
+      ) : null}
 
-        {viewEntries.map(({ fileName, filePath, fileType }, i) => (
-          <ButtonBase
-            key={fileName}
-            focusRipple
-            sx={createRowBackgroundSx({ index: i + 1, selected: isSelected(filePath) })}
-            onClick={createHandleRowClick(fileType, filePath)}
-          />
-        ))}
-      </Box>
-
-      {/* 每個 row 的實際內容，包括 header 的可點擊區 (header cell 會設 pointerEvents 回來) */}
-      <Box sx={containerSx.itemIsCells}>
-        <FileSystemTableRowHeader
-          fields={fileSystemColumns}
-          sortField={sortField}
-          sortOrder={sortOrder}
-          onSortChange={(field) => setSorting(field)}
+      {rows.map((row, index) => (
+        <TableRow
+          key={row.fileName}
+          row={row}
+          sx={createRowBackgroundSx({ index: isCurrentRoot ? index : index + 1, selected: isSelected(row.filePath) })}
+          onClick={createHandleRowClick(row.rawFileType, row.filePath)}
         />
-
-        {!isCurrentRoot && <FileSystemTableRowDirUp columns={6} icon="codicon codicon-folder-opened" text=".." />}
-
-        {viewEntries.map(({ icon, fileName, fileType, fileSize, mtime, ctime, size }) => (
-          <FileSystemTableRow
-            key={fileName}
-            icon={icon}
-            fileName={fileName}
-            fileType={fileType}
-            fileSize={fileSize}
-            mtime={mtime}
-            ctime={ctime}
-            size={size}
-          />
-        ))}
-      </Box>
+      ))}
     </Box>
   );
 };

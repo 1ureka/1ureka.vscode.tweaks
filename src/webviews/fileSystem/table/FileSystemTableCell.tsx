@@ -1,29 +1,18 @@
 import React from "react";
-import { Box, type BoxProps, type SxProps, Typography } from "@mui/material";
-import { ellipsisSx } from "../../utils/Providers";
+import { Typography, Box } from "@mui/material";
+import type { SxProps, BoxProps } from "@mui/material";
 
-type FileSystemListCellProps = {
-  align?: "left" | "center" | "right";
-} & BoxProps;
+import { ellipsisSx } from "@/webviews/utils/Providers";
+import type { TableIconColumn, TableTextColumn } from "./fileSystemTableColumns";
 
-/**
- * 只有基本樣式的單一儲存格組件，一般用於 row
- */
-const FileSystemListCell = ({ children, align = "right", sx, ...rest }: FileSystemListCellProps) => (
-  <Box sx={{ px: 2, py: 1, display: "grid", alignItems: "center", justifyContent: align, ...sx }} {...rest}>
-    {children}
-  </Box>
-);
+// ----------------------------------------------------------------------------
 
-type FileSystemListCellTextProps = {
-  text: string;
-  variant?: "primary" | "secondary";
-};
+type TableCellTextProps = { text: string; variant?: "primary" | "secondary" };
 
 /**
- * 儲存格組件中的文字組件
+ * 用於表格單元格中的文字顯示
  */
-const FileSystemListCellText = ({ text, variant = "secondary" }: FileSystemListCellTextProps) => {
+const TableCellText = ({ text, variant = "secondary" }: TableCellTextProps) => {
   const colorSx: SxProps = variant === "primary" ? { color: "text.primary" } : { color: "text.secondary" };
   return (
     <Typography variant="body2" sx={{ ...colorSx, ...ellipsisSx }}>
@@ -32,61 +21,97 @@ const FileSystemListCellText = ({ text, variant = "secondary" }: FileSystemListC
   );
 };
 
-type FileSystemListHeaderCellProps = {
-  title: string;
-  align?: "left" | "center" | "right";
-  sortable?: boolean;
-  sortOrder?: "asc" | "desc";
-  active?: boolean;
-} & Omit<BoxProps, "children" | "title">;
+type TableCellIconProps = { icon: `codicon codicon-${string}` };
 
 /**
- * 表頭專用的儲存格組件，包含排序圖示等功能
+ * 用於表格單元格中的圖示顯示
  */
-const FileSystemListHeaderCell = ({ title, align = "right", sx, ...rest }: FileSystemListHeaderCellProps) => {
-  const { sortable, active, sortOrder } = rest;
-  const variant = sortable ? (active ? "active" : "default") : "disabled";
+const TableCellIcon = ({ icon }: TableCellIconProps) => {
+  return <i className={icon} style={{ display: "flex", alignItems: "center" }} />;
+};
 
-  const cellSxMap: Record<typeof variant, SxProps> = {
-    active: {
-      cursor: "pointer",
-      userSelect: "none",
-      "&:hover > span.codicon": { color: "text.primary" },
-      "& > span.codicon": { color: "text.secondary" },
-    },
-    default: {
-      cursor: "pointer",
-      userSelect: "none",
-      "&:hover > span.codicon": { color: "text.secondary" },
-      "& > span.codicon": { color: "transparent" },
-    },
-    disabled: {
-      cursor: "default",
-      userSelect: "auto",
-    },
-  };
+// ----------------------------------------------------------------------------
 
-  const cellSx = {
-    pointerEvents: "auto",
-    gridAutoFlow: "column",
-    gap: 0.5,
-    ...cellSxMap[variant],
-    ...sx,
-  } as SxProps;
+type TableIconCellProps = TableCellIconProps & { iconColumn: TableIconColumn };
 
+/**
+ * 用於表格某 row 中的圖示單元格
+ */
+const TableIconCell = ({ icon, iconColumn }: TableIconCellProps) => {
+  const { align, width } = iconColumn;
+  const justifyContent = align === "left" ? "flex-start" : align === "right" ? "flex-end" : "center";
   return (
-    <FileSystemListCell sx={cellSx} align={align} {...rest}>
-      {variant !== "disabled" && align === "right" && (
-        <span className={`codicon codicon-arrow-${sortOrder === "asc" ? "up" : "down"}`} />
-      )}
-
-      <FileSystemListCellText text={title} variant={variant === "disabled" ? "secondary" : "primary"} />
-
-      {variant !== "disabled" && align !== "right" && (
-        <span className={`codicon codicon-arrow-${sortOrder === "asc" ? "up" : "down"}`} />
-      )}
-    </FileSystemListCell>
+    <Box sx={{ width, display: "flex", alignItems: "center", justifyContent }}>
+      <TableCellIcon icon={icon} />
+    </Box>
   );
 };
 
-export { FileSystemListCell, FileSystemListCellText, FileSystemListHeaderCell };
+type TableTextCellProps = TableCellTextProps & { textColumn: TableTextColumn };
+
+/**
+ * 用於表格某 row 中的文字單元格
+ */
+const TableTextCell = ({ text, variant, textColumn }: TableTextCellProps) => {
+  const { align, weight: flex } = textColumn;
+  const justifyContent = align === "left" ? "flex-start" : align === "right" ? "flex-end" : "center";
+  return (
+    <Box sx={{ flex, minWidth: 0, display: "flex", alignItems: "center", justifyContent }}>
+      <TableCellText text={text} variant={variant} />
+    </Box>
+  );
+};
+
+// ----------------------------------------------------------------------------
+
+type TableHeadCellProps = {
+  column: TableTextColumn;
+  sortOrder: "asc" | "desc";
+  active: boolean;
+} & Omit<BoxProps, "children">;
+
+type TableHeadCellVariant = "active" | "default" | "disabled";
+
+const tableCellSxMap: Record<TableHeadCellVariant, SxProps> = {
+  active: {
+    cursor: "pointer",
+    userSelect: "none",
+    "&:hover > span.codicon": { color: "text.primary" },
+    "& > span.codicon": { color: "text.secondary" },
+  },
+  default: {
+    cursor: "pointer",
+    userSelect: "none",
+    "&:hover > span.codicon": { color: "text.secondary" },
+    "& > span.codicon": { color: "transparent" },
+  },
+  disabled: {
+    cursor: "default",
+    userSelect: "auto",
+  },
+};
+
+/**
+ * 用於表格標題列的單元格
+ */
+const TableHeadCell = ({ column, sx, ...rest }: TableHeadCellProps) => {
+  const { label, align, weight, sortable } = column;
+  const { active, sortOrder } = rest;
+
+  const variant = sortable ? (active ? "active" : "default") : "disabled";
+  const cellSx = { gridAutoFlow: "column", gap: 0.5, ...tableCellSxMap[variant], ...sx } as SxProps;
+
+  return (
+    <Box sx={{ flex: weight, display: "grid", alignItems: "center", justifyContent: align, ...cellSx }} {...rest}>
+      {variant !== "disabled" && align === "right" && (
+        <span className={`codicon codicon-arrow-${sortOrder === "asc" ? "up" : "down"}`} />
+      )}
+      <TableCellText text={label} variant={variant === "disabled" ? "secondary" : "primary"} />
+      {variant !== "disabled" && align !== "right" && (
+        <span className={`codicon codicon-arrow-${sortOrder === "asc" ? "up" : "down"}`} />
+      )}
+    </Box>
+  );
+};
+
+export { TableIconCell, TableTextCell, TableHeadCell };
