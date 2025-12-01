@@ -4,7 +4,7 @@ import type { CustomDocument, CustomDocumentOpenContext, WebviewPanel, Cancellat
 
 import { handleCopyImage, handleExportImage, handleEyeDropper } from "../handlers/imageViewerHandler";
 import { createWebviewPanel } from "../utils/webviewHelper";
-import { type ExportFormat, openImage } from "../utils/imageOpener";
+import { type ExportFormat, openImage } from "@/utils/image";
 import type { OneOf } from "@/utils";
 
 /**

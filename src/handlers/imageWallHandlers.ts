@@ -1,9 +1,9 @@
 import * as vscode from "vscode";
 import { randomUUID, type UUID } from "crypto";
 
-import { generateThumbnail, openImages, type ExtendedMetadata } from "../utils/imageOpener";
-import { formatPath, formatPathToArray } from "../utils/formatter";
-import { copyImage } from "../utils/system_windows";
+import { generateThumbnail, openImages, type ExtendedMetadata } from "@/utils/image";
+import { formatPath, formatPathToArray } from "@/utils/formatter";
+import { copyImage } from "@/utils/system_windows";
 
 /**
  * 由插件主機一開始就注入 html (類似 SSR)的資料型別

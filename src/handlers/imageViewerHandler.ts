@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { copyImage } from "../utils/system_windows";
-import { type ExportFormat, exportImage } from "../utils/imageOpener";
+import { type ExportFormat, exportImage } from "@/utils/image";
 
 /**
  * 處理複製圖片到剪貼簿的請求
