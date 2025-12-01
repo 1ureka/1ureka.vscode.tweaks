@@ -15,12 +15,17 @@ export default [
       "no-restricted-syntax": [
         "error",
         {
-          selector: "MemberExpression[object.name='vscode'][property.name='postMessage']",
-          message: "請使用 src/utils/message_client.ts 中的 invoke() 函數來發送訊息",
+          selector: "CallExpression[callee.property.name='postMessage']",
+          message:
+            "如果這發生在前端，請使用 src/utils/message_client.ts 中所提供的訊息處理機制來發送訊息；如果這發生在擴展主機，請使用 src/utils/message_host.ts 中的訊息處理機制來自動接收並回應訊息",
         },
         {
           selector: "CallExpression[callee.property.name='onDidReceiveMessage']",
-          message: "請使用 src/utils/message_host.ts 中的 onDidReceiveInvoke() 函數來處理訊息",
+          message: "請使用 src/utils/message_host.ts 中的所提供的訊息處理機制來處理訊息",
+        },
+        {
+          selector: "CallExpression[callee.property.name='addEventListener'][arguments.0.value='message']",
+          message: "請使用 src/utils/message_client.ts 中的所提供的訊息處理機制來接收訊息",
         },
       ],
     },
