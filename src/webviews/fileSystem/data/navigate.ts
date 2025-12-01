@@ -1,5 +1,4 @@
 import { fileSystemDataStore } from "./data";
-import { clearSelection } from "./view";
 import { requestFileSystemHost } from "./message";
 
 /**
@@ -15,7 +14,6 @@ const refresh = async () => {
  * 請求切換資料夾
  */
 const navigateToFolder = async (folderPath: string) => {
-  clearSelection();
   const { panelId } = fileSystemDataStore.getState();
   const result = await requestFileSystemHost({ panelId, type: "readDirectory", params: { dirPath: folderPath } });
   fileSystemDataStore.setState({ ...result });

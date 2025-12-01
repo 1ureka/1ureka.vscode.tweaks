@@ -13,16 +13,12 @@ type ViewStateStore = {
   sortField: keyof Pick<FileProperties, "fileName" | "mtime" | "ctime" | "size">;
   sortOrder: "asc" | "desc";
   filter: "all" | "file" | "folder";
-  selection: { isDefaultSelected: boolean; overrides: { [filePath: string]: boolean } };
-  timestamp: number; // 用於將 fileSystemData 的更新繼續向下傳遞給 fileSystemViewData
 };
 
 const initialViewState: ViewStateStore = {
   sortField: "fileName",
   sortOrder: "asc",
   filter: "all",
-  selection: { isDefaultSelected: false, overrides: {} },
-  timestamp: Date.now(),
 };
 
 const fileSystemViewStore = create<ViewStateStore>(() => initialViewState);
@@ -31,101 +27,27 @@ export { fileSystemViewStore };
 export type { FileProperties };
 
 // ----------------------------------------------------------------------------
-// 當檔案系統資料更新時，驗證檢視狀態的合理性，並在驗證完成後確保將更新鏈繼續傳遞下去
-// ----------------------------------------------------------------------------
-
-/**
- * 驗證選取狀態與選取數量
- */
-const validateSelection = (entries: InspectDirectoryEntry[]) => {
-  const { selection } = fileSystemViewStore.getState();
-  const { overrides } = selection;
-
-  const entryPaths = new Set(entries.map((entry) => entry.filePath));
-  const validOverrides: { [filePath: string]: boolean } = {};
-
-  for (const [filePath, selected] of Object.entries(overrides)) {
-    if (entryPaths.has(filePath)) {
-      validOverrides[filePath] = selected;
-    }
-  }
-
-  fileSystemViewStore.setState({
-    selection: { isDefaultSelected: selection.isDefaultSelected, overrides: validOverrides },
-  });
-};
-
-/** 確保當檔案系統更新時，選取狀態與分頁是合理的 */
-fileSystemDataStore.subscribe(({ entries }) => {
-  validateSelection(entries);
-  fileSystemViewStore.setState({ timestamp: Date.now() }); // 觸發 viewData 的更新
-});
-
-// ----------------------------------------------------------------------------
-// 一些輔助提供更直觀的 viewState 的 selector 函數，由於更新鏈的存在，
-// 我認為這裡都可以相信 viewState 是合理的 (比如 overrides 裡面一定是正確的，因此選取數量不會算錯)
-// ----------------------------------------------------------------------------
-
-/**
- * 計算目前選取的項目數量
- */
-const useSelectionCount = () => {
-  const selection = fileSystemViewStore((state) => state.selection);
-  const entries = fileSystemDataStore((state) => state.entries);
-  const { isDefaultSelected, overrides } = selection;
-
-  let selectionCount = 0;
-  if (isDefaultSelected) {
-    // 計算未選取的數量，再用總數扣除
-    const deselectedCount = Object.values(overrides).filter((selected) => !selected).length;
-    selectionCount = entries.length - deselectedCount;
-  } else {
-    // 計算被選取的數量
-    selectionCount = Object.values(overrides).filter((selected) => selected).length;
-  }
-
-  return selectionCount;
-};
-
-/**
- * 判斷某個項目是否被選取
- */
-const useIsSelected = () => {
-  const selection = fileSystemViewStore((state) => state.selection);
-
-  return (filePath: string) => {
-    const { isDefaultSelected, overrides } = selection;
-
-    if (filePath in overrides) {
-      return overrides[filePath];
-    }
-
-    return isDefaultSelected;
-  };
-};
-
-export { useSelectionCount, useIsSelected };
-
-// ----------------------------------------------------------------------------
 // 定義用於實際呈現在表格中的檔案系統資料狀態
+// (以及同樣需要依賴於原始資料與檢視條件的選取狀態)
 // ----------------------------------------------------------------------------
 
-type ViewDataStore = { entries: FileProperties[] };
+type ViewDataStore = {
+  entries: FileProperties[];
+  selected: (0 | 1)[];
+};
 
-const initialViewData: ViewDataStore = { entries: [] };
+const initialViewData: ViewDataStore = {
+  entries: [],
+  selected: [],
+};
 
 const fileSystemViewDataStore = create<ViewDataStore>(() => initialViewData);
 
-// ----------------------------------------------------------------------------
-// 當檢視條件或檔案系統資料(透過更新鏈)任一更新時，重新計算用於呈現的檔案系統資料
-// ----------------------------------------------------------------------------
+export { fileSystemViewDataStore };
 
-/**
- * 將檔案屬性陣列擴展成帶有圖示的檔案屬性陣列
- */
-const assignIconToEntries = (entries: InspectDirectoryEntry[]): FileProperties[] => {
-  return entries.map((entry) => ({ ...entry, icon: `codicon codicon-${entry.fileType}` }));
-};
+// ----------------------------------------------------------------------------
+// 定義用於根據檔案系統資料與檢視條件計算 viewData 的輔助函式
+// ----------------------------------------------------------------------------
 
 /**
  * 根據目前的篩選條件回傳篩選後的檔案屬性陣列
@@ -172,60 +94,84 @@ const sortEntries = (entries: InspectDirectoryEntry[]) => {
 };
 
 /**
- * 當檢視條件或檔案系統任一更新時，重新計算 viewData
+ * 將檔案屬性陣列擴展成帶有圖示的檔案屬性陣列
  */
-fileSystemViewStore.subscribe(() => {
+const assignIconToEntries = (entries: InspectDirectoryEntry[]): FileProperties[] => {
+  return entries.map((entry) => ({ ...entry, icon: `codicon codicon-${entry.fileType}` }));
+};
+
+// ----------------------------------------------------------------------------
+// 定義更新鏈/依賴鏈，可參考 README.md 中的說明
+// ----------------------------------------------------------------------------
+
+/**
+ * 當檢視條件或檔案系統任一更新時，重新計算 viewData 並清空選取狀態
+ */
+const handleDataUpdate = () => {
   const entries = fileSystemDataStore.getState().entries;
 
   const entriesFiltered = filterEntries(entries);
   const entriesSorted = sortEntries(entriesFiltered);
   const entriesWithIcons = assignIconToEntries(entriesSorted);
 
-  fileSystemViewDataStore.setState({ entries: entriesWithIcons });
-});
+  const selected = Array<0 | 1>(entriesWithIcons.length).fill(0);
+  fileSystemViewDataStore.setState({ entries: entriesWithIcons, selected });
+};
 
-export { fileSystemViewDataStore };
+/**
+ * 實現更新鏈/依賴鏈的訂閱
+ */
+fileSystemViewStore.subscribe(handleDataUpdate);
+fileSystemDataStore.subscribe(handleDataUpdate);
 
 // ----------------------------------------------------------------------------
 // 定義用於更改檔案系統檢視狀態的行為
 // ----------------------------------------------------------------------------
 
 /** 選取某個項目 */
-const selectRow = (filePath: string, selected?: boolean) => {
-  fileSystemViewStore.setState(({ selection }) => {
-    const { isDefaultSelected, overrides } = selection;
-    const currentState = overrides[filePath] ?? isDefaultSelected;
-    const nextState = selected ?? !currentState;
+const selectRow = (index: number) => {
+  fileSystemViewDataStore.setState((state) => {
+    if (index < 0 || index >= state.selected.length) return {}; // 無效索引，不觸發重新渲染
+    const newSelected = [...state.selected];
+    newSelected[index] = (1 - newSelected[index]) as 0 | 1;
+    return { ...state, selected: newSelected };
+  });
+};
 
-    // 若 nextState 與 isDefaultSelected 相同，表示與預設值相同，則不需在 overrides 中記錄
-    if (nextState === isDefaultSelected) {
-      const { [filePath]: _, ...rest } = overrides;
-      return { selection: { isDefaultSelected, overrides: rest } };
-    } else {
-      return { selection: { isDefaultSelected, overrides: { ...overrides, [filePath]: nextState } } };
-    }
+/** 全選 */
+const selectAll = () => {
+  fileSystemViewDataStore.setState((state) => {
+    const newSelected = Array<0 | 1>(state.selected.length).fill(1);
+    return { ...state, selected: newSelected };
   });
 };
 
 /** 清空選取 */
-const clearSelection = () => {
-  fileSystemViewStore.setState({ selection: { isDefaultSelected: false, overrides: {} } });
+const selectNone = () => {
+  fileSystemViewDataStore.setState((state) => {
+    const newSelected = Array<0 | 1>(state.selected.length).fill(0);
+    return { ...state, selected: newSelected };
+  });
 };
 
-/** 設定排序欄位與順序 */
+/** 反轉選取 */
+const selectInvert = () => {
+  fileSystemViewDataStore.setState((state) => {
+    const newSelected = state.selected.map((value) => (1 - value) as 0 | 1);
+    return { ...state, selected: newSelected };
+  });
+};
+
+/** 設定排序欄位與順序，如果點擊的是同一欄位，切換順序；否則使用預設升序 */
 const setSorting = (field: ViewStateStore["sortField"]) => {
   const { sortField, sortOrder } = fileSystemViewStore.getState();
-  // 如果點擊的是同一欄位，切換順序；否則使用預設升序
   const newOrder = sortField === field && sortOrder === "asc" ? "desc" : "asc";
-
   fileSystemViewStore.setState({ sortField: field, sortOrder: newOrder });
 };
 
 /** 設定篩選條件 */
 const setFilter = (filter: ViewStateStore["filter"]) => {
-  clearSelection(); // 避免使用者忘記篩選掉的項目可能還被選取著
-
   fileSystemViewStore.setState({ filter });
 };
 
-export { selectRow, clearSelection, setSorting, setFilter };
+export { selectRow, selectNone, selectAll, selectInvert, setSorting, setFilter };
