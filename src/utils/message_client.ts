@@ -68,11 +68,15 @@ function invoke<T extends API>(id: T["id"], params: Parameters<T["handler"]>[0])
  * 處理來自擴展主機的命令消息
  * 詳情請參考 src/utils/message_host.ts 中的 forwardCommandMessage 相關說明
  */
-function onReceiveCommand<T extends API>(id: T["id"], handler: T["handler"], params: Parameters<T["handler"]>[0]) {
+function onReceiveCommand<T extends API>(
+  id: T["id"],
+  handler: (params: Parameters<T["handler"]>[0]) => void,
+  getParams: () => Parameters<T["handler"]>[0]
+) {
   const handleMessage = (event: MessageEvent<ForwardCommandMessage>) => {
     const message = event.data;
     if (message.type === "1ureka.command" && message.action === id) {
-      handler(params);
+      handler(getParams());
     }
   };
 
