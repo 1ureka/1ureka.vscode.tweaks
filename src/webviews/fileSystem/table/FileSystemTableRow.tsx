@@ -1,108 +1,90 @@
 import React from "react";
-import { Box } from "@mui/material";
-import { FileSystemListCell, FileSystemListCellText, FileSystemListHeaderCell } from "./FileSystemTableCell";
-import type { FileProperties } from "../data/view";
+import { Box, ButtonBase } from "@mui/material";
+import type { ButtonBaseProps, SxProps } from "@mui/material";
 
-type RowDirUpProps = {
-  columns: number;
-  icon: `codicon codicon-${string}`;
-  text: string;
-};
+import type { TableFields, TableIconColumn, TableTextColumn } from "./fileSystemTableColumns";
+import { tableColumns } from "./fileSystemTableColumns";
+import { TableHeadCell, TableIconCell, TableTextCell } from "./FileSystemTableCell";
+import { fileSystemViewStore, setSorting } from "../data/view";
 
 /**
- * 檔案系統表格中，表示「上層目錄」的列組件
+ * 表格列的固定高度
  */
-const FileSystemTableRowDirUp = ({ columns, icon, text }: RowDirUpProps) => {
-  const columnsArray = Array(columns).fill(null);
+const tableRowHeight = 36;
+
+/**
+ * 用於表格中每一列的基礎樣式
+ */
+const tableRowBaseSx: SxProps = {
+  display: "flex",
+  gap: 1,
+  pr: 1,
+  width: 1,
+  alignItems: "stretch",
+  justifyContent: "stretch",
+  height: tableRowHeight,
+  borderRadius: 1,
+};
+
+export { tableRowHeight };
+
+// ----------------------------------------------------------------------------
+
+type TableRowProps = ButtonBaseProps & { row: Record<TableFields, string> & { icon: `codicon codicon-${string}` } };
+
+/**
+ * 用於呈現一個普通的資料列
+ */
+const TableRow = ({ sx, row, ...props }: TableRowProps) => (
+  <ButtonBase focusRipple sx={{ ...tableRowBaseSx, ...sx }} {...props}>
+    {tableColumns.map((column) => {
+      const { field } = column;
+      const textVariant = field === "fileName" ? "primary" : "secondary";
+
+      if (field === "icon") return <TableIconCell key={field} icon={row.icon} iconColumn={column} />;
+      else return <TableTextCell key={field} variant={textVariant} text={row[field]} textColumn={column} />;
+    })}
+  </ButtonBase>
+);
+
+/**
+ * 用於當前目錄有上層目錄可供導航時，呈現的「返回上層目錄」列
+ */
+const TableNavigateUpRow = ({ sx, ...props }: ButtonBaseProps) => (
+  <ButtonBase focusRipple sx={{ ...tableRowBaseSx, ...sx }} {...props}>
+    <TableIconCell icon="codicon codicon-folder-opened" iconColumn={tableColumns[0] as TableIconColumn} />
+    <TableTextCell text=".." variant="primary" textColumn={tableColumns[1] as TableTextColumn} />
+  </ButtonBase>
+);
+
+/**
+ * 用於呈現表格標題列，會自動從 store 取得目前的排序欄位與排序順序
+ */
+const TableHeadRow = () => {
+  const sortField = fileSystemViewStore((state) => state.sortField);
+  const sortOrder = fileSystemViewStore((state) => state.sortOrder);
 
   return (
-    <>
-      {columnsArray.map((_, i) => (
-        <FileSystemListCell key={i} align={i === 0 || i === 1 ? "left" : "right"}>
-          {i === 0 ? (
-            <span className={icon} style={{ display: "flex", alignItems: "center" }} />
-          ) : i === 1 ? (
-            <FileSystemListCellText text={text} variant="primary" />
-          ) : (
-            <Box />
-          )}
-        </FileSystemListCell>
-      ))}
-    </>
+    <Box sx={{ ...tableRowBaseSx, bgcolor: "background.paper" }}>
+      {tableColumns.map((column) => {
+        const { field } = column;
+
+        if (field === "icon") {
+          return <Box key={field} sx={{ width: column.width }} />;
+        }
+
+        return (
+          <TableHeadCell
+            key={field}
+            column={column}
+            active={field === sortField}
+            sortOrder={sortOrder}
+            onClick={() => field !== "fileType" && setSorting(field)}
+          />
+        );
+      })}
+    </Box>
   );
 };
 
-type RowProps = Pick<FileProperties, "icon" | "fileName" | "fileType" | "fileSize" | "mtime" | "ctime" | "size">;
-
-const fileTypeLabels: Record<string, string> = {
-  file: "檔案",
-  folder: "資料夾",
-  "file-symlink-file": "符號連結檔案",
-  "file-symlink-directory": "符號連結資料夾",
-};
-
-/**
- * 檔案系統表格中，表示單一檔案或資料夾的列組件
- */
-const FileSystemTableRow = ({ icon, fileName, fileType, fileSize, mtime, ctime, size }: RowProps) => (
-  <>
-    <FileSystemListCell align="left">
-      <span className={icon} style={{ display: "flex", alignItems: "center" }} />
-    </FileSystemListCell>
-
-    <FileSystemListCell align="left">
-      <FileSystemListCellText text={fileName} variant="primary" />
-    </FileSystemListCell>
-
-    <FileSystemListCell>
-      <FileSystemListCellText text={fileTypeLabels[fileType]} />
-    </FileSystemListCell>
-
-    <FileSystemListCell>
-      <FileSystemListCellText text={new Date(mtime).toLocaleString()} />
-    </FileSystemListCell>
-
-    <FileSystemListCell>
-      <FileSystemListCellText text={new Date(ctime).toLocaleDateString()} />
-    </FileSystemListCell>
-
-    <FileSystemListCell>{size > 0 && <FileSystemListCellText text={fileSize} />}</FileSystemListCell>
-  </>
-);
-
-type SortableField = "fileName" | "mtime" | "ctime" | "size";
-
-type FieldDefinition = {
-  align: "left" | "center" | "right";
-  label: string;
-  dataField?: SortableField;
-};
-
-type RowHeaderProps = {
-  fields: FieldDefinition[];
-  sortField: SortableField;
-  sortOrder: "asc" | "desc";
-  onSortChange: (field: SortableField) => void;
-};
-
-/**
- * 檔案系統表格中，表示表頭列的組件
- */
-const FileSystemTableRowHeader = ({ fields, sortField, sortOrder, onSortChange }: RowHeaderProps) => (
-  <>
-    {fields.map(({ align, label, dataField }) => (
-      <FileSystemListHeaderCell
-        key={label}
-        title={label}
-        align={align}
-        sortable={Boolean(dataField)}
-        active={sortField === dataField}
-        sortOrder={sortOrder}
-        onClick={() => dataField && onSortChange(dataField)}
-      />
-    ))}
-  </>
-);
-
-export { FileSystemTableRowHeader, FileSystemTableRowDirUp, FileSystemTableRow };
-export type { FieldDefinition };
+export { TableHeadRow, TableRow, TableNavigateUpRow };
