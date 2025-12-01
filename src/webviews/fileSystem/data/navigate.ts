@@ -1,5 +1,5 @@
 import { fileSystemDataStore } from "./data";
-import { setPage, clearSelection } from "./view";
+import { clearSelection } from "./view";
 import { requestFileSystemHost } from "./message";
 
 /**
@@ -19,7 +19,6 @@ const navigateToFolder = async (folderPath: string) => {
   const { panelId } = fileSystemDataStore.getState();
   const result = await requestFileSystemHost({ panelId, type: "readDirectory", params: { dirPath: folderPath } });
   fileSystemDataStore.setState({ ...result });
-  setPage(1);
 };
 
 /**

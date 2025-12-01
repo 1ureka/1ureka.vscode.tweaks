@@ -38,6 +38,9 @@ const createHandleRowClick = (fileType: string, filePath: string) => (e: React.M
   }
 };
 
+/**
+ * 檔案類型標籤對應表
+ */
 const fileTypeLabels: Record<string, string> = {
   file: "檔案",
   folder: "資料夾",

@@ -7,13 +7,9 @@ import type { Prettify } from "@/utils";
 // 定義檔案系統可以如何被檢視的狀態
 // ----------------------------------------------------------------------------
 
-const FILES_PER_PAGE = 500;
-
 type FileProperties = Prettify<InspectDirectoryEntry & { icon: `codicon codicon-${string}` }>;
 
 type ViewStateStore = {
-  page: number;
-  pages: number;
   sortField: keyof Pick<FileProperties, "fileName" | "mtime" | "ctime" | "size">;
   sortOrder: "asc" | "desc";
   filter: "all" | "file" | "folder";
@@ -22,8 +18,6 @@ type ViewStateStore = {
 };
 
 const initialViewState: ViewStateStore = {
-  page: 1,
-  pages: 1,
   sortField: "fileName",
   sortOrder: "asc",
   filter: "all",
@@ -61,29 +55,9 @@ const validateSelection = (entries: InspectDirectoryEntry[]) => {
   });
 };
 
-/**
- * 驗證分頁是否合理
- */
-const validatePagination = (entries: InspectDirectoryEntry[]) => {
-  const { page, filter } = fileSystemViewStore.getState();
-
-  let filteredEntries: InspectDirectoryEntry[] = [];
-  if (filter === "all") {
-    filteredEntries = [...entries];
-  } else {
-    filteredEntries = entries.filter(({ fileType }) => fileType === filter);
-  }
-
-  const totalPages = Math.ceil(filteredEntries.length / FILES_PER_PAGE);
-  const validPage = page > totalPages ? Math.max(1, totalPages) : page;
-
-  fileSystemViewStore.setState({ page: validPage, pages: totalPages });
-};
-
 /** 確保當檔案系統更新時，選取狀態與分頁是合理的 */
 fileSystemDataStore.subscribe(({ entries }) => {
   validateSelection(entries);
-  validatePagination(entries);
   fileSystemViewStore.setState({ timestamp: Date.now() }); // 觸發 viewData 的更新
 });
 
@@ -198,19 +172,6 @@ const sortEntries = (entries: InspectDirectoryEntry[]) => {
 };
 
 /**
- * 根據目前的頁碼回傳分頁後的檔案屬性陣列
- */
-const paginateEntries = (entries: InspectDirectoryEntry[]) => {
-  const { page } = fileSystemViewStore.getState();
-
-  const startIndex = (page - 1) * FILES_PER_PAGE;
-  const endIndex = startIndex + FILES_PER_PAGE;
-  const paginatedEntries = entries.slice(startIndex, endIndex);
-
-  return paginatedEntries;
-};
-
-/**
  * 當檢視條件或檔案系統任一更新時，重新計算 viewData
  */
 fileSystemViewStore.subscribe(() => {
@@ -218,8 +179,7 @@ fileSystemViewStore.subscribe(() => {
 
   const entriesFiltered = filterEntries(entries);
   const entriesSorted = sortEntries(entriesFiltered);
-  const entriesPaginated = paginateEntries(entriesSorted);
-  const entriesWithIcons = assignIconToEntries(entriesPaginated);
+  const entriesWithIcons = assignIconToEntries(entriesSorted);
 
   fileSystemViewDataStore.setState({ entries: entriesWithIcons });
 });
@@ -229,11 +189,6 @@ export { fileSystemViewDataStore };
 // ----------------------------------------------------------------------------
 // 定義用於更改檔案系統檢視狀態的行為
 // ----------------------------------------------------------------------------
-
-/** 換頁 */
-const setPage = (page: number) => {
-  fileSystemViewStore.setState({ page });
-};
 
 /** 選取某個項目 */
 const selectRow = (filePath: string, selected?: boolean) => {
@@ -270,9 +225,7 @@ const setSorting = (field: ViewStateStore["sortField"]) => {
 const setFilter = (filter: ViewStateStore["filter"]) => {
   clearSelection(); // 避免使用者忘記篩選掉的項目可能還被選取著
 
-  fileSystemViewStore.setState({ filter, page: 1 });
-
-  validatePagination(fileSystemDataStore.getState().entries);
+  fileSystemViewStore.setState({ filter });
 };
 
-export { setPage, selectRow, clearSelection, setSorting, setFilter };
+export { selectRow, clearSelection, setSorting, setFilter };

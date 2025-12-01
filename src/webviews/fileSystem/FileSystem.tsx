@@ -4,7 +4,6 @@ import { fileSystemViewDataStore, fileSystemViewStore } from "./data/view";
 
 import { FileSystemHeader } from "./header/FileSystemHeader";
 import { FilterSystemOperationBar } from "./operation/FileSystemOperationBar";
-import { FileSystemPagination } from "./table/FileSystemPagination";
 import { FileSystemTable } from "./table/FileSystemTable";
 import { fileSystemDataStore } from "./data/data";
 
@@ -29,18 +28,6 @@ const NoItemDisplay = () => {
       <Typography color="text.secondary" variant="body2">
         {message}
       </Typography>
-    </Box>
-  );
-};
-
-const TableSection = () => {
-  const pages = fileSystemViewStore((state) => state.pages);
-
-  return (
-    <Box>
-      <FileSystemTable />
-      {pages > 1 && <FileSystemPagination />}
-      <NoItemDisplay />
     </Box>
   );
 };
@@ -77,7 +64,10 @@ const FileSystem = () => (
 
     <Box sx={{ display: "grid", gridTemplateColumns: "auto 1fr", alignItems: "start", gap: 1, px: 2 }}>
       <FilterSystemOperationBar />
-      <TableSection />
+      <Box>
+        <FileSystemTable />
+        <NoItemDisplay />
+      </Box>
     </Box>
 
     <Box sx={{ py: 1 }} />
