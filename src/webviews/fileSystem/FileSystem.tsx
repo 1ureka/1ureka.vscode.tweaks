@@ -52,6 +52,11 @@ const loadingContainerSx = {
   display: "flex",
   alignItems: "flex-end",
   justifyContent: "stretch",
+  animation: "progressDelay 0.15s steps(1, end)",
+  "@keyframes progressDelay": {
+    from: { opacity: 0 },
+    to: { opacity: 1 },
+  },
 };
 
 const LoadingDisplay = () => {
