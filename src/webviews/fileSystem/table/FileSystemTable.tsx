@@ -2,6 +2,7 @@ import React from "react";
 import { useWindowVirtualizer } from "@tanstack/react-virtual";
 import { Box, type SxProps } from "@mui/material";
 import { TableHeadRow, TableNavigateUpRow, TableRow, tableRowHeight } from "./FileSystemTableRow";
+import { NoItemDisplay } from "./NoItemDisplay";
 
 import { fileSystemDataStore } from "../data/data";
 import { navigateToFolder, navigateUp } from "../data/navigate";
@@ -106,6 +107,8 @@ const FileSystemTable = () => {
       ) : null}
 
       <TableBody />
+
+      <NoItemDisplay />
     </Box>
   );
 };
