@@ -27,22 +27,6 @@ export default [
           selector: "CallExpression[callee.property.name='addEventListener'][arguments.0.value='message']",
           message: "請使用 src/utils/message_client.ts 中的所提供的訊息處理機制來接收訊息",
         },
-        {
-          selector: "CallExpression[callee.name='invoke'][typeArguments.length=0]",
-          message: "invoke 必須明確指派泛型參數為 API 中的某一個處理器，以確保類型安全",
-        },
-        {
-          selector: "CallExpression[callee.name='onDidReceiveInvoke'][typeArguments.length=0]",
-          message: "onDidReceiveInvoke 必須明確指派泛型參數為 API 中的某一個處理器，以確保類型安全",
-        },
-        {
-          selector: "CallExpression[callee.name='forwardCommandToWebview'][typeArguments.length=0]",
-          message: "forwardCommandToWebview 必須明確指派泛型參數為 API 中的某一個處理器，以確保類型安全",
-        },
-        {
-          selector: "CallExpression[callee.name='onReceiveCommand'][typeArguments.length=0]",
-          message: "onReceiveCommand 必須明確指派泛型參數為 API 中的某一個處理器，以確保類型安全",
-        },
       ],
     },
   },

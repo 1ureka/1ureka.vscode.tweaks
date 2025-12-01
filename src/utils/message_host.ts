@@ -33,7 +33,7 @@ type InvokeResponseMessage = {
  * const result = await invoke<typeof myHandler>({ id: "123" });
  * // result 的類型會自動推斷為 { name: string; age: number }
  */
-function onDidReceiveInvoke<T extends API>(panel: vscode.WebviewPanel, id: T["id"], handler: T["handler"]) {
+function onDidReceiveInvoke<T extends API = never>(panel: vscode.WebviewPanel, id: T["id"], handler: T["handler"]) {
   const disposable = panel.webview.onDidReceiveMessage(async (message) => {
     const { type, requestId, handlerId, params } = message as InvokeMessage;
 
@@ -84,7 +84,7 @@ type ForwardCommandMessage = {
  * onReceiveCommand<ResetViewAPI>("resetView", handleResetView);
  * onReceiveCommand<OpenFileAPI>("openFile", () => invoke<OpenFileAPI>("openFile", { filePath: store.getState() }));
  */
-function forwardCommandToWebview<T extends API>(panel: vscode.WebviewPanel, action: T["id"]) {
+function forwardCommandToWebview<T extends API = never>(panel: vscode.WebviewPanel, action: T["id"]) {
   const message: ForwardCommandMessage = { type: "1ureka.command", action };
   panel.webview.postMessage(message);
 }

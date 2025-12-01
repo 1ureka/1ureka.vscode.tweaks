@@ -45,7 +45,7 @@ type InvokeMessage = {
  * const resultInWebview = await invoke<MyAPI>("myHandler", { id: "123" });
  * // resultInWebview 的類型會自動推斷為 { name: string; age: number }
  */
-function invoke<T extends API>(id: T["id"], params: Parameters<T["handler"]>[0]): Promised<T["handler"]> {
+function invoke<T extends API = never>(id: T["id"], params: Parameters<T["handler"]>[0]): Promised<T["handler"]> {
   const { promise, resolve } = defer<Awaited<ReturnType<T["handler"]>>>();
   const requestId = crypto.randomUUID();
 
@@ -68,7 +68,7 @@ function invoke<T extends API>(id: T["id"], params: Parameters<T["handler"]>[0])
  * 處理來自擴展主機的命令消息
  * 詳情請參考 src/utils/message_host.ts 中的 forwardCommandMessage 相關說明
  */
-function onReceiveCommand<T extends API>(
+function onReceiveCommand<T extends API = never>(
   id: T["id"],
   handler: (params: Parameters<T["handler"]>[0]) => void,
   getParams: () => Parameters<T["handler"]>[0]
