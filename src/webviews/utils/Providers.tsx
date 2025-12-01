@@ -56,6 +56,9 @@ const theme = createTheme({
           secondary: getColorVar("descriptionForeground"),
           disabled: getColorVar("disabledForeground"),
         },
+        info: {
+          main: getColorVar("editorInfo-foreground"),
+        },
         table: {
           alternateRowBackground: getColorVar("list-hoverBackground"),
           hoverBackground: getColorVar("toolbar-hoverBackground"),

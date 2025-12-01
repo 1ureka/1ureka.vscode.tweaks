@@ -1,11 +1,12 @@
 import React from "react";
-import { Box, Typography } from "@mui/material";
+import { Box, LinearProgress, Typography } from "@mui/material";
 import { fileSystemViewDataStore, fileSystemViewStore } from "./data/view";
 
 import { FileSystemHeader } from "./header/FileSystemHeader";
 import { FilterSystemOperationBar } from "./operation/FileSystemOperationBar";
 import { FileSystemPagination } from "./table/FileSystemPagination";
 import { FileSystemTable } from "./table/FileSystemTable";
+import { fileSystemDataStore } from "./data/data";
 
 const NoItemDisplay = () => {
   const viewEntries = fileSystemViewDataStore((state) => state.entries);
@@ -44,6 +45,27 @@ const TableSection = () => {
   );
 };
 
+const loadingContainerSx = {
+  position: "fixed",
+  inset: "0",
+  pointerEvents: "none",
+  display: "flex",
+  alignItems: "flex-end",
+  justifyContent: "stretch",
+};
+
+const LoadingDisplay = () => {
+  const loading = fileSystemDataStore((state) => state.loading);
+
+  if (!loading) return null;
+
+  return (
+    <Box sx={loadingContainerSx}>
+      <LinearProgress sx={{ width: 1, height: 6 }} color="info" />
+    </Box>
+  );
+};
+
 const FileSystem = () => (
   <Box sx={{ height: "100vh", display: "flex", flexDirection: "column" }}>
     <FileSystemHeader />
@@ -54,6 +76,8 @@ const FileSystem = () => (
     </Box>
 
     <Box sx={{ py: 1 }} />
+
+    <LoadingDisplay />
   </Box>
 );
 
