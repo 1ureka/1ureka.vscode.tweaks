@@ -1,8 +1,9 @@
 import * as fs from "fs";
 import * as path from "path";
 import * as vscode from "vscode";
-import customStyle from "../utils/customStyle.css";
+import customStyle from "@/assets/customStyle.css";
 import { parse as parseHtml } from "node-html-parser";
+import { createCommandManager } from "@/utils/command";
 
 function getConfiguredPath(): string | undefined {
   const config = vscode.workspace.getConfiguration("1ureka");
@@ -196,12 +197,8 @@ async function restoreAndReinjectStyles() {
 }
 
 export function registerInjectStylesCommands(context: vscode.ExtensionContext) {
-  const injectStylesCommand = vscode.commands.registerCommand("1ureka.injectStyles", injectStyles);
-  const restoreStylesCommand = vscode.commands.registerCommand("1ureka.restoreStyles", restoreStyles);
-  const restoreAndReinjectStylesCommand = vscode.commands.registerCommand(
-    "1ureka.restoreAndReinjectStyles",
-    restoreAndReinjectStyles
-  );
-
-  context.subscriptions.push(injectStylesCommand, restoreStylesCommand, restoreAndReinjectStylesCommand);
+  const commandManager = createCommandManager(context);
+  commandManager.register("1ureka.injectStyles", injectStyles);
+  commandManager.register("1ureka.restoreStyles", restoreStyles);
+  commandManager.register("1ureka.restoreAndReinjectStyles", restoreAndReinjectStyles);
 }

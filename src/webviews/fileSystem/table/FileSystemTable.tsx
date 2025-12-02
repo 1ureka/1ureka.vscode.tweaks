@@ -34,7 +34,7 @@ const createHandleRowClick =
     if (e.detail !== 2) return;
 
     if (fileType === "folder" || fileType === "file-symlink-directory") {
-      navigateToFolder(filePath);
+      navigateToFolder({ dirPath: filePath });
     } else if (fileType === "file" || fileType === "file-symlink-file") {
       openFile(filePath);
     }
@@ -69,11 +69,11 @@ const TableBody = () => {
 
   const rowVirtualizer = useWindowVirtualizer({
     count: viewEntries.length,
-    estimateSize: () => tableRowHeight + 8,
+    estimateSize: () => tableRowHeight + 4,
     overscan: 10,
   });
 
-  const virtualItemWrapperSx: SxProps = { position: "absolute", top: 0, left: 0, width: 1, pb: 0.5 };
+  const virtualItemWrapperSx: SxProps = { position: "absolute", top: 0, left: 0, width: 1 };
 
   return (
     <Box sx={{ position: "relative", height: `${rowVirtualizer.getTotalSize()}px`, width: 1 }}>

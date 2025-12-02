@@ -9,6 +9,7 @@ declare module "*.css" {
 }
 
 declare function acquireVsCodeApi(): {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   postMessage: (message: any) => void;
 };
 

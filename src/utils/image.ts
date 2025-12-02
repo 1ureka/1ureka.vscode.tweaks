@@ -19,6 +19,7 @@ async function openImage(filePath: string): Promise<ExtendedMetadata | null> {
   try {
     const metadata = await sharp(filePath).metadata();
     return { ...metadata, filePath, fileName: path.basename(filePath) };
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
     return null;
   }

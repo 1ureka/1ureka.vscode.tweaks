@@ -1,88 +1,65 @@
 import * as vscode from "vscode";
 import * as path from "path";
 
-import { createWebviewPanel } from "../utils/webviewHelper";
-import { handlePrepareInitialData, handlePreparePageData, imageHandlers } from "../handlers/imageWallHandlers";
-import type { ImageWallInitialData } from "../handlers/imageWallHandlers";
-import type { OneOf } from "@/utils";
+import type { ImageWallInitialData, ImageWallPageData } from "../handlers/imageWallHandlers";
+import { handleGenerateThumbnail, handleClickImage, handleCopyImage } from "@/handlers/imageWallHandlers";
+import { handlePrepareInitialData, handlePreparePageData } from "@/handlers/imageWallHandlers";
+import { createWebviewPanelManager } from "@/utils/webview";
+import { onDidReceiveInvoke } from "@/utils/message_host";
 
-import imageWallLight from "../icons/image-wall-light.svg";
-import imageWallDark from "../icons/image-wall-dark.svg";
+import imageWallLight from "@/assets/image-wall-light.svg";
+import imageWallDark from "@/assets/image-wall-dark.svg";
 
-type ImageWallMessage = OneOf<
-  [
-    { type: "images"; page: number },
-    { type: "image"; request: { type: string; id: string } },
-    { type: "info"; message: string }
-  ]
->;
+// ---------------------------------------------------------------------------------
+// 定義延伸主機端所有可呼叫的處理器 API 型別
+// ---------------------------------------------------------------------------------
 
-/** 檢查接收到的訊息格式是否正確 */
-function checkMessage(value: any): ImageWallMessage | null {
-  if (typeof value !== "object" || value === null) return null;
+type ShowInfoAPI = { id: "showInfo"; handler: (info: string) => void };
+type GetPageDataAPI = { id: "getPageData"; handler: (page: number) => ImageWallPageData };
+type GenerateThumbnailAPI = { id: "generateThumbnail"; handler: (id: string) => Promise<string | undefined> };
+type ClickImageAPI = { id: "clickImage"; handler: (id: string) => void };
+type CopyImageAPI = { id: "copyImage"; handler: (id: string) => void };
 
-  const { type, id, info, page } = value as Record<string, unknown>;
-  if (typeof type !== "string") return null; // 訊息必須包含 type
-
-  // 請求圖片牆某頁的所有圖片
-  if (type === "images" && typeof page === "number") return { type: "images", page };
-  // 圖片相關訊息：包含 type 和 id
-  if (typeof id === "string") return { type: "image", request: { type, id } };
-  // 要求顯示資訊訊息
-  if (type === "info" && typeof info === "string") return { type: "info", message: info };
-
-  return null;
-}
+export type { ShowInfoAPI, GetPageDataAPI, GenerateThumbnailAPI, ClickImageAPI, CopyImageAPI };
 
 /**
- * 讀取資料夾中的圖片並在 WebView 中顯示
+ * 提供圖片牆面板的管理功能，包括創建和獲取當前面板
  */
-async function createImageWallPanel(context: vscode.ExtensionContext, folderPath: string) {
-  const { initialData, images } = await handlePrepareInitialData(folderPath);
+function ImageWallPanelProvider(context: vscode.ExtensionContext) {
+  const panelManager = createWebviewPanelManager(context);
 
-  const panel = createWebviewPanel<ImageWallInitialData>({
-    panelId: "1ureka.imageWall",
-    panelTitle: `圖片牆 - ${path.basename(folderPath)}`,
-    webviewType: "imageWall",
-    extensionUri: context.extensionUri,
-    resourceUri: vscode.Uri.file(folderPath),
-    initialData,
-    iconPath: { light: vscode.Uri.parse(imageWallLight), dark: vscode.Uri.parse(imageWallDark) },
-  });
+  const createPanel = async (folderPath: string) => {
+    const { initialData, images } = await handlePrepareInitialData({ folderPath });
 
-  const webview = panel.webview;
+    const panel = panelManager.create<ImageWallInitialData>({
+      panelId: "1ureka.imageWall",
+      panelTitle: `圖片牆 - ${path.basename(folderPath)}`,
+      webviewType: "imageWall",
+      extensionUri: context.extensionUri,
+      resourceUri: vscode.Uri.file(folderPath),
+      initialData,
+      iconPath: { light: vscode.Uri.parse(imageWallLight), dark: vscode.Uri.parse(imageWallDark) },
+    });
 
-  const messageListener = webview.onDidReceiveMessage(async (event) => {
-    const result = checkMessage(event);
-    if (!result) {
-      console.warn("Image Wall Extension Host: 接收到無效的訊息");
-      return;
-    }
+    onDidReceiveInvoke<ShowInfoAPI>(panel, "showInfo", vscode.window.showInformationMessage);
+    onDidReceiveInvoke<GetPageDataAPI>(panel, "getPageData", (page) => handlePreparePageData({ page, images }));
+    onDidReceiveInvoke<GenerateThumbnailAPI>(panel, "generateThumbnail", async (id: string) => {
+      const image = images.find((img) => img.id === id);
+      if (image) return handleGenerateThumbnail({ filePath: image.metadata.filePath });
+    });
 
-    if (result.type === "info") {
-      vscode.window.showInformationMessage(result.message);
-      return;
-    }
+    onDidReceiveInvoke<ClickImageAPI>(panel, "clickImage", (id: string) => {
+      const image = images.find((img) => img.id === id);
+      if (image) handleClickImage({ filePath: image.metadata.filePath });
+    });
 
-    if (result.type === "images") {
-      handlePreparePageData({ webview, images, page: result.page });
-      return;
-    }
+    onDidReceiveInvoke<CopyImageAPI>(panel, "copyImage", (id: string) => {
+      const image = images.find((img) => img.id === id);
+      if (image) handleCopyImage({ filePath: image.metadata.filePath });
+    });
+  };
 
-    const { request } = result;
-    const filePath = images.find(({ id }) => id === request.id)?.metadata.filePath;
-    if (!filePath) return;
-
-    const handler = imageHandlers[request.type];
-    if (!handler) return;
-
-    const response = await handler(request.id, filePath);
-    if (response) webview.postMessage(response);
-  });
-
-  panel.onDidDispose(() => messageListener.dispose());
-  context.subscriptions.push(panel);
-  return panel;
+  return { getCurrentPanel: panelManager.getCurrent, createPanel };
 }
 
-export { createImageWallPanel };
+export { ImageWallPanelProvider };

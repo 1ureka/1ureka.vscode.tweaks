@@ -8,8 +8,8 @@ import { ImageListItemBar, imageListItemBarClassName } from "./ImageListItemBar"
 import { ImageClickControl } from "./ImageClickControl";
 import { ImageDisplay } from "./ImageDisplay";
 
-import { imageWallPreferenceStore } from "./events";
-import { imageWallDataStore } from "./data";
+import { imageWallPreferenceStore } from "./data/preference";
+import { imageWallDataStore } from "./data/data";
 
 const columnCountsMap = {
   s: { xl: 7, lg: 6, md: 5, sm: 4, xs: 3 },

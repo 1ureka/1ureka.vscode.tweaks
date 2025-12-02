@@ -1,18 +1,26 @@
 import * as vscode from "vscode";
-import { openFileSystemPanel } from "../providers/fileSystemProvider";
+import { FileSystemPanelProvider, type ReadDirAPI } from "@/providers/fileSystemProvider";
+import { forwardCommandToWebview } from "@/utils/message_host";
+import { createCommandManager } from "@/utils/command";
 
+/**
+ * 註冊檔案系統相關命令與面板
+ */
 export function registerFileSystemCommands(context: vscode.ExtensionContext) {
-  // 從檔案總管右鍵開啟
-  const openFromExplorer = (uri: vscode.Uri) => {
+  const fileSystemProvider = FileSystemPanelProvider(context);
+  const commandManager = createCommandManager(context);
+
+  /** 開啟面板，從檔案總管右鍵開啟 */
+  commandManager.register("1ureka.openFileSystemFromExplorer", (uri: vscode.Uri) => {
     if (!uri || !uri.fsPath) {
       vscode.window.showErrorMessage("請選擇一個資料夾來開啟檔案系統");
     } else {
-      openFileSystemPanel(context, uri.fsPath);
+      fileSystemProvider.createPanel(uri.fsPath);
     }
-  };
+  });
 
-  // 從命令面板開啟
-  const openFromCommandPalette = async () => {
+  /** 開啟面板，從命令選單面板開啟 */
+  commandManager.register("1ureka.openFileSystem", async () => {
     const folders = await vscode.window.showOpenDialog({
       canSelectFiles: false,
       canSelectFolders: true,
@@ -22,18 +30,13 @@ export function registerFileSystemCommands(context: vscode.ExtensionContext) {
 
     // 不須要顯示錯誤訊息，因為可能使用者只是取消選擇
     if (folders && folders.length > 0) {
-      openFileSystemPanel(context, folders[0].fsPath);
+      fileSystemProvider.createPanel(folders[0].fsPath);
     }
-  };
+  });
 
-  const openFromExplorerCommand = vscode.commands.registerCommand(
-    "1ureka.openFileSystemFromExplorer",
-    openFromExplorer
-  );
-  const openFromCommandPaletteCommand = vscode.commands.registerCommand(
-    "1ureka.openFileSystem",
-    openFromCommandPalette
-  );
-
-  context.subscriptions.push(openFromExplorerCommand, openFromCommandPaletteCommand);
+  commandManager.register("1ureka.fileSystem.refresh", () => {
+    const panel = fileSystemProvider.getCurrentPanel();
+    if (!panel) return;
+    forwardCommandToWebview<ReadDirAPI>(panel, "readDirectory");
+  });
 }

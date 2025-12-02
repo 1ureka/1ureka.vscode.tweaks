@@ -1,23 +1,20 @@
 import * as vscode from "vscode";
-import { randomUUID } from "crypto";
-import { createImageWallPanel } from "../providers/imageWallProvider";
+import { ImageWallPanelProvider } from "@/providers/imageWallProvider";
+import { createCommandManager } from "@/utils/command";
+import { forwardCommandToWebview } from "@/utils/message_host";
+import type { SetModeStandardAPI, SetModeMasonryAPI, SetModeWovenAPI } from "@/webviews/imageWall/data/preference";
+import type { SetSizeLargeAPI, SetSizeMediumAPI, SetSizeSmallAPI } from "@/webviews/imageWall/data/preference";
 
 export function registerImageWallCommands(context: vscode.ExtensionContext) {
-  const panelsMap = new Map<string, vscode.WebviewPanel>();
+  const commandManager = createCommandManager(context);
+  const imageWallPanelProvider = ImageWallPanelProvider(context);
 
-  const openPanel = async (folderPath: string) => {
-    const panel = await createImageWallPanel(context, folderPath);
-    const panelId = randomUUID();
-    panelsMap.set(panelId, panel);
-    panel.onDidDispose(() => panelsMap.delete(panelId));
-  };
-
-  const openFromExplorer = (uri: vscode.Uri) => {
+  commandManager.register("1ureka.openImageWallFromExplorer", (uri: vscode.Uri) => {
     if (!uri || !uri.fsPath) vscode.window.showErrorMessage("請選擇一個資料夾來開啟圖片牆");
-    else openPanel(uri.fsPath);
-  };
+    else imageWallPanelProvider.createPanel(uri.fsPath);
+  });
 
-  const openFromCommandPalette = async () => {
+  commandManager.register("1ureka.openImageWall", async () => {
     const folders = await vscode.window.showOpenDialog({
       canSelectFiles: false,
       canSelectFolders: true,
@@ -26,40 +23,40 @@ export function registerImageWallCommands(context: vscode.ExtensionContext) {
     });
 
     if (!folders || folders.length === 0) vscode.window.showErrorMessage("請選擇一個資料夾來開啟圖片牆");
-    else openPanel(folders[0].fsPath);
-  };
+    else imageWallPanelProvider.createPanel(folders[0].fsPath);
+  });
 
-  const openFromFolder = async (folderPath: string) => {
-    openPanel(folderPath);
-  };
+  commandManager.register("1ureka.imageWall.openImageWallFromFolder", (folderPath: string) => {
+    imageWallPanelProvider.createPanel(folderPath);
+  });
 
-  const openFromExplorerCommand = vscode.commands.registerCommand("1ureka.openImageWallFromExplorer", openFromExplorer);
-  const openFromCommandPaletteCommand = vscode.commands.registerCommand("1ureka.openImageWall", openFromCommandPalette);
-  const openFromFolderCommand = vscode.commands.registerCommand(
-    "1ureka.imageWall.openImageWallFromFolder",
-    openFromFolder
-  );
+  commandManager.register("1ureka.imageWall.setLayoutStandard", () => {
+    const panel = imageWallPanelProvider.getCurrentPanel();
+    if (panel) forwardCommandToWebview<SetModeStandardAPI>(panel, "setModeStandard");
+  });
 
-  context.subscriptions.push(openFromExplorerCommand, openFromCommandPaletteCommand, openFromFolderCommand);
+  commandManager.register("1ureka.imageWall.setLayoutMasonry", () => {
+    const panel = imageWallPanelProvider.getCurrentPanel();
+    if (panel) forwardCommandToWebview<SetModeMasonryAPI>(panel, "setModeMasonry");
+  });
 
-  // ------------------------------ Preference Commands ------------------------------
+  commandManager.register("1ureka.imageWall.setLayoutWoven", () => {
+    const panel = imageWallPanelProvider.getCurrentPanel();
+    if (panel) forwardCommandToWebview<SetModeWovenAPI>(panel, "setModeWoven");
+  });
 
-  const createPreferenceCommandHandler = (preference: { mode?: string; size?: string }) => () => {
-    panelsMap.forEach((panel) => panel.webview.postMessage({ type: "setPreference", preference }));
-  };
+  commandManager.register("1ureka.imageWall.setSizeSmall", () => {
+    const panel = imageWallPanelProvider.getCurrentPanel();
+    if (panel) forwardCommandToWebview<SetSizeSmallAPI>(panel, "setSizeSmall");
+  });
 
-  const preferenceCommandMap = {
-    setLayoutStandard: { mode: "standard" },
-    setLayoutWoven: { mode: "woven" },
-    setLayoutMasonry: { mode: "masonry" },
-    setSizeSmall: { size: "s" },
-    setSizeMedium: { size: "m" },
-    setSizeLarge: { size: "l" },
-  };
+  commandManager.register("1ureka.imageWall.setSizeMedium", () => {
+    const panel = imageWallPanelProvider.getCurrentPanel();
+    if (panel) forwardCommandToWebview<SetSizeMediumAPI>(panel, "setSizeMedium");
+  });
 
-  const preferenceCommands = Object.entries(preferenceCommandMap).map(([command, preference]) =>
-    vscode.commands.registerCommand(`1ureka.imageWall.${command}`, createPreferenceCommandHandler(preference))
-  );
-
-  context.subscriptions.push(...preferenceCommands);
+  commandManager.register("1ureka.imageWall.setSizeLarge", () => {
+    const panel = imageWallPanelProvider.getCurrentPanel();
+    if (panel) forwardCommandToWebview<SetSizeLargeAPI>(panel, "setSizeLarge");
+  });
 }

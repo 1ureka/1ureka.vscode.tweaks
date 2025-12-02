@@ -1,29 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import { postMessageToExtension } from "../utils/vscodeApi";
-
-/** 收到訊息後啟動取色工具 */
-const useEyeDropper = () => {
-  useEffect(() => {
-    const handleMessage = async (event: MessageEvent) => {
-      const message = event.data;
-      if (message.type !== "eyeDropper") return;
-
-      const eyeDropper = new EyeDropper();
-      try {
-        const result = await eyeDropper.open();
-        postMessageToExtension({ type: "eyeDropper", color: result.sRGBHex });
-      } catch (error) {
-        postMessageToExtension({ type: "error", error: "顏色選取失敗" });
-      }
-    };
-
-    window.addEventListener("message", handleMessage);
-
-    return () => {
-      window.removeEventListener("message", handleMessage);
-    };
-  }, []);
-};
 
 /** 延遲指定毫秒數 */
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -32,6 +7,7 @@ const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 async function decode(image: HTMLImageElement, attempt = 0): Promise<void> {
   try {
     await image.decode();
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
     if (attempt < 1000) {
       await decode(image, attempt + 1);
@@ -69,4 +45,4 @@ const useDecodeImage = (src: string | null): [string | null, boolean] => {
   return [_src, state];
 };
 
-export { useEyeDropper, useDecodeImage };
+export { useDecodeImage };

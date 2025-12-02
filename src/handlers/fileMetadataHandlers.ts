@@ -1,7 +1,7 @@
 import * as fs from "fs";
 import * as path from "path";
-import { openImage } from "../utils/imageOpener";
-import type { FileInfo, ImageInfo } from "../providers/fileMetadataProvider";
+import { openImage } from "@/utils/image";
+import type { FileInfo, ImageInfo } from "@/providers/fileMetadataProvider";
 
 async function handleGetFileMetadata(filePath: string): Promise<FileInfo | ImageInfo | null> {
   try {
@@ -19,6 +19,7 @@ async function handleGetFileMetadata(filePath: string): Promise<FileInfo | Image
 
     const { width, height, format, space, channels, hasAlpha } = imageMetadata;
     return { ...baseInfo, width, height, format, space, channels, hasAlpha };
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
     return null;
   }

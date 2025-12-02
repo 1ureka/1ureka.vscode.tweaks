@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 import * as path from "path";
 import * as fs from "fs";
 import { exec, spawn } from "child_process";
-import { generateBase64 } from "./imageOpener";
+import { generateBase64 } from "@/utils/image";
 
 // 之所以有些沒有印出 error.message，是因為 Windows 命令提示字元預設使用的是 CP950 (Big5) 或 CP936 (GBK) 編碼，但是 Node.js 原生沒有支援這些編碼，只有 utf-8。, utf-16le 等。
 
@@ -140,6 +140,7 @@ async function getFileStatus(filePath: string): Promise<FileStatus | null> {
     });
 
     return status;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (err) {
     return null;
   }

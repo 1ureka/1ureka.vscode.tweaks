@@ -1,14 +1,18 @@
 import { create } from "zustand";
-import { getInitialData } from "@/webviews/utils/vscodeApi";
-import { requestFileSystemHost } from "./message";
-import type { FileSystemInitialData } from "@/providers/fileSystemProvider";
+import { refresh } from "./navigate";
+import { requestQueue } from "./queue";
+import { getInitialData, invoke, onReceiveCommand } from "@/utils/message_client";
+import type { ShowInfoAPI, ReadDirAPI, FileSystemInitialData } from "@/providers/fileSystemProvider";
 
 // ------------------------------------------------------------------------------------------
 // 建立前端用於儲存檔案系統資料的容器
 // ------------------------------------------------------------------------------------------
 
 const initialData = getInitialData<FileSystemInitialData>();
-if (!initialData) throw new Error("無法取得檔案系統初始資料");
+if (!initialData) {
+  invoke<ShowInfoAPI>("showInformationMessage", { message: "無法取得檔案系統初始資料" });
+  throw new Error("無法取得檔案系統初始資料");
+}
 
 const fileSystemDataStore = create<FileSystemInitialData & { loading: boolean }>(() => ({
   ...initialData,
@@ -16,14 +20,14 @@ const fileSystemDataStore = create<FileSystemInitialData & { loading: boolean }>
 }));
 
 /** 初始化 */
-const registerDataInitEvent = async () => {
-  const result = await requestFileSystemHost({
-    panelId: initialData.panelId,
-    type: "readDirectory",
-    params: { dirPath: initialData.currentPath },
-  });
+const registerMessageEvents = async () => {
+  const result = await requestQueue.add(() =>
+    invoke<ReadDirAPI>("readDirectory", { dirPath: initialData.currentPath })
+  );
 
   fileSystemDataStore.setState({ ...result });
+
+  onReceiveCommand<ReadDirAPI>("readDirectory", refresh);
 };
 
-export { fileSystemDataStore, registerDataInitEvent };
+export { fileSystemDataStore, registerMessageEvents };

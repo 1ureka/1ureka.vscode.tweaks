@@ -1,7 +1,5 @@
 import { tryCatch, defer } from "@/utils";
 import { fileSystemDataStore } from "./data";
-import { postMessageToExtension } from "@/webviews/utils/vscodeApi";
-import type { RequestFileSystemHost } from "@/providers/fileSystemProvider";
 
 // ------------------------------------------------------------------------------------------
 // 用於避免 race condition 的請求佇列，同時也可以實現精準的 loading 狀態判斷，給 UI 使用
@@ -52,35 +50,4 @@ const requestQueue = createRequestQueue((loading) => {
   fileSystemDataStore.setState({ loading });
 });
 
-// ------------------------------------------------------------------------------------------
-// 與 Extension 端進行通訊的函數實作
-// ------------------------------------------------------------------------------------------
-
-/**
- * 對 Extension Host 發送請求，並等待回應
- */
-const requestFileSystemHost: RequestFileSystemHost = ({ panelId, type, params }) => {
-  return requestQueue.add(() => {
-    const requestId = crypto.randomUUID();
-    const { promise, resolve } = defer<any>();
-
-    const handleMessage = (event: MessageEvent) => {
-      if (
-        event.data &&
-        event.data.panelId === panelId &&
-        event.data.type === type + "Result" &&
-        event.data.requestId === requestId
-      ) {
-        resolve(event.data.result);
-        window.removeEventListener("message", handleMessage);
-      }
-    };
-
-    window.addEventListener("message", handleMessage);
-    postMessageToExtension({ panelId, type, params, requestId });
-
-    return promise;
-  });
-};
-
-export { requestFileSystemHost };
+export { requestQueue };
