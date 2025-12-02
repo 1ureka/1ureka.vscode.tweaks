@@ -1,4 +1,5 @@
-import type { CopyImageAPI, EyeDropperAPI, ShowErrorAPI, ShowInfoAPI } from "@/providers/imageViewerProvider";
+import type { CopyImageAPI, EyeDropperAPI, ExportImageAPI } from "@/providers/imageViewerProvider";
+import type { ShowErrorAPI, ShowInfoAPI } from "@/providers/imageViewerProvider";
 import { invoke, onReceiveCommand } from "@/utils/message_client";
 
 const resetTransformRef: { current: (() => void) | null } = { current: null };
@@ -39,6 +40,11 @@ const registerMessageEvents = () => {
       const fn = resetTransformRef.current as () => void;
       fn();
     }
+  });
+
+  /** 收到導出指令 */
+  onReceiveCommand<ExportImageAPI>("exportImage", () => {
+    invoke<ExportImageAPI>("exportImage", undefined);
   });
 };
 
