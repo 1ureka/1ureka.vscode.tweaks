@@ -70,6 +70,8 @@
 - 命令選擇區也可直接啟動 Substance Painter 或 Blender
 - 若應用位置特殊或想指定版本，可在 VsCode 設定中自訂路徑
 
+---
+
 # 2. 訊息通訊的種類與挑戰
 
 在 VSCode 擴展開發中，延伸主機（Node.js 環境）與 Webview（瀏覽器環境）之間存在著嚴格的環境隔離。兩者無法直接共享記憶體或呼叫彼此的函數，所有通訊都必須透過訊息傳遞機制實現。然而，這種機制所帶來的複雜性遠超表面所見。
@@ -83,6 +85,8 @@
 1. **前端請求 (Invoke)**：前端呼叫延伸主機的 handler，需要等待結果並確保型別安全
 2. **命令轉發 (Forward)**：延伸主機將 command 訊息轉發給前端，讓前端根據自身狀態 Invoke，或者直接使用前端的 handler
 3. **初始資料注入 (Initial Data)**：在 webview HTML 中預先注入資料，避免載入閃爍與額外的請求延遲
+
+---
 
 # 3. 訊息框架設計
 
@@ -204,35 +208,25 @@ function onReceiveCommand<T extends API = never>(id: T["id"], handler: () => voi
 
 ## 強化安全性
 
-為了確保開發者不會繞過框架直接使用原生訊息 API，專案配置了嚴格的 ESLint 規則：
+為了確保開發者不會繞過框架直接使用原生訊息 API，專案配置了嚴格的 ESLint 規則，比如：
 
 ```javascript
-"no-restricted-syntax": [
-  "error",
-  {
-    selector: "CallExpression[callee.property.name='postMessage']",
-    message: "請使用 @/utils/message_client.ts 或 @/utils/message_host.ts 處理訊息發送。",
-  },
-  {
-    selector: "CallExpression[callee.property.name='onDidReceiveMessage']",
-    message: "請使用 @/utils/message_host.ts 中的訊息處理機制。",
-  },
-  {
-    selector: "CallExpression[callee.property.name='addEventListener'][arguments.0.value='message']",
-    message: "請使用 @/utils/message_client.ts 中的訊息處理機制。",
-  },
-]
+CallExpression[callee.property.name='postMessage']
+CallExpression[callee.property.name='onDidReceiveMessage']
+CallExpression[callee.property.name='addEventListener'][arguments.0.value='message']
 ```
 
 這些規則禁止直接呼叫 `postMessage`、`onDidReceiveMessage` 與 `addEventListener('message', ...)`，強制所有訊息通訊都必須透過框架提供的包裝函數。
 
-同時，利用 TypeScript 的型別系統，框架要求在使用 `invoke`、`onDidReceiveInvoke` 等函數時，必須明確指定泛型參數（預設為 `never`），這樣若開發者忘記帶入正確的 API 型別，輸入 id 時就會產生型別錯誤，避免誤用：
+同時，利用 TypeScript 的型別系統，預設泛型為 `never`，這樣若開發者忘記帶入正確的 API 型別，輸入 id 時就會產生型別錯誤，避免誤用：
 
 ```typescript
-invoke("someUnknownId", {}); // 錯誤：無法將類型 'string' 分配給類型 'never'
+invoke("id", {...}); // 錯誤：無法將類型 'string' 分配給類型 'never'
 ```
 
 這種「編譯時防護」確保了即使在團隊協作或長期維護中，也不會因為疏忽或不熟悉而破壞框架的一致性。所有訊息都遵循統一的格式與流程，讓程式碼審查與除錯變得更加容易。
+
+---
 
 # 4. 架構設計
 
@@ -299,7 +293,7 @@ Webviews 層是架構中唯一運行於瀏覽器環境的部分，其定義是�
 
 | 層級      | 動作                                                                                                                    |
 | --------- | ----------------------------------------------------------------------------------------------------------------------- |
-| 使用者    | 使用者右鍵點擊資料夾，選擇「以檔案系統瀏覽器顯示」                                                                      |
+| 使用者    | 使用者在 VSCode 的檔案總管面板右鍵點擊資料夾，選擇「以檔案系統瀏覽器顯示」                                              |
 | Commands  | VSCode 觸發對應命令，其回調被執行 → 呼叫 `fileSystemProvider.createPanel`                                               |
 | Providers | 呼叫 `handleInitialData(/* ... */)`                                                                                     |
 | Handlers  | 快速讀取一些基本的路徑資訊                                                                                              |
