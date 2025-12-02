@@ -91,12 +91,10 @@
   - 當資料層 (Data Store) 或檢視狀態層 (View Store) 更新時，自動觸發檢視資料層 (View Data Store) 重新計算
   - 計算流程：篩選 → 排序 → 附加圖示 → 重置選取狀態，整個更新鏈在單一事件循環內同步完成
   - 保證原子性與一致性，無論更新來源是使用者操作或作業系統檔案系統變更
-  - 依賴鏈同時也是彈性的，比如當使用者切換選取狀態，僅須更新 View Data 的 selected 陣列而無需重新計算檢視資料
 
 - **計算與渲染分離**
   - 所有資料轉換邏輯（篩選、排序、分頁）完全在狀態層的訂閱回調中執行
   - React 元件僅負責讀取最終狀態並渲染，避免在渲染階段進行昂貴的計算
-  - 配合虛擬化列表與 Flexbox 佈局，達到架構清晰與效能極致的雙重目標
   - 整個專案一個 `useEffect` 也沒有，真正做到 React 所說的 `UI = f(state)`
 
 ## 檔案系統瀏覽器 - 操作區
@@ -120,9 +118,8 @@
 - 命令選擇區也可直接啟動 Substance Painter 或 Blender
 - 若應用位置特殊或想指定版本，可在 VsCode 設定中自訂路徑
 
-# 2. 訊息框架
 
-## 訊息通訊的種類與挑戰
+# 2. 訊息通訊的種類與挑戰
 
 在 VSCode 擴展開發中，延伸主機（Node.js 環境）與 Webview（瀏覽器環境）之間存在著嚴格的環境隔離。兩者無法直接共享記憶體或呼叫彼此的函數，所有通訊都必須透過訊息傳遞機制實現。然而，這種機制所帶來的複雜性遠超表面所見。
 
@@ -136,11 +133,11 @@
 2. **命令轉發 (Forward)**：延伸主機將 command 訊息轉發給前端，讓前端根據自身狀態 Invoke，或者直接使用前端的 handler
 3. **初始資料注入 (Initial Data)**：在 webview HTML 中預先注入資料，避免載入閃爍與額外的請求延遲
 
-## 框架設計理念與實現
+# 3. 訊息框架設計
 
 面對上述複雜性，本專案選擇自行實現一套訊息框架，而非依賴現有方案。這個決策是基於對擴展開發特殊需求的深刻理解：需要一個既能保證型別安全、又不犧牲靈活性與獨立性的解決方案。
 
-### 型別安全與環境無關性
+## 型別安全與環境無關性
 
 框架的核心是一個簡單卻強大的型別定義：
 
@@ -153,29 +150,46 @@ type API = {
 
 這個 `API` 型別定義了一個「處理函數」的抽象概念，它只包含兩個屬性：唯一識別碼 `id` 與實際處理邏輯 `handler`。關鍵在於，這個型別定義完全不依賴任何執行環境，既不需要 VSCode API、也不需要瀏覽器 API。它只是一個純粹的 TypeScript 型別，可以代表任何環境中的 handler，同時可以在任何環境中被導入並作為泛型參數使用。
 
-### 獨立的訊息通道與架構
+## 獨立的訊息通道與架構
 
 傳統的訊息框架往往採用「集中式註冊」的設計模式，例如維護一個 `apiMap` 或 `apiRecord` 物件，將所有 API 的 id 與 handler 對應關係集中管理。這種做法看似清晰，實則帶來了耦合性問題：每次新增 API 都需要修改這個中央註冊表，所有 API 的生命週期被綁定在一起。
 
-本框架採用完全相反的策略：**每個 API 的註冊與監聽都是獨立的**。延伸主機透過 `onDidReceiveInvoke` 單獨註冊每個 handler，前端透過 `invoke` 單獨發起每個請求，兩者之間沒有任何中央協調機制。唯一的連接點是 `id` 字串與型別定義。
+本框架採用完全相反的策略：**每個 API 的註冊與監聽都是獨立的**，唯一的連接點是 `id` 字串與型別定義。
 
-#### 前端發送：invoke 與 onReceiveCommand
+### Invoke (請求-回應)
 
-前端環境提供兩個核心函數，分別對應「主動請求」與「被動接收命令」兩種場景：
+在 `message_host.ts` 中，提供給延伸主機 `onDidReceiveInvoke` 函數，用於註冊處理前端請求的 handler：
 
-**invoke**：用於前端主動呼叫延伸主機的處理函數並等待回應
+```typescript
+function onDidReceiveInvoke<T extends API = never>(panel: vscode.WebviewPanel, id: T["id"], handler: T["handler"]) {
+  const disposable = panel.webview.onDidReceiveMessage(async (message) => {
+    const { type, requestId, handlerId, params } = message as InvokeMessage;
+
+    if (type === "invoke" && handlerId === id) {
+      const result = await handler(params);
+      const responseMessage: InvokeResponseMessage = { type: "invoke.response", requestId, handlerId: id, result };
+
+      panel.webview.postMessage(responseMessage);
+    }
+  });
+
+  panel.onDidDispose(() => disposable.dispose());
+}
+```
+
+在 `message_client.ts` 中，提供給前端 `invoke` 函數，用於呼叫延伸主機的 handler 並等待回應：
 
 ```typescript
 function invoke<T extends API = never>(id: T["id"], params: Parameters<T["handler"]>[0]): Promised<T["handler"]> {
   const { promise, resolve } = defer<Awaited<ReturnType<T["handler"]>>>();
   const requestId = crypto.randomUUID();
 
-  const message: InvokeMessage = { type: "1ureka.invoke", requestId, handlerId: id, params };
+  const message: InvokeMessage = { type: "invoke", requestId, handlerId: id, params };
   vscode.postMessage(message);
 
   const handleMessage = (event: MessageEvent<InvokeResponseMessage>) => {
     const message = event.data;
-    if (message.type === "1ureka.invoke.response" && message.requestId === requestId && message.handlerId === id) {
+    if (message.type === "invoke.response" && message.requestId === requestId && message.handlerId === id) {
       window.removeEventListener("message", handleMessage);
       resolve(message.result);
     }
@@ -186,69 +200,37 @@ function invoke<T extends API = never>(id: T["id"], params: Parameters<T["handle
 }
 ```
 
-這個函數的核心機制是「請求-回應配對」：透過 `requestId` 確保回應與請求正確對應（因為可能同時有多個請求在進行中）。當延伸主機回應時，監聽器會比對 `requestId` 與 `handlerId`，確認後才 resolve Promise。這讓非同步的訊息通道能夠以同步 `await` 的方式使用。
+當然，除了解決耦合性問題， VSCode 右鍵選單的特殊性仍然存在，因此我們需要一個專門的通道來處理命令轉發，但同時也擁有與 invoke 相同的型別安全與獨立性保障。
 
-**onReceiveCommand**：用於接收延伸主機轉發的命令訊息
+### Forward (命令轉發/意圖)
+
+在 `message_host.ts` 中，提供給延伸主機 `forwardCommandToWebview` 函數，用於將命令轉發給前端：
+
+```typescript
+function forwardCommandToWebview<T extends API = never>(panel: vscode.WebviewPanel, action: T["id"]) {
+  const message: ForwardCommandMessage = { type: "command", action };
+  panel.webview.postMessage(message);
+}
+```
+
+注意到其並不需要在呼叫時提供任何參數，因為後端不保有任何狀態，該通道也是為了解決這種「延伸主機無法存取前端狀態」的問題。
+
+在 `message_client.ts` 中，提供給前端 `onReceiveCommand` 函數，用於接收延伸主機轉發的命令：
+
 
 ```typescript
 function onReceiveCommand<T extends API = never>(id: T["id"], handler: () => void) {
   const handleMessage = (event: MessageEvent<ForwardCommandMessage>) => {
     const message = event.data;
-    if (message.type === "1ureka.command" && message.action === id) {
-      handler();
-    }
+    if (message.type === "command" && message.action === id) handler();
   };
-
   window.addEventListener("message", handleMessage);
 }
 ```
 
-這個函數更為簡潔，因為命令轉發是單向的、不需要回應。當訊息的 `action` 與 `id` 匹配時，直接執行 handler。注意這裡的 handler 沒有參數，因為前端需要自行從狀態管理中讀取所需資訊（這正是轉發機制的意義所在）。
+## 開放封閉原則與實際例子
 
-#### 延伸主機接收與發送：onDidReceiveInvoke 與 forwardCommandToWebview
-
-延伸主機環境同樣提供兩個核心函數，與前端形成對稱的通道：
-
-**onDidReceiveInvoke**：註冊處理函數，回應前端的 invoke 請求
-
-```typescript
-function onDidReceiveInvoke<T extends API = never>(panel: vscode.WebviewPanel, id: T["id"], handler: T["handler"]) {
-  const disposable = panel.webview.onDidReceiveMessage(async (message) => {
-    const { type, requestId, handlerId, params } = message as InvokeMessage;
-
-    if (type === "1ureka.invoke" && handlerId === id) {
-      const result = await handler(params);
-      const responseMessage: InvokeResponseMessage = {
-        type: "1ureka.invoke.response",
-        requestId,
-        handlerId: id,
-        result,
-      };
-
-      panel.webview.postMessage(responseMessage);
-    }
-  });
-
-  panel.onDidDispose(() => disposable.dispose());
-}
-```
-
-這個函數的特點是「獨立監聽」：每次呼叫都會建立一個新的監聽器，只處理匹配 `handlerId` 的訊息。執行 handler 後，將結果與原始的 `requestId` 一起發送回前端，確保前端能正確配對。監聽器會在 panel 銷毀時自動清理，避免記憶體洩漏。
-
-**forwardCommandToWebview**：將命令意圖轉發給前端處理
-
-```typescript
-function forwardCommandToWebview<T extends API = never>(panel: vscode.WebviewPanel, action: T["id"]) {
-  const message: ForwardCommandMessage = { type: "1ureka.command", action };
-  panel.webview.postMessage(message);
-}
-```
-
-這個函數非常直接，只是發送一個帶有 `action` 的訊息，通知前端「使用者想執行這個操作」。前端收到後會根據自身狀態決定如何處理（可能再次呼叫 `invoke`，也可能純前端處理）。
-
-### 開放封閉原則與實際例子
-
-透過以上的兩個設計，我們實現了一個極致解耦合的訊息通道。每個訊息的發送與接收都是獨立的，互不干擾，且都享有相同的型別安全保證。並且 `API` 型別的設計使得該框架與環境無關，不論是前端還是延伸主機，都可以自由定義自己的 API，並且可以導入對方的 API 定義，只要帶入正確的泛型參數即可。
+透過以上的兩個設計，實現了每個訊息的發送與接收都是獨立的，互不干擾，且都享有相同的型別安全保證。並且 `API` 型別的設計使得該框架與環境無關，不論是前端還是延伸主機，都可以自由定義自己的 API，並且可以導入對方的 API 定義，只要帶入正確的泛型參數即可。
 
 這種架構的優勢在於可擴展性與可維護性：新增一個功能模組時，只需定義自己的 API 型別、註冊自己的 handler、在前端呼叫自己的 invoke，完全不需要了解其他模組的實作。這種「按需註冊、互不干擾」的模式，讓專案能夠水平擴展而不增加複雜度。
 
@@ -305,7 +287,7 @@ onClick={() =>
 };
 ```
 
-### 強化安全性
+## 強化安全性
 
 為了確保開發者不會繞過框架直接使用原生訊息 API，專案配置了嚴格的 ESLint 規則：
 
@@ -337,27 +319,7 @@ invoke("someUnknownId", {}); // 錯誤：無法將類型 'string' 分配給類�
 
 這種「編譯時防護」確保了即使在團隊協作或長期維護中，也不會因為疏忽或不熟悉而破壞框架的一致性。所有訊息都遵循統一的格式與流程，讓程式碼審查與除錯變得更加容易。
 
-### 初始資料注入
-
-作為使用過全端框架的人，想必已經很熟悉了 SSR 的概念，然而到了像是 Electron 或者這次的 VSCode 這種本地雙環境時，似乎就沒有太多人在意。但實際上，在本地雙環境中，其實應該更容易實現：
-
-```
-使用者觸發開啟 webview 的 command
-  ↓ command callback 呼叫 handler 準備初始資料
-  ↓ handler 執行同步或非同步邏輯（如讀取檔案系統）
-  ↓ 將結果序列化為 JSON 字串（經過 XSS 防護處理）
-  ↓ 注入到 HTML 模板的 <script id="__data__"> 標籤中
-  ↓ 設定 webview.html，VSCode 渲染 webview
-前端 React 應用啟動
-  ↓ 呼叫 getInitialData<T>() 讀取 __data__ 標籤內容
-  ↓ 解析 JSON 並返回型別化的資料
-  ↓ 直接放入 Zustand 狀態管理
-  ↓ React 元件在首次渲染時已有資料，無閃爍
-```
-
-這個流程的精髓在於「資料與 HTML 同時抵達」。傳統的 SPA 應用需要先載入空殼 HTML、再透過 JavaScript 請求資料，這會導致明顯的載入延遲。而初始資料注入技術類似於 SSR（Server-Side Rendering），讓首次渲染就能顯示有意義的內容。
-
-# 3. 架構設計
+# 4. 架構設計
 
 ## 四層架構的由來與定義
 
@@ -365,7 +327,7 @@ invoke("someUnknownId", {}); // 錯誤：無法將類型 'string' 分配給類�
 
 這四層分別是 **Commands**、**Providers**、**Handlers** 與 **Webviews**，其中前三層運行於延伸主機（Node.js 環境），最後一層運行於 Webview（瀏覽器環境）。每層都有明確的職責邊界，但又透過「廣義定義」獲得了足夠的表達能力，避免了過度分層的弊病。
 
-### Commands：廣義的全域事件監聽
+## Commands：廣義的全域事件監聽
 
 在 VSCode API 中，`vscode.commands.registerCommand` 是註冊命令的標準方式。但本架構將 **Commands** 的概念擴展為「任意全域事件的監聽層」，而非狹義的命令註冊。
 
@@ -373,7 +335,7 @@ invoke("someUnknownId", {}); // 錯誤：無法將類型 'string' 分配給類�
 
 因此，Commands 層不僅處理 `registerCommand`，也處理諸如 `vscode.window.onDidChangeActiveTextEditor`、`vscode.workspace.onDidChangeConfiguration` 等生命週期事件。這些事件的共同特徵是：它們都是「外部觸發、全域性、需要註冊監聽器」的行為。
 
-### Providers：廣義的延伸主機 UI 管理
+## Providers：廣義的延伸主機 UI 管理
 
 傳統上，`Provider` 是 VSCode API 中的特定概念，例如 `TreeDataProvider`、`CompletionItemProvider` 等，用於實現特定類型的 UI 功能。但本架構將 **Providers** 擴展為「任意在延伸主機層級的全域 UI 管理」，遠超出 VSCode 官方定義的範疇。
 
@@ -386,7 +348,7 @@ invoke("someUnknownId", {}); // 錯誤：無法將類型 'string' 分配給類�
 - **StatusBar 操作**：更新狀態列顯示（檔案元資料功能）
 - **API 定義與監聽註冊**：定義延伸主機端有哪些可呼叫的處理函數，並實際註冊訊息監聽器
 
-### Handlers：無狀態的處理流程
+## Handlers：無狀態的處理流程
 
 Handlers 層是整個架構中最純粹的一層，其定義非常直接：**所有可以提供給 Commands、Providers 使用的處理器函數**。
 
@@ -403,7 +365,7 @@ export type { ReadDirAPI, CreateFileAPI /* ... */ };
 
 這些型別定義會被前端導入（透過 `import type`），用於 `invoke` 呼叫時的型別參數。這形成了一個清晰的契約：Providers 定義介面、Handlers 實作邏輯、Webviews 呼叫服務。
 
-### Webviews：前端應用的載體
+## Webviews：前端應用的載體
 
 Webviews 層是架構中唯一運行於瀏覽器環境的部分，其定義是：**任意在 panel.webview 中實際使用的前端程式碼**。若插件中的某個功能需要 webview，這裡就會有對應的 React 應用存在。
 
@@ -414,8 +376,7 @@ Webviews 層是架構中唯一運行於瀏覽器環境的部分，其定義是�
 - **事件處理**：響應使用者互動（點擊、輸入等）
 - **通訊協調**：透過 `invoke` 呼叫延伸主機 API、透過 `onReceiveCommand` 接收命令轉發
 
-# 4. 資料流
-
+# 5. 資料流
 
 有了對於訊息框架與四層架構的理解後，我們可以透過具體的範例來觀察資料如何在各層之間流動。
 
