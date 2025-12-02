@@ -83,3 +83,6 @@ function onReceiveCommand<T extends API = never>(id: T["id"], handler: () => voi
 
 export { getInitialData, invoke, onReceiveCommand };
 export type { InvokeMessage };
+
+const postMessageToExtension: (params: any) => any = () => {};
+export { postMessageToExtension };

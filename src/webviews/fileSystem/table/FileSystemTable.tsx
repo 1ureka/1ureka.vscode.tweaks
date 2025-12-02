@@ -34,7 +34,7 @@ const createHandleRowClick =
     if (e.detail !== 2) return;
 
     if (fileType === "folder" || fileType === "file-symlink-directory") {
-      navigateToFolder(filePath);
+      navigateToFolder({ dirPath: filePath });
     } else if (fileType === "file" || fileType === "file-symlink-file") {
       openFile(filePath);
     }
