@@ -297,41 +297,41 @@ Webviews 層是架構中唯一運行於瀏覽器環境的部分，其定義是�
 
 ## 場景一：使用者開啟檔案系統瀏覽器
 
-| 階段 | 層級      | 動作                                                                                                                    |
-| ---- | --------- | ----------------------------------------------------------------------------------------------------------------------- |
-| 1    | 使用者    | 使用者右鍵點擊資料夾，選擇「以檔案系統瀏覽器顯示」                                                                      |
-| 2    | Commands  | VSCode 觸發對應命令，其回調被執行 → 呼叫 `fileSystemProvider.createPanel`                                               |
-| 3    | Providers | 呼叫 `handleInitialData(/* ... */)`                                                                                     |
-| 4    | Handlers  | 快速讀取一些基本的路徑資訊                                                                                              |
-| 5    | Providers | 將初始資料序列化並注入 HTML → 註冊 `onDidReceiveInvoke<ReadDirAPI>` → 設定 `panel.webview.html`                         |
-| 6    | Webviews  | 讀取初始資料放入 zustand 狀態 → React 立即渲染骨架畫面，React 外部同時呼叫 `invoke<ReadDirAPI>(/* ... */)` 獲取詳細資訊 |
-| 7    | Providers | `onDidReceiveInvoke<ReadDirAPI>` 接收到訊息 → 呼叫 `handleReadDirectory`                                                |
-| 8    | Handlers  | 讀取該目錄的詳細資訊                                                                                                    |
-| 9    | Providers | `onDidReceiveInvoke<ReadDirAPI>` 發送回前端                                                                             |
-| 10   | Webviews  | `invoke` 的 Promise resolve → `store.setState({ ...result })` → React 自動重新渲染                                      |
+| 層級      | 動作                                                                                                                    |
+| --------- | ----------------------------------------------------------------------------------------------------------------------- |
+| 使用者    | 使用者右鍵點擊資料夾，選擇「以檔案系統瀏覽器顯示」                                                                      |
+| Commands  | VSCode 觸發對應命令，其回調被執行 → 呼叫 `fileSystemProvider.createPanel`                                               |
+| Providers | 呼叫 `handleInitialData(/* ... */)`                                                                                     |
+| Handlers  | 快速讀取一些基本的路徑資訊                                                                                              |
+| Providers | 將初始資料序列化並注入 HTML → 註冊 `onDidReceiveInvoke<ReadDirAPI>` → 設定 `panel.webview.html`                         |
+| Webviews  | 讀取初始資料放入 zustand 狀態 → React 立即渲染骨架畫面，React 外部同時呼叫 `invoke<ReadDirAPI>(/* ... */)` 獲取詳細資訊 |
+| Providers | `onDidReceiveInvoke<ReadDirAPI>` 接收到訊息 → 呼叫 `handleReadDirectory`                                                |
+| Handlers  | 讀取該目錄的詳細資訊                                                                                                    |
+| Providers | `onDidReceiveInvoke<ReadDirAPI>` 發送回前端                                                                             |
+| Webviews  | `invoke` 的 Promise resolve → `store.setState({ ...result })` → React 自動重新渲染                                      |
 
 這個流程展現了完整的初始化過程。第一階段透過注入基本資訊，讓 webview 能立即顯示骨架畫面；第二階段透過 `invoke` 請求詳細資料，填充檔案列表。這種設計在視覺上提供了漸進式載入的流暢體驗。
 
 ## 場景二：使用者在 webview 中點擊資料夾
 
-| 階段 | 層級      | 動作                                                                               |
-| ---- | --------- | ---------------------------------------------------------------------------------- |
-| 1    | 使用者    | 使用者點擊某個資料夾                                                               |
-| 2    | Webviews  | onClick 事件觸發 → 呼叫 `invoke<ReadDirAPI>(/* ... */)`                            |
-| 3    | Providers | `onDidReceiveInvoke<ReadDirAPI>` 接收訊息 → 呼叫 `handleReadDirectory`             |
-| 4    | Handlers  | 執行檔案讀取與處理邏輯 → 返回結果                                                  |
-| 5    | Providers | `onDidReceiveInvoke<ReadDirAPI>` 發送結果                                          |
-| 6    | Webviews  | `invoke` 的 Promise resolve → `store.setState({ ...result })` → React 自動重新渲染 |
+| 層級      | 動作                                                                               |
+| --------- | ---------------------------------------------------------------------------------- |
+| 使用者    | 使用者點擊某個資料夾                                                               |
+| Webviews  | onClick 事件觸發 → 呼叫 `invoke<ReadDirAPI>(/* ... */)`                            |
+| Providers | `onDidReceiveInvoke<ReadDirAPI>` 接收訊息 → 呼叫 `handleReadDirectory`             |
+| Handlers  | 執行檔案讀取與處理邏輯 → 返回結果                                                  |
+| Providers | `onDidReceiveInvoke<ReadDirAPI>` 發送結果                                          |
+| Webviews  | `invoke` 的 Promise resolve → `store.setState({ ...result })` → React 自動重新渲染 |
 
 這個流程展現了典型的前端請求-回應模式。使用者互動直接觸發 `invoke`，延伸主機處理請求並返回結果，前端更新狀態並重新渲染畫面。
 
 ## 場景三：使用者在 webview 右鍵選單點擊「重新整理」
 
-| 階段 | 層級     | 動作                                                                                                                                   |
-| ---- | -------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| 1    | 使用者   | 使用者在 webview 上按右鍵，選擇「重新整理」                                                                                            |
-| 2    | Commands | VSCode 觸發該右鍵選單選項綁定的命令 → 命令的回調執行 → 獲取當前面板並呼叫 `forwardCommandToWebview<ReadDirAPI>(/* ... */)`             |
-| 3    | Webviews | `onReceiveCommand<ReadDirAPI>` 接收訊息 → 讀取 `store.getState().currentPath` → `invoke<ReadDirAPI>(/* ... */)` → （後續流程同場景二） |
+| 層級     | 動作                                                                                                                                 |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| 使用者   | 使用者在 webview 上按右鍵,選擇「重新整理」                                                                                           |
+| Commands | VSCode 觸發該右鍵選單選項綁定的命令 → 命令的回調執行 → 獲取當前面板並呼叫 `forwardCommandToWebview<ReadDirAPI>(/* ... */)`           |
+| Webviews | `onReceiveCommand<ReadDirAPI>` 接收訊息 → 讀取 `store.getState().currentPath` → `invoke<ReadDirAPI>(/* ... */)` → (後續流程同場景二) |
 
 這個流程展現了「命令轉發」的完整機制。由於右鍵命令在延伸主機觸發，無法直接知道前端的當前路徑，因此需要轉發到前端、由前端讀取自身狀態（`currentPath`）、再透過 `invoke` 發起請求。
 
