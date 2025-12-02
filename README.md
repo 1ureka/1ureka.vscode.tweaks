@@ -17,8 +17,8 @@
 ## 圖片牆
 
 - 右鍵資料夾「以圖片牆顯示」，或使用命令面板「開啟圖片牆」瀏覽任意位置的圖片
-- 提供三種布局模式（標準、編織、磚牆）和三種尺寸（小、中、大），可在右鍵選單即時切換
-- 預設智慧瀑布流佈局（磚牆模式），完美適應當資料夾中有各種尺寸圖片時的情況
+- 提供不同布局模式與不同尺寸等偏好設定，可在右鍵選單即時切換
+- 預設的瀑布流佈局，完美適應當資料夾中有各種尺寸比例圖片時的情況
 - 響應式設計，無論面板如何分割或調整大小，都能正確排版並顯示圖片
 - 漸進式載入機制，先快速掃描所有圖片的元資料，顯示骨架與排版，確保初始畫面無閃爍
 - 自動壓縮圖片，經過測試在 50 張圖片且每張圖片都超過 50MB 也能高效顯示且不影響滾動體驗
@@ -27,11 +27,9 @@
 
 ## 圖片剪貼簿
 
-- 完整實作上述功能的剪貼簿操作，避免由於 VSCode 原生選單中的複製選項無法刪除，造成誤導
 - 在圖片檢視器右鍵選單有複製該張圖片的選項
 - 在圖片牆右鍵任一圖片的選單中也有複製該張圖片的選項
-- 在 Windows 系統上，複製與剪下的是圖片本身而非路徑
-- 該功能甚至支援 Windows 原生無法處理的 WebP、TIFF 等格式寫入剪貼簿
+- 在 Windows 系統上，複製的是圖片二進位資料而非單純路徑，包括 Windows 原生無法直接寫入的 WebP、TIFF 等格式
 - 複製大型圖片時顯示實時進度，提供即時回饋
 
 ## 檔案元資料顯示
@@ -46,62 +44,16 @@
 - 右鍵資料夾「以檔案系統瀏覽器顯示」，或使用命令面板「開啟檔案系統瀏覽器」瀏覽任意位置的檔案
 - 類似作業系統的檔案總管，但使用仿雲端硬碟的現代化介面，目標是再也不需要打開系統檔案總管
   <!-- - 讓 VsCode 能夠更輕鬆的與外部互動，比如將下載資料夾中的檔案移動到工作區中 -->
-  <!-- - 在 VsCode 原有工作區的樹狀檢視、能快速理解檔案結構的基礎上，提供更靈活的本地操作能力 -->
 - 實現完整路由，包括瀏覽資料夾、回到上層、麵包屑導航、開啟檔案並顯示在 VsCode 編輯器等
-- 實現完整排序功能，支援依名稱、大小、建立時間、修改時間排序，並可切換升冪/降冪
-- 支援完整的表格操作，排序、篩選、選取，所有操作皆有響應式視覺回饋
-
-## 檔案系統瀏覽器 - 表格
-
-- **打破既定，利用 CSS 機制**
-
-  - 不採用原生 HTML 表格 (`<table>`) 元素，也不採用 MUI 的 `<Table>` 元件，而是從零打造
-  - 採用 `flex: N` 搭配 `minWidth: 0` 的佈局策略，實現欄位寬度的自動分配與響應式調整
-  - 圖示欄使用固定寬度，文字欄位依據權重 (weight，也就是 flex 屬性) 動態分配剩餘空間
-  - 相較於傳統方案的優勢：
-    - 使用 `useEffect` 監聽容器寬度並計算 width：需要額外的狀態管理、渲染循環，且在視窗調整時會有延遲
-    - 使用百分比寬度：無法處理固定寬度欄位（如圖示欄），且欄位數量變化時需要重新計算所有百分比
-    - `flex: N` 方案：瀏覽器原生處理，零 JavaScript 成本，完美支援混合固定與動態寬度，響應式無延遲
-
-- **虛擬化列表實現**
-
-  - 由於不是使用 table 元件為基礎，因此該專案的表格可以輕易的虛擬化
-  - 僅渲染可視區域內的列表項目，大幅降低 DOM 節點數量與記憶體佔用
-  - 配合 Flexbox 佈局的輕量級特性，確保滾動時的流暢體驗
-  - 即使資料夾包含數萬個檔案，也能維持原生檔案總管的效能表現
-
-## 檔案系統瀏覽器 - 資料流
-
-- **前後端通訊架構**
-
-  - 前端發送請求時透過請求佇列系統確保操作依序執行，從根本上避免競態條件
-  - 佇列系統同時作為載入狀態的可靠來源：只要佇列中有待處理的請求，loading 狀態就為 true
-  - 全局載入指示器利用 CSS 動畫延遲顯示，避免瞬間完成(0.15s)的操作造成閃爍，提升使用體驗
-
-- **三層狀態管理**
-
-  - 前端採用 Zustand 狀態管理，將資料分為三個層次，形成單向依賴鏈
-  - 實際資料層 (Data Store)：儲存延伸主機回傳的檔案系統原始資料
-  - 檢視狀態層 (View Store)：儲存使用者的檢視偏好（排序欄位、篩選條件等）
-  - 檢視資料層 (View Data Store)：儲存需要依賴於上述兩者的資料 (經過檢視條件處理後的資料、選取狀態等)
-
-- **依賴鏈與單向資料流**
-
-  - 利用 Zustand 的同步訂閱機制與 JavaScript 事件循環特性，建立依賴鏈自動更新系統
-  - 當資料層 (Data Store) 或檢視狀態層 (View Store) 更新時，自動觸發檢視資料層 (View Data Store) 重新計算
-  - 計算流程：篩選 → 排序 → 附加圖示 → 重置選取狀態，整個更新鏈在單一事件循環內同步完成
-  - 保證原子性與一致性，無論更新來源是使用者操作或作業系統檔案系統變更
-
-- **計算與渲染分離**
-  - 所有資料轉換邏輯（篩選、排序、分頁）完全在狀態層的訂閱回調中執行
-  - React 元件僅負責讀取最終狀態並渲染，避免在渲染階段進行昂貴的計算
-  - 整個專案一個 `useEffect` 也沒有，真正做到 React 所說的 `UI = f(state)`
+- 支援完整的表格操作，依指定欄位排序、切換升冪/降冪、篩選、索引式選取等
+- 採用虛擬化技術，即使資料夾包含數萬個檔案，也能維持原生檔案總管的效能表現
+- 使用單一佇列系統處理所有 IO 非同步請求，避免競態條件並確保操作順序一致
+- 從佇列系統中衍生出可靠的全域載入狀態指示，同時對於快速完成的操作顯示避免顯示，杜絕閃爍
+- 載入指示採非侵入式設計，在下方以細長進度條顯示，使用者仍可繼續操作介面
 
 ## 檔案系統瀏覽器 - 操作區
 
 - 檔案系統瀏覽器左側有對於瀏覽器所在目錄的操作區
-- 提供重新整理按鈕與最後更新時間顯示，整理交由使用者自行決定時機
-- 篩選區提供即時過濾顯示檔案與資料夾的功能
 - 提供常用的檔案操作按鈕（新增資料夾、新增檔案等）
 - 「在此開啟...」功能組，提供快速在當前路徑開啟新工作區、終端機或是該插件的圖片牆等
 
@@ -118,14 +70,13 @@
 - 命令選擇區也可直接啟動 Substance Painter 或 Blender
 - 若應用位置特殊或想指定版本，可在 VsCode 設定中自訂路徑
 
-
 # 2. 訊息通訊的種類與挑戰
 
 在 VSCode 擴展開發中，延伸主機（Node.js 環境）與 Webview（瀏覽器環境）之間存在著嚴格的環境隔離。兩者無法直接共享記憶體或呼叫彼此的函數，所有通訊都必須透過訊息傳遞機制實現。然而，這種機制所帶來的複雜性遠超表面所見。
 
-首先是究竟如何確保型別一致，若只是在呼叫端使用斷言太過寬鬆，而傳統的映射或 Record 雖然能解決型別安全問題，卻犧牲了通用性與擴展性，且強迫將不同功能的 API 綁定在同一個物件上，導致耦合度過高。並且上述的方案都假設所謂 handler 只存在於延伸主機端，然而實際上，前端同樣也會有自己的 handler 定義，這些 handler 可能會希望由右鍵選單觸發，這就引出了第二個挑戰。
+首先是如何確保型別一致，若只是使用斷言太過寬鬆，而中央註冊表雖然能解決型別安全問題，卻強迫將不同功能的 API 綁定在同一個物件上，導致耦合度過高。並且上述的方案都假設功能只存在於延伸主機端，然而實際上，前端同樣也會有自己的功能，這些功能可能會希望由右鍵選單觸發，這就引出了第二個挑戰。
 
-第二個挑戰，是 VSCode 右鍵選單的特殊性。當使用者在 webview 上按右鍵並選擇某個 command 時，該 command 實際上是在延伸主機環境中被觸發的。此時，command 回調函數無法直接存取 webview 的當前狀態（如使用者選取了哪些項目），因為它運行在完全獨立的環境中。這導致需要一種「轉發機制」：延伸主機先通知前端「使用者想執行某操作」，前端根據自身狀態準備完整參數後，再透過正常的請求流程回傳給延伸主機處理。
+第二個挑戰，是 VSCode 右鍵選單的特殊性。當使用者在 webview 上按右鍵並選擇某個 command 時，該 command 實際上是在延伸主機環境中被觸發的。此時，command 回調函數無法直接存取 webview 的當前狀態（如使用者選取了哪些項目）。這導致需要一種「轉發機制」：延伸主機先通知前端「使用者想執行某操作」，前端根據自身狀態準備完整參數後，再透過正常的請求流程回傳給延伸主機處理（如將選取的檔案刪除）。
 
 綜合以上挑戰，一個擴展插件至少需要處理三種核心訊息類型：
 
@@ -135,9 +86,9 @@
 
 # 3. 訊息框架設計
 
-面對上述複雜性，本專案選擇自行實現一套訊息框架，而非依賴現有方案。這個決策是基於對擴展開發特殊需求的深刻理解：需要一個既能保證型別安全、又不犧牲靈活性與獨立性的解決方案。
+面對上述複雜性，本專案選擇自行實現一套訊息框架，而非依賴現有方案。
 
-## 型別安全與環境無關性
+## 與環境無關的函數
 
 框架的核心是一個簡單卻強大的型別定義：
 
@@ -149,6 +100,24 @@ type API = {
 ```
 
 這個 `API` 型別定義了一個「處理函數」的抽象概念，它只包含兩個屬性：唯一識別碼 `id` 與實際處理邏輯 `handler`。關鍵在於，這個型別定義完全不依賴任何執行環境，既不需要 VSCode API、也不需要瀏覽器 API。它只是一個純粹的 TypeScript 型別，可以代表任何環境中的 handler，同時可以在任何環境中被導入並作為泛型參數使用。
+
+比如說：
+
+```typescript
+// 延伸主機端定義的 API
+type ReadDirAPI = { id: "readDirectory"; handler: typeof handleReadDirectory };
+// 前端可以直接用型別導入這個定義，並套用到下個章節中介紹的泛型函數
+import type { ReadDirAPI } from "@/providers/fileSystemProvider";
+```
+
+或反之
+
+```typescript
+// 前端定義的 API
+type SetLayoutLargeAPI = { id: "setLayoutLarge"; handler: typeof handleSetLayoutLarge };
+// 延伸主機可以直接用型別導入這個定義，並套用到下個章節中介紹的泛型函數
+import type { SetLayoutLargeAPI } from "@/webviews/imageWall/layoutActions";
+```
 
 ## 獨立的訊息通道與架構
 
@@ -217,7 +186,6 @@ function forwardCommandToWebview<T extends API = never>(panel: vscode.WebviewPan
 
 在 `message_client.ts` 中，提供給前端 `onReceiveCommand` 函數，用於接收延伸主機轉發的命令：
 
-
 ```typescript
 function onReceiveCommand<T extends API = never>(id: T["id"], handler: () => void) {
   const handleMessage = (event: MessageEvent<ForwardCommandMessage>) => {
@@ -228,64 +196,11 @@ function onReceiveCommand<T extends API = never>(id: T["id"], handler: () => voi
 }
 ```
 
-## 開放封閉原則與實際例子
+## 開放封閉原則
 
 透過以上的兩個設計，實現了每個訊息的發送與接收都是獨立的，互不干擾，且都享有相同的型別安全保證。並且 `API` 型別的設計使得該框架與環境無關，不論是前端還是延伸主機，都可以自由定義自己的 API，並且可以導入對方的 API 定義，只要帶入正確的泛型參數即可。
 
-這種架構的優勢在於可擴展性與可維護性：新增一個功能模組時，只需定義自己的 API 型別、註冊自己的 handler、在前端呼叫自己的 invoke，完全不需要了解其他模組的實作。這種「按需註冊、互不干擾」的模式，讓專案能夠水平擴展而不增加複雜度。
-
-比如一個讀取目錄的 API，可以在延伸主機端這樣定義：
-
-```typescript
-// 延伸主機定義的處理函數
-async function handleReadDirectory(params: { dirPath: string }): Promise<ReadDirectoryResult> {
-  /* ... */
-}
-type ReadDirAPI = { id: "readDirectory"; handler: typeof handleReadDirectory };
-
-// 延伸主機註冊該 handler
-onDidReceiveInvoke<ReadDirAPI>(panel, "readDirectory", handleReadDirectory);
-```
-
-前端則可以直接導入這個型別定義（注意使用 `type` 關鍵字確保只導入型別而非實際代碼），並在呼叫時獲得完整的型別推斷：
-
-```typescript
-import type { ReadDirAPI } from "@/providers/fileSystemProvider";
-
-// TypeScript 會自動推斷參數與回傳值型別
-const result = await invoke<ReadDirAPI>("readDirectory", { dirPath: "/some/path" });
-// result 的型別會自動推斷為 Promise<ReadDirectoryResult>
-```
-
-又或者一個轉發動作：
-
-```typescript
-// 延伸主機定義的處理函數
-async function handleCopyFiles({ selectedPaths }: { selectedPaths: string[] }): void {
-  /* ... */
-}
-type CopyFilesAPI = { id: "copyFiles"; handler: typeof handleCopyFiles };
-
-// 延伸主機註冊該 handler
-onDidReceiveForward<CopyFilesAPI>(panel, "copyFiles", handleCopyFiles);
-
-// 使用者在 webview 右鍵選單觸發 command，由延伸主機轉發給前端
-forwardCommandToWebview<CopyFilesAPI>(panel, "copyFiles");
-```
-
-前端則有
-
-```typescript
-// 前端註冊該轉發事件
-onReceiveCommand<CopyFilesAPI>("copyFiles", () =>
-  invoke<CopyFilesAPI>("copyFiles", { selectedPaths: store.getState().selectedPaths })
-);
-
-// 當然前端也可以有自己的按鈕呼叫同樣的 API
-onClick={() =>
-  invoke<CopyFilesAPI>("copyFiles", { selectedPaths: store.getState().selectedPaths })
-};
-```
+這種架構的優勢在於其實現了開放封閉原則：新增一個功能模組時，只需定義自己的 API 型別、註冊自己的 handler、在前端呼叫自己的 invoke，完全不需要了解其他模組的實作。這種「按需註冊、互不干擾」的模式，讓專案能夠水平擴展而不增加複雜度。
 
 ## 強化安全性
 
@@ -382,81 +297,43 @@ Webviews 層是架構中唯一運行於瀏覽器環境的部分，其定義是�
 
 ## 場景一：使用者開啟檔案系統瀏覽器
 
-```
-使用者在檔案總管右鍵點擊資料夾，選擇「以檔案系統瀏覽器顯示」
-  ↓ VSCode 觸發 command: "1ureka.openFileSystemFromExplorer"
-[Commands] registerFileSystemCommands 中的回調被執行
-  ↓ 驗證 uri 參數有效性
-  ↓ 呼叫 fileSystemProvider.createPanel(uri.fsPath)
-[Providers] FileSystemPanelProvider.createPanel 執行
-  ↓ 呼叫 handleInitialData({ dirPath })
-[Handlers] handleInitialData 返回基本的路徑資訊（不讀取檔案）
-  ↓ 返回到 Providers 層
-[Providers] 使用 initialData 建立 webview panel
-  ↓ 將 initialData 序列化並注入 HTML <script> 標籤
-  ↓ 註冊訊息監聽器（onDidReceiveInvoke）
-  ↓ 設定 panel.webview.html
-[Webviews] React 應用載入並執行
-  ↓ getInitialData() 讀取 <script> 標籤內容
-  ↓ fileSystemDataStore 初始化（包含路徑資訊，但 entries 為空）
-  ↓ React 元件立即渲染骨架畫面
-  ↓ 透過 requestQueue 呼叫 invoke<ReadDirAPI>("readDirectory", { dirPath })
-[Providers] onDidReceiveInvoke 接收到訊息
-  ↓ 呼叫 handleReadDirectory({ dirPath })
-[Handlers] handleReadDirectory 執行
-  ↓ 實際讀取檔案系統（readDirectory）
-  ↓ 統計數量、檢視詳細資訊（inspectDirectory）
-  ↓ 返回 ReadDirectoryResult
-[Providers] onDidReceiveInvoke 發送回前端
-[Webviews] invoke 的 Promise resolve
-  ↓ fileSystemDataStore.setState({ ...result }) 更新狀態
-  ↓ React 元件重新渲染，顯示檔案列表
-```
+| 階段 | 層級      | 動作                                                                                                                    |
+| ---- | --------- | ----------------------------------------------------------------------------------------------------------------------- |
+| 1    | 使用者    | 使用者右鍵點擊資料夾，選擇「以檔案系統瀏覽器顯示」                                                                      |
+| 2    | Commands  | VSCode 觸發對應命令，其回調被執行 → 呼叫 `fileSystemProvider.createPanel`                                               |
+| 3    | Providers | 呼叫 `handleInitialData(/* ... */)`                                                                                     |
+| 4    | Handlers  | 快速讀取一些基本的路徑資訊                                                                                              |
+| 5    | Providers | 將初始資料序列化並注入 HTML → 註冊 `onDidReceiveInvoke<ReadDirAPI>` → 設定 `panel.webview.html`                         |
+| 6    | Webviews  | 讀取初始資料放入 zustand 狀態 → React 立即渲染骨架畫面，React 外部同時呼叫 `invoke<ReadDirAPI>(/* ... */)` 獲取詳細資訊 |
+| 7    | Providers | `onDidReceiveInvoke<ReadDirAPI>` 接收到訊息 → 呼叫 `handleReadDirectory`                                                |
+| 8    | Handlers  | 讀取該目錄的詳細資訊                                                                                                    |
+| 9    | Providers | `onDidReceiveInvoke<ReadDirAPI>` 發送回前端                                                                             |
+| 10   | Webviews  | `invoke` 的 Promise resolve → `store.setState({ ...result })` → React 自動重新渲染                                      |
 
-這個流程展現了完整的初始化過程。關鍵在於「兩階段載入」：第一階段透過 `initialData` 注入基本資訊，讓 webview 能立即顯示骨架畫面（路徑、麵包屑等），避免白屏；第二階段透過 `invoke` 請求實際資料，填充檔案列表。這種設計在視覺上提供了漸進式載入的流暢體驗。
+這個流程展現了完整的初始化過程。第一階段透過注入基本資訊，讓 webview 能立即顯示骨架畫面；第二階段透過 `invoke` 請求詳細資料，填充檔案列表。這種設計在視覺上提供了漸進式載入的流暢體驗。
 
 ## 場景二：使用者在 webview 中點擊資料夾
 
-```
-使用者點擊某個資料夾名稱
-  ↓ onClick 事件觸發
-[Webviews] 表格元件呼叫 navigateToFolder({ dirPath: clickedFolderPath })
-  ↓ navigateToFolder 將請求加入 requestQueue
-  ↓ requestQueue 呼叫 invoke<ReadDirAPI>("readDirectory", { dirPath })
-  ↓ requestQueue 設定 loading 為 true
-[Providers] onDidReceiveInvoke 接收訊息
-  ↓ 呼叫 handleReadDirectory({ dirPath })
-[Handlers] 執行檔案讀取與處理邏輯
-  ↓ 返回結果
-[Providers] onDidReceiveInvoke 發送結果
-[Webviews] invoke Promise resolve
-  ↓ requestQueue 設定 loading 為 false
-  ↓ fileSystemDataStore.setState({ ...result }) 更新資料
-  ↓ fileSystemViewStore 訂閱觸發，呼叫 handleDataUpdate()
-  ↓ handleDataUpdate 執行篩選、排序、附加圖示
-  ↓ fileSystemViewDataStore.setState({ entries, selected }) 更新檢視資料
-  ↓ React 元件訂閱 viewDataStore，重新渲染新的檔案列表
-```
+| 階段 | 層級      | 動作                                                                               |
+| ---- | --------- | ---------------------------------------------------------------------------------- |
+| 1    | 使用者    | 使用者點擊某個資料夾                                                               |
+| 2    | Webviews  | onClick 事件觸發 → 呼叫 `invoke<ReadDirAPI>(/* ... */)`                            |
+| 3    | Providers | `onDidReceiveInvoke<ReadDirAPI>` 接收訊息 → 呼叫 `handleReadDirectory`             |
+| 4    | Handlers  | 執行檔案讀取與處理邏輯 → 返回結果                                                  |
+| 5    | Providers | `onDidReceiveInvoke<ReadDirAPI>` 發送結果                                          |
+| 6    | Webviews  | `invoke` 的 Promise resolve → `store.setState({ ...result })` → React 自動重新渲染 |
 
-這個流程展現了「請求佇列」與「依賴鏈自動更新」的機制。`requestQueue` 確保即使使用者快速點擊多個資料夾，請求也會依序執行，不會出現「回應 B 先到達、覆蓋回應 A」的競態問題。同時，`loading` 狀態完全由佇列管理，只要佇列中有待處理請求，loading 就為 true，確保了指示器的正確顯示。
+這個流程展現了典型的前端請求-回應模式。使用者互動直接觸發 `invoke`，延伸主機處理請求並返回結果，前端更新狀態並重新渲染畫面。
 
 ## 場景三：使用者在 webview 右鍵選單點擊「重新整理」
 
-```
-使用者在 webview 上按右鍵，選擇「重新整理」
-  ↓ VSCode 觸發 command: "1ureka.fileSystem.refresh"
-[Commands] registerFileSystemCommands 中的回調執行
-  ↓ 獲取當前面板（panelManager.getCurrent()）
-  ↓ 呼叫 forwardCommandToWebview<ReadDirAPI>(panel, "readDirectory")
-[Providers] forwardCommandToWebview 發送 ForwardCommandMessage
-[Webviews] onReceiveCommand<ReadDirAPI>("readDirectory", handleRefresh) 接收訊息
-  ↓ handleRefresh 執行
-  ↓ 讀取 fileSystemDataStore.getState().currentPath
-  ↓ 呼叫 navigateToFolder({ dirPath: currentPath })
-  ↓ （後續流程同場景二）
-```
+| 階段 | 層級     | 動作                                                                                                                                   |
+| ---- | -------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| 1    | 使用者   | 使用者在 webview 上按右鍵，選擇「重新整理」                                                                                            |
+| 2    | Commands | VSCode 觸發該右鍵選單選項綁定的命令 → 命令的回調執行 → 獲取當前面板並呼叫 `forwardCommandToWebview<ReadDirAPI>(/* ... */)`             |
+| 3    | Webviews | `onReceiveCommand<ReadDirAPI>` 接收訊息 → 讀取 `store.getState().currentPath` → `invoke<ReadDirAPI>(/* ... */)` → （後續流程同場景二） |
 
-這個流程展現了「命令轉發」的完整機制。由於右鍵命令在延伸主機觸發，無法直接知道前端的當前路徑，因此需要轉發到前端、由前端讀取自身狀態（`currentPath`）、再透過 `invoke` 發起請求。這種雙跳機制雖然增加了一次通訊，卻換來了清晰的職責分離與可維護性。
+這個流程展現了「命令轉發」的完整機制。由於右鍵命令在延伸主機觸發，無法直接知道前端的當前路徑，因此需要轉發到前端、由前端讀取自身狀態（`currentPath`）、再透過 `invoke` 發起請求。
 
 ---
 
