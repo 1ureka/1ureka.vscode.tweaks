@@ -1,22 +1,17 @@
 import React, { useEffect, useState } from "react";
 import { Box, Container, Skeleton, Typography } from "@mui/material";
 import { TransformWrapper, TransformComponent, useControls } from "react-zoom-pan-pinch";
-import { imageViewerInitialData } from "./data";
-import { useDecodeImage } from "./hooks";
+import { imageViewerInitialData } from "./data/data";
+import { useDecodeImage } from "./data/hooks";
+import { resetTransformRef } from "./data/events";
 
 const Controls = () => {
   const { resetTransform } = useControls();
 
   useEffect(() => {
-    const handleMessage = (event: MessageEvent) => {
-      const message = event.data;
-      if (message.type === "resetTransform") resetTransform();
-    };
-
-    window.addEventListener("message", handleMessage);
-
+    resetTransformRef.current = resetTransform;
     return () => {
-      window.removeEventListener("message", handleMessage);
+      resetTransformRef.current = null;
     };
   }, [resetTransform]);
 

@@ -70,15 +70,11 @@ function invoke<T extends API = never>(id: T["id"], params: Parameters<T["handle
  * 處理來自擴展主機的命令消息
  * 詳情請參考 src/utils/message_host.ts 中的 forwardCommandMessage 相關說明
  */
-function onReceiveCommand<T extends API = never>(
-  id: T["id"],
-  handler: (params: Parameters<T["handler"]>[0]) => void,
-  getParams: () => Parameters<T["handler"]>[0]
-) {
+function onReceiveCommand<T extends API = never>(id: T["id"], handler: () => void) {
   const handleMessage = (event: MessageEvent<ForwardCommandMessage>) => {
     const message = event.data;
     if (message.type === "1ureka.command" && message.action === id) {
-      handler(getParams());
+      handler();
     }
   };
 

@@ -1,6 +1,9 @@
 import * as vscode from "vscode";
 import * as fs from "fs";
-import { ImageViewerEditorProvider, startExportImage } from "../providers/imageViewerProvider";
+import { type EyeDropperAPI, ImageViewerEditorProvider } from "@/providers/imageViewerProvider";
+import { handleExportImage } from "@/handlers/imageViewerHandler";
+import { forwardCommandToWebview } from "@/utils/message_host";
+import type { ResetTransformAPI } from "@/webviews/imageViewer/data/events";
 
 /**
  * 註冊圖片檢視器相關命令與編輯器
@@ -15,6 +18,7 @@ function registerImageViewerCommands(context: vscode.ExtensionContext) {
    * 取得目前活動的 image viewer webview 面板
    */
   const getCurrentPanel = () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const e = vscode.window.tabGroups.activeTabGroup.activeTab?.input as any;
     if (!e || !e?.uri?.path) return null;
 
@@ -34,12 +38,12 @@ function registerImageViewerCommands(context: vscode.ExtensionContext) {
 
   const resetTransformCommand = vscode.commands.registerCommand("1ureka.imageViewer.resetTransform", () => {
     const result = getCurrentPanel();
-    if (result?.panel) result.panel.webview.postMessage({ type: "resetTransform" });
+    if (result?.panel) forwardCommandToWebview<ResetTransformAPI>(result.panel, "resetTransform");
   });
 
   const eyeDropperCommand = vscode.commands.registerCommand("1ureka.imageViewer.eyeDropper", async () => {
     const result = getCurrentPanel();
-    if (result?.panel) result.panel.webview.postMessage({ type: "eyeDropper" });
+    if (result?.panel) forwardCommandToWebview<EyeDropperAPI>(result.panel, "eyeDropper");
   });
 
   const exportAsCommand = vscode.commands.registerCommand("1ureka.imageViewer.exportAs", async () => {
@@ -56,7 +60,7 @@ function registerImageViewerCommands(context: vscode.ExtensionContext) {
       return;
     }
 
-    return startExportImage(imagePath);
+    return handleExportImage(imagePath);
   });
 
   context.subscriptions.push(providerRegistration, resetTransformCommand, eyeDropperCommand, exportAsCommand);

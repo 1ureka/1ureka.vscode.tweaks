@@ -2,46 +2,22 @@ import * as vscode from "vscode";
 import * as path from "path";
 import type { CustomDocument, CustomDocumentOpenContext, WebviewPanel, CancellationToken } from "vscode";
 
-import { handleCopyImage, handleExportImage, handleEyeDropper } from "../handlers/imageViewerHandler";
+import { handleCopyImage, handleEyeDropper } from "@/handlers/imageViewerHandler";
 import { createWebviewPanel } from "@/utils/webview";
-import { type ExportFormat, openImage } from "@/utils/image";
-import type { OneOf } from "@/utils";
+import { onDidReceiveInvoke } from "@/utils/message_host";
+import { openImage } from "@/utils/image";
 
-/**
- * 由插件主機一開始就注入 html (類似 SSR) 的資料型別
- */
-type ImageViewerInitialData = {
-  uri: string;
-  metadata: Awaited<ReturnType<typeof openImage>>;
-};
+// -----------------------------------------------------------------------------------
 
-/**
- * 前端傳送給後端的訊息型別
- */
-type ImageViewerMessage = OneOf<
-  [
-    { type: "error"; error: string },
-    { type: "info"; info: string },
-    { type: "copy" },
-    { type: "eyeDropper"; color: string }
-  ]
->;
+type ImageViewerInitialData = { uri: string; metadata: Awaited<ReturnType<typeof openImage>> };
+type ShowInfoAPI = { id: "showInfo"; handler: (info: string) => void };
+type ShowErrorAPI = { id: "showError"; handler: (error: string) => void };
+type CopyImageAPI = { id: "copyImage"; handler: () => void };
+type EyeDropperAPI = { id: "eyeDropper"; handler: typeof handleEyeDropper };
 
-/**
- * 檢查前端傳送的訊息是否符合 ImageViewerMessage 型別
- */
-const checkMessage = (message: any): message is ImageViewerMessage => {
-  if (typeof message !== "object" || message === null || typeof message.type !== "string") {
-    return false;
-  }
+export type { ImageViewerInitialData, ShowInfoAPI, ShowErrorAPI, CopyImageAPI, EyeDropperAPI };
 
-  if (message.type === "error" && typeof message.error === "string") return true;
-  if (message.type === "info" && typeof message.info === "string") return true;
-  if (message.type === "copy") return true;
-  if (message.type === "eyeDropper" && typeof message.color === "string") return true;
-
-  return false;
-};
+// -----------------------------------------------------------------------------------
 
 /**
  * 圖片檢視器自訂編輯器提供者
@@ -63,6 +39,7 @@ class ImageViewerEditorProvider implements vscode.CustomReadonlyEditorProvider {
   /**
    * 開啟自訂文件 (無需額外處理)
    */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async openCustomDocument(uri: vscode.Uri, _o: CustomDocumentOpenContext, _: CancellationToken) {
     return { uri, dispose: () => {} } as CustomDocument;
   }
@@ -70,6 +47,7 @@ class ImageViewerEditorProvider implements vscode.CustomReadonlyEditorProvider {
   /**
    * 開啟自訂編輯器時要顯示的內容
    */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async resolveCustomEditor(document: CustomDocument, panel: WebviewPanel, _: CancellationToken) {
     const initialData: ImageViewerInitialData = {
       uri: panel.webview.asWebviewUri(document.uri).toString(),
@@ -84,93 +62,16 @@ class ImageViewerEditorProvider implements vscode.CustomReadonlyEditorProvider {
       initialData,
     });
 
-    const messageListener = panel.webview.onDidReceiveMessage(async (message) => {
-      if (!checkMessage(message)) return;
-
-      const { type } = message;
-
-      if (type === "error") {
-        vscode.window.showErrorMessage(message.error);
-      } else if (type === "info") {
-        vscode.window.showInformationMessage(message.info);
-      } else if (type === "copy") {
-        handleCopyImage(document.uri.fsPath);
-      } else if (type === "eyeDropper") {
-        handleEyeDropper(message.color);
-      }
-    });
+    onDidReceiveInvoke<ShowInfoAPI>(panel, "showInfo", vscode.window.showInformationMessage);
+    onDidReceiveInvoke<ShowErrorAPI>(panel, "showError", vscode.window.showErrorMessage);
+    onDidReceiveInvoke<CopyImageAPI>(panel, "copyImage", () => handleCopyImage(document.uri.fsPath));
+    onDidReceiveInvoke<EyeDropperAPI>(panel, "eyeDropper", handleEyeDropper);
 
     this.map.set(document.uri.fsPath, panel);
     const disposeListener = panel.onDidDispose(() => this.map.delete(document.uri.fsPath));
 
-    this.context.subscriptions.push(messageListener, disposeListener);
+    this.context.subscriptions.push(disposeListener);
   }
 }
 
-/**
- * 格式選項介面
- */
-interface FormatOption extends vscode.QuickPickItem {
-  format: ExportFormat;
-  extension: string;
-}
-
-/**
- * 可供選擇的格式選項
- */
-const formatOptions: FormatOption[] = [
-  {
-    label: "PNG",
-    description: "無損壓縮，支援透明度",
-    detail: "適合需要透明背景的圖片",
-    format: "png",
-    extension: ".png",
-  },
-  {
-    label: "JPEG",
-    description: "有損壓縮，檔案較小",
-    detail: "適合相片或不需要透明度的圖片",
-    format: "jpeg",
-    extension: ".jpg",
-  },
-  {
-    label: "WebP",
-    description: "現代格式，壓縮率高",
-    detail: "有損壓縮，品質優於 JPEG ，且支援透明度",
-    format: "webp",
-    extension: ".webp",
-  },
-  {
-    label: "WebP (無損)",
-    description: "無損壓縮，支援透明度",
-    detail: "若應用程式支援，相比 PNG 其檔案通常更小但品質相同",
-    format: "webp-lossless",
-    extension: ".webp",
-  },
-];
-
-/**
- * 開啟導出圖片流程
- */
-const startExportImage = async (imagePath: string) => {
-  const pickerOptions = { placeHolder: "選擇導出格式", title: "圖片導出格式" };
-  const formatOption = await vscode.window.showQuickPick(formatOptions, pickerOptions);
-  if (!formatOption) return;
-
-  const sourceName = path.basename(imagePath, path.extname(imagePath));
-  const defaultFileName = `${sourceName}${formatOption.extension}`;
-
-  const uri = await vscode.window.showSaveDialog({
-    defaultUri: vscode.Uri.file(path.join(path.dirname(imagePath), defaultFileName)),
-    filters: { Images: [formatOption.extension.replace(".", "")] },
-    saveLabel: "導出",
-    title: `導出為 ${formatOption.label}`,
-  });
-
-  if (!uri) return;
-
-  return handleExportImage(imagePath, uri.fsPath, formatOption.format);
-};
-
-export { ImageViewerEditorProvider, startExportImage };
-export type { ImageViewerInitialData };
+export { ImageViewerEditorProvider };

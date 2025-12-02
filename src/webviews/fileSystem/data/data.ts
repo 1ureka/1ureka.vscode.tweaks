@@ -1,6 +1,6 @@
 import { create } from "zustand";
+import { refresh } from "./navigate";
 import { requestQueue } from "./queue";
-import { navigateToFolder } from "./navigate";
 import { getInitialData, invoke, onReceiveCommand } from "@/utils/message_client";
 import type { ShowInfoAPI, ReadDirAPI, FileSystemInitialData } from "@/providers/fileSystemProvider";
 
@@ -27,9 +27,7 @@ const registerMessageEvents = async () => {
 
   fileSystemDataStore.setState({ ...result });
 
-  onReceiveCommand<ReadDirAPI>("readDirectory", navigateToFolder, () => ({
-    dirPath: fileSystemDataStore.getState().currentPath,
-  }));
+  onReceiveCommand<ReadDirAPI>("readDirectory", refresh);
 };
 
 export { fileSystemDataStore, registerMessageEvents };

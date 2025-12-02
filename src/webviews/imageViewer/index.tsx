@@ -2,11 +2,9 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import { ImageViewer } from "./ImageViewer";
 import { Providers } from "@/utils/ui";
-import { registerClipboardEvent } from "./events";
-import { useEyeDropper } from "./hooks";
+import { registerMessageEvents } from "./data/events";
 
 const App = () => {
-  useEyeDropper();
   return (
     <Providers>
       <ImageViewer />
@@ -16,7 +14,7 @@ const App = () => {
 
 const container = document.getElementById("root");
 if (container) {
-  registerClipboardEvent();
+  registerMessageEvents();
   createRoot(container).render(<App />);
 }
 
