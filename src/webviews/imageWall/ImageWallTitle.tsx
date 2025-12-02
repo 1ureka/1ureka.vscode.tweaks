@@ -1,6 +1,6 @@
 import React from "react";
 import { Box, Breadcrumbs, Typography } from "@mui/material";
-import { imageWallDataStore } from "./data";
+import { imageWallDataStore } from "./data/data";
 
 const ImageWallTitle = () => {
   const folderPathParts = imageWallDataStore((state) => state.folderPathParts);

@@ -1,6 +1,6 @@
 import React from "react";
 import { Box, Pagination } from "@mui/material";
-import { imageWallDataStore, setPage } from "./data";
+import { imageWallDataStore, setPage } from "./data/data";
 
 const ImageWallPagination = () => {
   const page = imageWallDataStore((state) => state.page);

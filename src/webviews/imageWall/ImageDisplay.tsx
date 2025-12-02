@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Box, Skeleton } from "@mui/material";
-import { postMessageToExtension } from "@/utils/message_client";
+import type { GenerateThumbnailAPI } from "@/providers/imageWallProvider";
+import { invoke } from "@/utils/message_client";
 
 type ImageDisplayProps = {
   id: string;
@@ -14,19 +15,13 @@ export const ImageDisplay: React.FC<ImageDisplayProps> = ({ id, fileName, width,
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    postMessageToExtension({ type: "generateThumbnail", id });
-
-    const handleMessage = (event: MessageEvent) => {
-      const message = event.data;
-      if (message.type === "thumbnailGenerated" && message.id === id && imgRef.current) {
+    invoke<GenerateThumbnailAPI>("generateThumbnail", id).then((base64) => {
+      if (base64 && imgRef.current) {
         // 命令式更新 DOM，避免將 base64 存入 state
-        imgRef.current.src = `data:image/webp;base64,${message.base64}`;
+        imgRef.current.src = `data:image/webp;base64,${base64}`;
         setIsLoaded(true);
       }
-    };
-
-    window.addEventListener("message", handleMessage);
-    return () => window.removeEventListener("message", handleMessage);
+    });
   }, [id]);
 
   return (

@@ -31,7 +31,7 @@ const IMAGES_PER_PAGE = 100;
 /**
  * 準備圖片牆開啟所需的初始資料，以及建立圖片牆所有圖片的元資料與 ID 關係，以便後續圖片事件處理能找到對應的圖片
  */
-const handlePrepareInitialData = async (folderPath: string) => {
+const handlePrepareInitialData = async ({ folderPath }: { folderPath: string }) => {
   const imageMetadata = await vscode.window.withProgress(
     { location: vscode.ProgressLocation.Notification, title: "開啟圖片牆中", cancellable: false },
     (progress) => {
@@ -66,7 +66,6 @@ const handlePrepareInitialData = async (folderPath: string) => {
  * 準備並傳送指定頁數的圖片牆資料給前端所需的參數型別
  */
 type HanldePreparePageDataParams = {
-  webview: vscode.Webview;
   images: Awaited<ReturnType<typeof handlePrepareInitialData>>["images"];
   page: number;
 };
@@ -74,32 +73,26 @@ type HanldePreparePageDataParams = {
 /**
  * 準備並傳送指定頁數的圖片牆資料給前端
  */
-const handlePreparePageData = ({ webview, images, page }: HanldePreparePageDataParams) => {
+const handlePreparePageData = ({ images, page }: HanldePreparePageDataParams) => {
   const startIndex = (page - 1) * IMAGES_PER_PAGE;
   const imagesInPage = images.slice(startIndex, startIndex + IMAGES_PER_PAGE);
   const data: ImageWallPageData = { page, images: imagesInPage };
-  webview.postMessage({ type: "imageWallData", data });
+  return data;
 };
-
-/**
- * 處理前端要求的圖片相關事件的統一介面
- * @returns 回傳一個可能包含要回傳給前端的資料的 Promise 或不回傳任何東西
- */
-type ImageHandler = (id: string, filePath: string) => Promise<Record<string, unknown> | void> | void;
 
 /**
  * 產生圖片縮圖的事件處理函式
  */
-const handleGenerateThumbnail: ImageHandler = async (id, filePath) => {
+const handleGenerateThumbnail = async ({ filePath }: { filePath: string }) => {
   const base64 = await generateThumbnail(filePath);
   if (!base64) return;
-  return { type: "thumbnailGenerated", id, base64 };
+  return base64;
 };
 
 /**
  * 點擊圖片的事件處理函式
  */
-const handleClickImage: ImageHandler = (_, filePath) => {
+const handleClickImage = ({ filePath }: { filePath: string }) => {
   const uri = vscode.Uri.file(filePath);
   vscode.commands.executeCommand("vscode.open", uri, vscode.ViewColumn.Active);
 };
@@ -107,7 +100,7 @@ const handleClickImage: ImageHandler = (_, filePath) => {
 /**
  * 複製圖片到剪貼簿的事件處理函式
  */
-const handleCopyImage: ImageHandler = async (_, filePath) => {
+const handleCopyImage = async ({ filePath }: { filePath: string }) => {
   if (process.platform !== "win32") {
     const uri = vscode.Uri.file(filePath);
     await vscode.env.clipboard.writeText(uri.fsPath);
@@ -136,11 +129,5 @@ const handleCopyImage: ImageHandler = async (_, filePath) => {
   });
 };
 
-const imageHandlers: Record<string, ImageHandler> = {
-  generateThumbnail: handleGenerateThumbnail,
-  clickImage: handleClickImage,
-  copyImage: handleCopyImage,
-};
-
-export { imageHandlers, handlePrepareInitialData, handlePreparePageData };
+export { handlePrepareInitialData, handlePreparePageData, handleGenerateThumbnail, handleClickImage, handleCopyImage };
 export type { ImageWallInitialData, ImageWallPageData };

@@ -1,6 +1,9 @@
 import * as vscode from "vscode";
 import { ImageWallPanelProvider } from "@/providers/imageWallProvider";
 import { createCommandManager } from "@/utils/command";
+import { forwardCommandToWebview } from "@/utils/message_host";
+import type { SetModeStandardAPI, SetModeMasonryAPI, SetModeWovenAPI } from "@/webviews/imageWall/data/preference";
+import type { SetSizeLargeAPI, SetSizeMediumAPI, SetSizeSmallAPI } from "@/webviews/imageWall/data/preference";
 
 export function registerImageWallCommands(context: vscode.ExtensionContext) {
   const commandManager = createCommandManager(context);
@@ -27,23 +30,33 @@ export function registerImageWallCommands(context: vscode.ExtensionContext) {
     imageWallPanelProvider.createPanel(folderPath);
   });
 
-  // ------------------------------ Preference Commands ------------------------------
-
-  const createPreferenceCommandHandler = (preference: { mode?: string; size?: string }) => () => {
+  commandManager.register("1ureka.imageWall.setLayoutStandard", () => {
     const panel = imageWallPanelProvider.getCurrentPanel();
-    if (panel) panel.webview.postMessage({ type: "setPreference", preference });
-  };
+    if (panel) forwardCommandToWebview<SetModeStandardAPI>(panel, "setModeStandard");
+  });
 
-  const preferenceCommandMap = {
-    setLayoutStandard: { mode: "standard" },
-    setLayoutWoven: { mode: "woven" },
-    setLayoutMasonry: { mode: "masonry" },
-    setSizeSmall: { size: "s" },
-    setSizeMedium: { size: "m" },
-    setSizeLarge: { size: "l" },
-  };
+  commandManager.register("1ureka.imageWall.setLayoutMasonry", () => {
+    const panel = imageWallPanelProvider.getCurrentPanel();
+    if (panel) forwardCommandToWebview<SetModeMasonryAPI>(panel, "setModeMasonry");
+  });
 
-  Object.entries(preferenceCommandMap).map(([command, preference]) =>
-    commandManager.register(`1ureka.imageWall.${command}`, createPreferenceCommandHandler(preference))
-  );
+  commandManager.register("1ureka.imageWall.setLayoutWoven", () => {
+    const panel = imageWallPanelProvider.getCurrentPanel();
+    if (panel) forwardCommandToWebview<SetModeWovenAPI>(panel, "setModeWoven");
+  });
+
+  commandManager.register("1ureka.imageWall.setSizeSmall", () => {
+    const panel = imageWallPanelProvider.getCurrentPanel();
+    if (panel) forwardCommandToWebview<SetSizeSmallAPI>(panel, "setSizeSmall");
+  });
+
+  commandManager.register("1ureka.imageWall.setSizeMedium", () => {
+    const panel = imageWallPanelProvider.getCurrentPanel();
+    if (panel) forwardCommandToWebview<SetSizeMediumAPI>(panel, "setSizeMedium");
+  });
+
+  commandManager.register("1ureka.imageWall.setSizeLarge", () => {
+    const panel = imageWallPanelProvider.getCurrentPanel();
+    if (panel) forwardCommandToWebview<SetSizeLargeAPI>(panel, "setSizeLarge");
+  });
 }
