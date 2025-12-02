@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import * as fs from "fs";
 import * as path from "path";
 import { copyImage } from "../utils/system_windows";
 import { type ExportFormat, exportImage } from "@/utils/image";
@@ -112,6 +113,11 @@ const formatOptions: FormatOption[] = [
  * 處理導出圖片的請求
  */
 const handleExportImage = async (imagePath: string) => {
+  if (!fs.existsSync(imagePath)) {
+    vscode.window.showErrorMessage("找不到原始圖片檔案");
+    return;
+  }
+
   const pickerOptions = { placeHolder: "選擇導出格式", title: "圖片導出格式" };
   const formatOption = await vscode.window.showQuickPick(formatOptions, pickerOptions);
   if (!formatOption) return;
