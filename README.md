@@ -76,25 +76,25 @@
 
 在 VSCode 擴展開發中，延伸主機（Node.js 環境）與 Webview（瀏覽器環境）之間存在著嚴格的環境隔離。兩者無法直接共享記憶體或呼叫彼此的函數，所有通訊都必須透過訊息傳遞機制實現。然而，這種機制所帶來的複雜性遠超表面所見。
 
-首先是如何確保型別一致，若只是使用斷言太過寬鬆，而中央註冊表雖然能解決型別安全問題，卻強迫將不同功能的 API 綁定在同一個物件上，導致耦合度過高。並且上述的方案都假設功能只存在於延伸主機端，然而實際上，前端同樣也會有自己的功能，這些功能可能會希望由右鍵選單觸發，這就引出了第二個挑戰。
+第一個挑戰是 **型別與結構的一致性**。若僅依賴斷言，型別檢查過於寬鬆；若使用集中式的註冊表，可確保型別安全，卻又把所有 API 綁在單一物件上，使不同功能彼此耦合。此外，這些方案多半假設功能只存在於延伸主機，然而實際上，由於有第二個挑戰的存在，單純的「前端 → 主機」模型無法涵蓋全部需求。
 
-第二個挑戰，是 VSCode 右鍵選單的特殊性。當使用者在 webview 上按右鍵並選擇某個 command 時，該 command 實際上是在延伸主機環境中被觸發的。此時，command 回調函數無法直接存取 webview 的當前狀態（如使用者選取了哪些項目）。這導致需要一種「轉發機制」：延伸主機先通知前端「使用者想執行某操作」，前端根據自身狀態準備完整參數後，再透過正常的請求流程回傳給延伸主機處理（如將選取的檔案刪除）。
+第二個挑戰則來自 **VSCode 右鍵選單的特殊性**。Webview 本身並不是一般的前端應用，它無法像傳統網頁那樣攔截或自訂瀏覽器的 `contextmenu` 行為。因此，當使用者在 Webview 的畫面上按右鍵並選擇某個選項時，真正被觸發的其實是 **延伸主機端的 command**
+
+此時，command 回調函數無法直接存取 webview 的當前狀態（如使用者選取了哪些項目）。這導致需要一種 **轉發機制**，延伸主機先通知前端「使用者意圖」，前端根據自身狀態準備完整參數後，再透過正常的請求流程回傳給延伸主機處理（如將選取的檔案刪除）。
+
+甚至有些原本設想用右鍵選單觸發的功能，本質上其實完全屬於前端邏輯，只是因為 VSCode 的限制才必須透過延伸主機轉發。
 
 綜合以上挑戰，一個擴展插件至少需要處理三種核心訊息類型：
 
 1. **前端請求 (Invoke)**：前端呼叫延伸主機的 handler，需要等待結果並確保型別安全
-2. **命令轉發 (Forward)**：延伸主機將 command 訊息轉發給前端，讓前端根據自身狀態 Invoke，或者直接使用前端的 handler
-3. **初始資料注入 (Initial Data)**：在 webview HTML 中預先注入資料，避免載入閃爍與額外的請求延遲
+2. **命令轉發 (Forward)**：延伸主機把 command 訊息轉發給前端，由前端依據自身狀態組合參數並進行 Invoke，或直接觸發前端邏輯
+3. **初始資料注入 (Initial Data)**：在 Webview 生成 HTML 時直接注入資料，避免 Webview 載入時的閃爍與延遲
 
 ---
 
 # 3. 訊息框架設計
 
-面對上述複雜性，本專案選擇自行實現一套訊息框架，而非依賴現有方案。
-
-## 與環境無關的函數
-
-框架的核心是一個簡單卻強大的型別定義：
+面對上述複雜性，似乎沒有現有方案能夠完全滿足需求，因此本專案選擇自行實現一套訊息框架。由於 VSCode 右鍵選單的特殊性，所以功能或者說 API，其實可能存在於延伸主機端，也可能存在於前端，因此框架先從以下的一個核心概念出發：
 
 ```typescript
 type API = {
@@ -230,64 +230,61 @@ invoke("id", {...}); // 錯誤：無法將類型 'string' 分配給類型 'never
 
 # 4. 架構設計
 
-## 四層架構的由來與定義
+面對擴展插件的複雜性，我認為 VSCode 原本的擴展架構與名詞模式過度抽象，為了通用性或技術準確性而引入過多層次，反而讓簡單的需求變得繁瑣。
 
-面對擴展插件的複雜性，傳統的架構往往顯得不夠貼合 VSCode 擴展開發的實際需求。這些經典模式過度抽象，為了「通用性」而引入過多層次，反而讓簡單的需求變得繁瑣。本專案選擇自行設計一套四層架構，其核心理念是**透過擴展名詞的語義範圍，實現更扁平、更彈性的結構**。
+因此，本專案選擇自行設計一套四層架構，其核心理念是**透過擴展原本名詞的語義範圍，實現更扁平、更彈性的結構**。
 
-這四層分別是 **Commands**、**Providers**、**Handlers** 與 **Webviews**，其中前三層運行於延伸主機（Node.js 環境），最後一層運行於 Webview（瀏覽器環境）。每層都有明確的職責邊界，但又透過「廣義定義」獲得了足夠的表達能力，避免了過度分層的弊病。
+## Commands
 
-## Commands：廣義的全域事件監聽
+**定位**：所有「在 VSCode 全域觸發、需註冊監聽」的事件來源
 
-在 VSCode API 中，`vscode.commands.registerCommand` 是註冊命令的標準方式。但本架構將 **Commands** 的概念擴展為「任意全域事件的監聽層」，而非狹義的命令註冊。
+**涵蓋範圍**：
 
-這個擴展基於一個觀察：命令本質上也是一種事件監聽。當使用者透過命令面板、右鍵選單或快捷鍵觸發某個 command 時，延伸主機收到的就是一個「命令被呼叫」的事件。既然如此，為何不將所有全域事件監聽都納入同一層管理？
+- VSCode commands (`registerCommand`)，因命令本質上也可視作一種「全域事件」
+- 編輯器焦點切換（`onDidChangeActiveTextEditor`）
+- 設定變更（`onDidChangeConfiguration`）
+- 其他全域的事件監聽綁定
+- 若命令與 Webview 高度相關，比如註冊在 `webview/context` 中的命令，可以使用 `forwardCommandToWebview`
 
-因此，Commands 層不僅處理 `registerCommand`，也處理諸如 `vscode.window.onDidChangeActiveTextEditor`、`vscode.workspace.onDidChangeConfiguration` 等生命週期事件。這些事件的共同特徵是：它們都是「外部觸發、全域性、需要註冊監聽器」的行為。
+## Providers
 
-## Providers：廣義的延伸主機 UI 管理
+**定位**：所有「需要持續或長時間存在、管理、協調」的延伸主機視圖 (View) 與前後端溝通協調
 
-傳統上，`Provider` 是 VSCode API 中的特定概念，例如 `TreeDataProvider`、`CompletionItemProvider` 等，用於實現特定類型的 UI 功能。但本架構將 **Providers** 擴展為「任意在延伸主機層級的全域 UI 管理」，遠超出 VSCode 官方定義的範疇。
+**涵蓋範圍**：
 
-這個擴展同樣基於語義的觀察：所有這些 UI 相關操作（無論是實現一個 TreeView、建立一個 Webview Panel、為 Webview 與延伸主機建立溝通、還是更新 StatusBar）的共同特徵是：它們都涉及長時間的生命週期或者是需要在插件啟用下持續追蹤的。
+- 官方 Provider（如 `CustomEditorProvider`）
+- Webview Panel 建立、追蹤、銷毀
+- StatusBar 生命週期管理
+- 當有 Webview 需求時，將 Handlers 的處理函數包裝為 API，以及使用 `onDidReceiveInvoke`
 
-因此，Providers 層包含但不限於：
+## Handlers
 
-- **官方 Provider**：如 `CustomEditorProvider` 的實作（圖片檢視器功能）
-- **Webview Panel 管理**：建立、配置、銷毀 webview 面板
-- **StatusBar 操作**：更新狀態列顯示（檔案元資料功能）
-- **API 定義與監聽註冊**：定義延伸主機端有哪些可呼叫的處理函數，並實際註冊訊息監聽器
+**定位**：所有可被 Commands / Providers 呼叫的「無狀態」處理函數，可以是純函數，也可以是帶有流程控制的非同步函數
 
-## Handlers：無狀態的處理流程
+**涵蓋範圍**：
 
-Handlers 層是整個架構中最純粹的一層，其定義非常直接：**所有可以提供給 Commands、Providers 使用的處理器函數**。
+- 單純接收參數 → 使用 nodeJS 模組 → 回傳結果的純函數
+- 需要與使用者互動（`vscode.window.showQuickPick`）或顯示進度（`vscode.window.withProgress`）的非同步函數
+- 用 `fs`、`path` 等模組進行檔案系統操作的函數
+- 處理圖片（`sharp`）等二進位檔案的函數
+- 關鍵在於與專案的訊息框架無關
 
-這些函數都遵循「無狀態」的原則：它們不依賴外部狀態、不保存內部狀態、不產生副作用（除了預期的 I/O 操作）。每次呼叫都是獨立的：帶入參數、進入流程、返回結果、結束。然而他們並不是實際意義上的「純函數」，因為他們仍可以提供「流程控制」的能力，比如使用 `vscode.window.quickPick` 來與使用者互動，或者使用 `vscode.window.withProgress` 來顯示進度等。
+## Webviews
 
-而 Providers 則會負責協調這些 Handlers，透過 TypeScript 的型別導出定義了「延伸主機端有哪些可呼叫的 API」
+**定位**：在瀏覽器環境中執行的前端應用，但不是每個功能都會用到，只有需要 Webview 的功能才會有這一層
 
-```typescript
-type ReadDirAPI = { id: "readDirectory"; handler: typeof handleReadDirectory };
-type CreateFileAPI = { id: "createFile"; handler: typeof handleCreateFile };
-// ...
-export type { ReadDirAPI, CreateFileAPI /* ... */ };
-```
+**涵蓋範圍**：
 
-這些型別定義會被前端導入（透過 `import type`），用於 `invoke` 呼叫時的型別參數。這形成了一個清晰的契約：Providers 定義介面、Handlers 實作邏輯、Webviews 呼叫服務。
+- 使用 React 構建使用者介面
+- 透過 Zustand 維護狀態
+- 響應使用者互動事件（點擊、輸入等）
+- 需要時透過 `invoke` 呼叫延伸主機 API、透過 `onReceiveCommand` 接收命令轉發
 
-## Webviews：前端應用的載體
-
-Webviews 層是架構中唯一運行於瀏覽器環境的部分，其定義是：**任意在 panel.webview 中實際使用的前端程式碼**。若插件中的某個功能需要 webview，這裡就會有對應的 React 應用存在。
-
-這一層的職責包括：
-
-- **UI 呈現**：使用 React + Material-UI 構建使用者介面
-- **狀態管理**：透過 Zustand 維護前端狀態
-- **事件處理**：響應使用者互動（點擊、輸入等）
-- **通訊協調**：透過 `invoke` 呼叫延伸主機 API、透過 `onReceiveCommand` 接收命令轉發
+---
 
 # 5. 資料流
 
-有了對於訊息框架與四層架構的理解後，我們可以透過具體的範例來觀察資料如何在各層之間流動。
+有了訊息框架與四層架構，我們可以透過具體的範例來觀察資料如何在各層之間流動。
 
 ## 場景一：使用者開啟檔案系統瀏覽器
 
