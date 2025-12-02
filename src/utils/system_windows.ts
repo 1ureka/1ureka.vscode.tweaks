@@ -140,6 +140,7 @@ async function getFileStatus(filePath: string): Promise<FileStatus | null> {
     });
 
     return status;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (err) {
     return null;
   }

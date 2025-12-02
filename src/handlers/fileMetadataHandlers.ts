@@ -19,6 +19,7 @@ async function handleGetFileMetadata(filePath: string): Promise<FileInfo | Image
 
     const { width, height, format, space, channels, hasAlpha } = imageMetadata;
     return { ...baseInfo, width, height, format, space, channels, hasAlpha };
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
     return null;
   }
