@@ -117,7 +117,7 @@ const handleDataUpdate = () => {
   const entriesWithIcons = assignIconToEntries(entriesSorted);
 
   const selected = Array<0 | 1>(entriesWithIcons.length).fill(0);
-  fileSystemViewDataStore.setState({ entries: entriesWithIcons, selected });
+  fileSystemViewDataStore.setState({ entries: entriesWithIcons, selected, lastSelectedIndex: null });
 };
 
 /**
