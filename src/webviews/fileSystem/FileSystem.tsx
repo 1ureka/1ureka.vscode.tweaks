@@ -1,9 +1,8 @@
 import React from "react";
 import { Box, LinearProgress } from "@mui/material";
-import { FileSystemHeader } from "./header/FileSystemHeader";
-import { FilterSystemOperationBar } from "./operation/FileSystemOperationBar";
-import { FileSystemTable } from "./table/FileSystemTable";
 import { fileSystemDataStore } from "./data/data";
+import { FileSystemHeader } from "./header/FileSystemHeader";
+import { FileSystemTable } from "./table/FileSystemTable";
 import { FileSystemFooter } from "./footer/FileSystemFooter";
 
 const loadingContainerSx = {
@@ -32,22 +31,22 @@ const LoadingDisplay = () => {
   );
 };
 
+const FileSystemBodyWrapper = ({ children }: { children: React.ReactNode }) => (
+  <Box
+    id="file-system-body-wrapper"
+    sx={{ position: "relative", display: "flex", flexDirection: "column", overflow: "auto", flex: 1, minHeight: 0 }}
+  >
+    {children}
+  </Box>
+);
+
 const FileSystem = () => (
   <Box sx={{ height: "100vh", display: "flex", flexDirection: "column" }}>
-    <Box
-      id="file-system-main-body"
-      sx={{ position: "relative", display: "flex", flexDirection: "column", overflow: "auto", flex: 1, minHeight: 0 }}
-    >
+    <FileSystemBodyWrapper>
       <FileSystemHeader />
-
-      <Box sx={{ display: "grid", gridTemplateColumns: "auto 1fr", alignItems: "start", gap: 1, px: 2 }}>
-        <FilterSystemOperationBar />
-        <FileSystemTable />
-      </Box>
-
+      <FileSystemTable />
       <LoadingDisplay />
-    </Box>
-
+    </FileSystemBodyWrapper>
     <FileSystemFooter />
   </Box>
 );

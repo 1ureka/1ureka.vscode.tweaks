@@ -69,7 +69,7 @@ const TableBody = () => {
   }));
 
   const rowVirtualizer = useVirtualizer({
-    getScrollElement: () => document.getElementById("file-system-main-body"),
+    getScrollElement: () => document.getElementById("file-system-body-wrapper"),
     count: viewEntries.length,
     estimateSize: () => tableRowHeight + 4,
     overscan: 10,
@@ -99,7 +99,7 @@ const FileSystemTable = () => {
   const isCurrentRoot = fileSystemDataStore((state) => state.isCurrentRoot);
 
   return (
-    <Box sx={{ position: "relative", display: "flex", flexDirection: "column", gap: 0.5 }}>
+    <Box sx={{ position: "relative", display: "flex", flexDirection: "column", gap: 0.5, px: 2 }}>
       <TableHeadRow />
 
       {!isCurrentRoot ? (
