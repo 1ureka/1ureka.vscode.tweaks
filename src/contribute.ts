@@ -32,6 +32,12 @@ const commandIds = [
   "1ureka.fileSystem.refresh",
   "1ureka.fileSystem.createFolder",
   "1ureka.fileSystem.createFile",
+  "1ureka.fileSystem.openInWorkspace",
+  "1ureka.fileSystem.openInTerminal",
+  "1ureka.fileSystem.openInImageWall",
+  "1ureka.fileSystem.filterAll",
+  "1ureka.fileSystem.filterFolders",
+  "1ureka.fileSystem.filterFiles",
 
   // Inject Styles Commands
   "1ureka.injectStyles",
@@ -188,13 +194,35 @@ const webviewContextMenuEntries: WebviewContextMenuEntries = [
     group: "navigation@100",
   },
   {
-    submenuId: "fileSystem.create",
-    label: "在此新增...",
+    submenuId: "fileSystem.openIn",
+    label: "在此開啟...",
     webviewId: "1ureka.fileSystem",
     group: "navigation@101",
     commandEntries: [
+      { id: "1ureka.fileSystem.openInWorkspace", title: "新工作區", group: "1_openIn@1" },
+      { id: "1ureka.fileSystem.openInTerminal", title: "終端機", group: "1_openIn@2" },
+      { id: "1ureka.fileSystem.openInImageWall", title: "圖片牆", group: "1_openIn@3" },
+    ],
+  },
+  {
+    submenuId: "fileSystem.create",
+    label: "在此新增...",
+    webviewId: "1ureka.fileSystem",
+    group: "navigation@102",
+    commandEntries: [
       { id: "1ureka.fileSystem.createFolder", title: "資料夾", group: "1_create@1" },
       { id: "1ureka.fileSystem.createFile", title: "檔案", group: "1_create@2" },
+    ],
+  },
+  {
+    submenuId: "fileSystem.filter",
+    label: "篩選",
+    webviewId: "1ureka.fileSystem",
+    group: "view@100",
+    commandEntries: [
+      { id: "1ureka.fileSystem.filterAll", title: "顯示全部", group: "1_filter@1" },
+      { id: "1ureka.fileSystem.filterFolders", title: "僅顯示資料夾", group: "1_filter@2" },
+      { id: "1ureka.fileSystem.filterFiles", title: "僅顯示檔案", group: "1_filter@3" },
     ],
   },
 ];

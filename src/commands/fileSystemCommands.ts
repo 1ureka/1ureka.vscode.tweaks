@@ -1,5 +1,7 @@
 import * as vscode from "vscode";
 import type { CreateFileAPI, CreateDirAPI, ReadDirAPI } from "@/providers/fileSystemProvider";
+import type { OpenInWorkspaceAPI, OpenInTerminalAPI, OpenInImageWallAPI } from "@/webviews/fileSystem/data/message";
+import type { FilterAllAPI, FilterFoldersAPI, FilterFilesAPI } from "@/webviews/fileSystem/data/message";
 import { FileSystemPanelProvider } from "@/providers/fileSystemProvider";
 import { forwardCommandToWebview } from "@/utils/message_host";
 import { createCommandManager } from "@/utils/command";
@@ -51,5 +53,41 @@ export function registerFileSystemCommands(context: vscode.ExtensionContext) {
     const panel = fileSystemProvider.getCurrentPanel();
     if (!panel) return;
     forwardCommandToWebview<CreateFileAPI>(panel, "createFile");
+  });
+
+  commandManager.register("1ureka.fileSystem.openInWorkspace", () => {
+    const panel = fileSystemProvider.getCurrentPanel();
+    if (!panel) return;
+    forwardCommandToWebview<OpenInWorkspaceAPI>(panel, "openInWorkspace");
+  });
+
+  commandManager.register("1ureka.fileSystem.openInTerminal", () => {
+    const panel = fileSystemProvider.getCurrentPanel();
+    if (!panel) return;
+    forwardCommandToWebview<OpenInTerminalAPI>(panel, "openInTerminal");
+  });
+
+  commandManager.register("1ureka.fileSystem.openInImageWall", () => {
+    const panel = fileSystemProvider.getCurrentPanel();
+    if (!panel) return;
+    forwardCommandToWebview<OpenInImageWallAPI>(panel, "openInImageWall");
+  });
+
+  commandManager.register("1ureka.fileSystem.filterAll", () => {
+    const panel = fileSystemProvider.getCurrentPanel();
+    if (!panel) return;
+    forwardCommandToWebview<FilterAllAPI>(panel, "filterAll");
+  });
+
+  commandManager.register("1ureka.fileSystem.filterFolders", () => {
+    const panel = fileSystemProvider.getCurrentPanel();
+    if (!panel) return;
+    forwardCommandToWebview<FilterFoldersAPI>(panel, "filterFolders");
+  });
+
+  commandManager.register("1ureka.fileSystem.filterFiles", () => {
+    const panel = fileSystemProvider.getCurrentPanel();
+    if (!panel) return;
+    forwardCommandToWebview<FilterFilesAPI>(panel, "filterFiles");
   });
 }
