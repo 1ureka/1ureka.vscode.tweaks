@@ -3,8 +3,9 @@ import { fileSystemDataStore } from "../data/data";
 import { fileSystemViewDataStore } from "../data/view";
 import { refresh } from "../data/navigate";
 import { colorMix } from "@/utils/ui";
-import { Box, ButtonBase, Divider, Tooltip, Typography } from "@mui/material";
-import type { ButtonBaseProps, SxProps, TooltipProps } from "@mui/material";
+import { Box, ButtonBase, Divider, Typography } from "@mui/material";
+import type { ButtonBaseProps, SxProps } from "@mui/material";
+import { FooterTooltip } from "./FileSystemFooterTooltip";
 
 const FooterButton = ({ children, sx, disabled, ...props }: ButtonBaseProps) => {
   const defaultSx: SxProps = {
@@ -16,30 +17,6 @@ const FooterButton = ({ children, sx, disabled, ...props }: ButtonBaseProps) => 
     <ButtonBase focusRipple disabled={disabled} sx={{ ...defaultSx, ...sx }} {...props}>
       {children}
     </ButtonBase>
-  );
-};
-
-const FooterTooltip = ({ children, ...props }: TooltipProps) => {
-  return (
-    <Tooltip
-      slotProps={{
-        popper: {
-          sx: {
-            '&.MuiTooltip-popper[data-popper-placement*="top"] .MuiTooltip-tooltip': {
-              bgcolor: "tooltip.background",
-              border: "1px solid",
-              borderColor: "tooltip.border",
-              boxShadow: "0 2px 8px var(--vscode-widget-shadow)",
-              borderRadius: 1,
-              m: 1,
-            },
-          },
-        },
-      }}
-      {...props}
-    >
-      {children}
-    </Tooltip>
   );
 };
 
@@ -72,7 +49,7 @@ const FileSystemFooter = () => {
     >
       <Box sx={footerFlexBoxSx}>
         <Box sx={{ ...footerFlexBoxSx, gap: 0, flexWrap: "nowrap" }}>
-          <FooterTooltip title="重新整理">
+          <FooterTooltip actionName="重新整理" actionShortcut={["Ctrl", "R"]}>
             <FooterButton onClick={handleRefresh}>
               <i className="codicon codicon-sync" />
             </FooterButton>
@@ -90,19 +67,19 @@ const FileSystemFooter = () => {
             {selectionCaption}
           </Typography>
 
-          <FooterTooltip title="全選">
+          <FooterTooltip actionName="全選" actionShortcut={["Ctrl", "A"]}>
             <FooterButton disabled={allSelected}>
               <i className="codicon codicon-checklist" />
             </FooterButton>
           </FooterTooltip>
 
-          <FooterTooltip title="取消全選">
+          <FooterTooltip actionName="取消全選" actionShortcut={["Ctrl", "Shift", "A"]}>
             <FooterButton disabled={selectedCount === 0}>
               <i className="codicon codicon-clear-all" />
             </FooterButton>
           </FooterTooltip>
 
-          <FooterTooltip title="反轉選取">
+          <FooterTooltip actionName="反轉選取" actionShortcut={["Ctrl", "I"]}>
             <FooterButton>
               <i className="codicon codicon-arrow-swap" />
             </FooterButton>
@@ -116,19 +93,19 @@ const FileSystemFooter = () => {
             剪貼簿有 0 個項目
           </Typography>
 
-          <FooterTooltip title="複製選取項目到剪貼簿">
+          <FooterTooltip actionName="複製選取項目到剪貼簿" actionShortcut={["Ctrl", "C"]}>
             <FooterButton disabled={selectedCount === 0}>
               <i className="codicon codicon-git-stash-apply" />
             </FooterButton>
           </FooterTooltip>
 
-          <FooterTooltip title="剪下選取項目到剪貼簿">
+          <FooterTooltip actionName="剪下選取項目到剪貼簿" actionShortcut={["Ctrl", "X"]}>
             <FooterButton disabled={selectedCount === 0}>
               <i className="codicon codicon-git-stash-pop" />
             </FooterButton>
           </FooterTooltip>
 
-          <FooterTooltip title="貼上剪貼簿中的項目">
+          <FooterTooltip actionName="貼上剪貼簿中的項目" actionShortcut={["Ctrl", "V"]}>
             <FooterButton>
               <i className="codicon codicon-git-stash" />
             </FooterButton>
