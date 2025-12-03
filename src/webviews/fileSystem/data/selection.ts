@@ -69,7 +69,8 @@ const registerSelectionEvents = () => {
   window.addEventListener("keydown", (e) => {
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "a") {
       e.preventDefault();
-      selectAll();
+      if (e.shiftKey) selectNone();
+      else selectAll();
     }
 
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "i") {
