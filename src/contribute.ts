@@ -118,6 +118,21 @@ const explorerContextMenuEntries: ContextMenuEntries = [
   },
 ];
 
+const editorTitleContextMenuEntries: ContextMenuEntries = [
+  {
+    id: "1ureka.openWithBlender",
+    title: "以 Blender 開啟",
+    when: "resourceExtname == .blend",
+    group: "navigation@100",
+  },
+  {
+    id: "1ureka.openWithPainter",
+    title: "以 Painter 開啟",
+    when: "resourceExtname == .spp",
+    group: "navigation@100",
+  },
+];
+
 const webviewContextMenuEntries: WebviewContextMenuEntries = [
   // Image Viewer
   {
@@ -275,6 +290,7 @@ export function generateContribute() {
   extract(commandPaletteEntries);
   extract(explorerContextMenuEntries);
   extract(webviewContextMenuEntries);
+  extract(editorTitleContextMenuEntries);
 
   // ---------------------------------------------------------------------------
 
@@ -332,14 +348,17 @@ export function generateContribute() {
   const commands = generateCommandsRegistration();
   const commandPaletteMenu = generateCommandPaletteRegistration(commandPaletteEntries);
   const explorerContextMenu = generateMenuRegistration(explorerContextMenuEntries);
+  const editorTitleContextMenu = generateMenuRegistration(editorTitleContextMenuEntries);
   const webviewContextMenu = generateWebviewMenuRegistration(webviewContextMenuEntries);
 
   // ---------------------------------------------------------------------------
 
   // 建構 menus 物件
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const menus: Record<string, Array<any>> = {
     commandPalette: commandPaletteMenu,
     "explorer/context": explorerContextMenu,
+    "editor/title/context": editorTitleContextMenu,
     "webview/context": webviewContextMenu,
     ...submenuMenus,
   };
