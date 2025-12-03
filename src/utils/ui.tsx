@@ -26,6 +26,10 @@ declare module "@mui/material/styles" {
       selectedBackground: string;
       selectedHoverBackground: string;
     };
+    tooltip: {
+      background: string;
+      border: string;
+    };
   }
   interface PaletteOptions {
     table: {
@@ -33,6 +37,10 @@ declare module "@mui/material/styles" {
       hoverBackground: string;
       selectedBackground: string;
       selectedHoverBackground: string;
+    };
+    tooltip: {
+      background: string;
+      border: string;
     };
   }
 }
@@ -65,6 +73,10 @@ const theme = createTheme({
           selectedBackground: getColorVar("editor-selectionBackground"),
           selectedHoverBackground: colorMix("table-selectedBackground", "table-hoverBackground", 50),
         },
+        tooltip: {
+          background: getColorVar("editorHoverWidget-background"),
+          border: getColorVar("editorHoverWidget-border"),
+        },
         divider: getColorVar("panel-border"),
       },
     },
@@ -96,4 +108,4 @@ const ellipsisSx = {
   wordBreak: "break-all",
 } as const;
 
-export { Providers, ellipsisSx };
+export { Providers, ellipsisSx, colorMix };

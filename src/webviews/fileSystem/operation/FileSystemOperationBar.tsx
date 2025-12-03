@@ -2,9 +2,6 @@ import React from "react";
 import { Box, type SxProps } from "@mui/material";
 import { OperationBarHeader } from "./FileSystemOpHeader";
 import { OperationButton, GroupContainer } from "./FileSystemOpActionEl";
-
-import { fileSystemDataStore } from "../data/data";
-import { refresh } from "../data/navigate";
 import { fileSystemViewStore, setFilter } from "../data/view";
 import { openInWorkspace, openInTerminal, openInImageWall } from "../data/action";
 
@@ -16,10 +13,8 @@ const operationBarContainerSx: SxProps = {
 };
 
 const FilterSystemOperationBar = () => {
-  const timestamp = fileSystemDataStore((state) => state.timestamp);
   const filter = fileSystemViewStore((state) => state.filter);
 
-  const handleRefresh = () => refresh();
   const handleOpenInWorkspace = () => openInWorkspace();
   const handleOpenInTerminal = () => openInTerminal();
   const handleOpenInImageWall = () => openInImageWall();
@@ -31,10 +26,6 @@ const FilterSystemOperationBar = () => {
   return (
     <Box sx={operationBarContainerSx}>
       <OperationBarHeader />
-
-      <GroupContainer icon="codicon codicon-history" title={`${new Date(timestamp).toLocaleTimeString()}`}>
-        <OperationButton icon="codicon codicon-refresh" label="重新整理" onClick={handleRefresh} />
-      </GroupContainer>
 
       <GroupContainer title="篩選...">
         <OperationButton

@@ -1,5 +1,5 @@
 import React from "react";
-import { useWindowVirtualizer } from "@tanstack/react-virtual";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import { Box, type SxProps } from "@mui/material";
 import { TableHeadRow, TableNavigateUpRow, TableRow, tableRowHeight } from "./FileSystemTableRow";
 import { NoItemDisplay } from "./NoItemDisplay";
@@ -68,7 +68,8 @@ const TableBody = () => {
     size: size > 0 ? fileSize : "",
   }));
 
-  const rowVirtualizer = useWindowVirtualizer({
+  const rowVirtualizer = useVirtualizer({
+    getScrollElement: () => document.getElementById("file-system-main-body"),
     count: viewEntries.length,
     estimateSize: () => tableRowHeight + 4,
     overscan: 10,

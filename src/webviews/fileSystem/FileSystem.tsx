@@ -4,9 +4,10 @@ import { FileSystemHeader } from "./header/FileSystemHeader";
 import { FilterSystemOperationBar } from "./operation/FileSystemOperationBar";
 import { FileSystemTable } from "./table/FileSystemTable";
 import { fileSystemDataStore } from "./data/data";
+import { FileSystemFooter } from "./footer/FileSystemFooter";
 
 const loadingContainerSx = {
-  position: "fixed",
+  position: "absolute",
   inset: "0",
   pointerEvents: "none",
   display: "flex",
@@ -33,16 +34,21 @@ const LoadingDisplay = () => {
 
 const FileSystem = () => (
   <Box sx={{ height: "100vh", display: "flex", flexDirection: "column" }}>
-    <FileSystemHeader />
+    <Box
+      id="file-system-main-body"
+      sx={{ position: "relative", display: "flex", flexDirection: "column", overflow: "auto", flex: 1, minHeight: 0 }}
+    >
+      <FileSystemHeader />
 
-    <Box sx={{ display: "grid", gridTemplateColumns: "auto 1fr", alignItems: "start", gap: 1, px: 2 }}>
-      <FilterSystemOperationBar />
-      <FileSystemTable />
+      <Box sx={{ display: "grid", gridTemplateColumns: "auto 1fr", alignItems: "start", gap: 1, px: 2 }}>
+        <FilterSystemOperationBar />
+        <FileSystemTable />
+      </Box>
+
+      <LoadingDisplay />
     </Box>
 
-    <Box sx={{ py: 1 }} />
-
-    <LoadingDisplay />
+    <FileSystemFooter />
   </Box>
 );
 
