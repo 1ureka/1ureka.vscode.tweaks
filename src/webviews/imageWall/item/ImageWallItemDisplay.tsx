@@ -10,7 +10,7 @@ type ImageDisplayProps = {
   height: number;
 };
 
-export const ImageDisplay: React.FC<ImageDisplayProps> = ({ id, fileName, width, height }) => {
+const ImageWallItemDisplay = ({ id, fileName, width, height }: ImageDisplayProps) => {
   const imgRef = useRef<HTMLImageElement>(null);
   const [isLoaded, setIsLoaded] = useState(false);
 
@@ -51,3 +51,5 @@ export const ImageDisplay: React.FC<ImageDisplayProps> = ({ id, fileName, width,
     </Box>
   );
 };
+
+export { ImageWallItemDisplay };
