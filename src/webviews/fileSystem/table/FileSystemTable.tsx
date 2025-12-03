@@ -6,8 +6,9 @@ import { NoItemDisplay } from "./NoItemDisplay";
 
 import { fileSystemDataStore } from "../data/data";
 import { navigateToFolder, navigateUp } from "../data/navigate";
-import { fileSystemViewDataStore, selectRow } from "../data/view";
+import { fileSystemViewDataStore } from "../data/view";
 import { openFile } from "../data/action";
+import { selectRow } from "../data/selection";
 
 /**
  * 用於呈現每一列的背景樣式
