@@ -6,7 +6,7 @@ import { OperationButton, GroupContainer } from "./FileSystemOpActionEl";
 import { fileSystemDataStore } from "../data/data";
 import { refresh } from "../data/navigate";
 import { fileSystemViewStore, setFilter } from "../data/view";
-import { createNewFile, createNewFolder, openInWorkspace, openInTerminal, openInImageWall } from "../data/action";
+import { openInWorkspace, openInTerminal, openInImageWall } from "../data/action";
 
 const operationBarContainerSx: SxProps = {
   display: "flex",
@@ -20,9 +20,6 @@ const FilterSystemOperationBar = () => {
   const filter = fileSystemViewStore((state) => state.filter);
 
   const handleRefresh = () => refresh();
-  const handleCreateNewFolder = () => createNewFolder();
-  const handleCreateNewFile = () => createNewFile();
-
   const handleOpenInWorkspace = () => openInWorkspace();
   const handleOpenInTerminal = () => openInTerminal();
   const handleOpenInImageWall = () => openInImageWall();
@@ -58,11 +55,6 @@ const FilterSystemOperationBar = () => {
           label="僅限資料夾"
           onClick={createHandleFilter("folder")}
         />
-      </GroupContainer>
-
-      <GroupContainer title="操作...">
-        <OperationButton icon="codicon codicon-new-folder" label="新增資料夾" onClick={handleCreateNewFolder} />
-        <OperationButton icon="codicon codicon-new-file" label="新增檔案" onClick={handleCreateNewFile} />
       </GroupContainer>
 
       <GroupContainer title="在此開啟...">

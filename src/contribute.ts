@@ -30,6 +30,8 @@ const commandIds = [
   "1ureka.openFileSystem",
   "1ureka.openFileSystemFromExplorer",
   "1ureka.fileSystem.refresh",
+  "1ureka.fileSystem.createFolder",
+  "1ureka.fileSystem.createFile",
 
   // Inject Styles Commands
   "1ureka.injectStyles",
@@ -179,7 +181,22 @@ const webviewContextMenuEntries: WebviewContextMenuEntries = [
   },
 
   // File System
-  { id: "1ureka.fileSystem.refresh", title: "重新整理", webviewId: "1ureka.fileSystem", group: "navigation@100" },
+  {
+    id: "1ureka.fileSystem.refresh",
+    title: "重新整理",
+    webviewId: "1ureka.fileSystem",
+    group: "navigation@100",
+  },
+  {
+    submenuId: "fileSystem.create",
+    label: "在此新增...",
+    webviewId: "1ureka.fileSystem",
+    group: "navigation@101",
+    commandEntries: [
+      { id: "1ureka.fileSystem.createFolder", title: "資料夾", group: "1_create@1" },
+      { id: "1ureka.fileSystem.createFile", title: "檔案", group: "1_create@2" },
+    ],
+  },
 ];
 
 const configuration = {

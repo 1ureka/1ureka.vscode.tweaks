@@ -1,8 +1,10 @@
 import { create } from "zustand";
 import { refresh } from "./navigate";
 import { requestQueue } from "./queue";
+import { createNewFile, createNewFolder } from "./action";
 import { getInitialData, invoke, onReceiveCommand } from "@/utils/message_client";
-import type { ShowInfoAPI, ReadDirAPI, FileSystemInitialData } from "@/providers/fileSystemProvider";
+import type { ShowInfoAPI, ReadDirAPI, CreateDirAPI, CreateFileAPI } from "@/providers/fileSystemProvider";
+import type { FileSystemInitialData } from "@/providers/fileSystemProvider";
 
 // ------------------------------------------------------------------------------------------
 // 建立前端用於儲存檔案系統資料的容器
@@ -28,6 +30,8 @@ const registerMessageEvents = async () => {
   fileSystemDataStore.setState({ ...result });
 
   onReceiveCommand<ReadDirAPI>("readDirectory", refresh);
+  onReceiveCommand<CreateDirAPI>("createDir", createNewFolder);
+  onReceiveCommand<CreateFileAPI>("createFile", createNewFile);
 };
 
 export { fileSystemDataStore, registerMessageEvents };
