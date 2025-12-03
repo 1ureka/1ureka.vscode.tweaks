@@ -10,14 +10,14 @@ const FileSystemBreadcrumb: React.FC = () => {
     <Breadcrumbs
       aria-label="navigation"
       separator={<span className="codicon codicon-chevron-right" />}
-      sx={{ "& .MuiBreadcrumbs-separator": { mx: 0.5 } }}
+      sx={{ "& .MuiBreadcrumbs-separator": { mx: 0.5 }, "& .MuiBreadcrumbs-li": { display: "flex" } }}
     >
       {currentPathParts.map((part, index) => {
         const isLast = index === currentPathParts.length - 1;
 
         if (isLast) {
           return (
-            <Typography key={index} sx={{ color: "text.primary" }}>
+            <Typography key={index} variant="body2" sx={{ color: "text.primary" }}>
               {part}
             </Typography>
           );
@@ -26,6 +26,7 @@ const FileSystemBreadcrumb: React.FC = () => {
         return (
           <Link
             key={index}
+            variant="body2"
             underline="hover"
             color="inherit"
             onClick={() => navigateToBreadcrumb(index)}
