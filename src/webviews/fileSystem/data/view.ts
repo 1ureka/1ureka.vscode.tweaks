@@ -34,11 +34,13 @@ export type { FileProperties };
 type ViewDataStore = {
   entries: FileProperties[];
   selected: (0 | 1)[];
+  lastSelectedIndex: number | null;
 };
 
 const initialViewData: ViewDataStore = {
   entries: [],
   selected: [],
+  lastSelectedIndex: null,
 };
 
 const fileSystemViewDataStore = create<ViewDataStore>(() => initialViewData);
@@ -129,12 +131,42 @@ fileSystemDataStore.subscribe(handleDataUpdate);
 // ----------------------------------------------------------------------------
 
 /** 選取某個項目 */
-const selectRow = (index: number) => {
+const selectRow = (params: { index: number; isAdditive: boolean; isRange: boolean }) => {
+  const { index: currentIndex, isAdditive, isRange } = params;
+
   fileSystemViewDataStore.setState((state) => {
-    if (index < 0 || index >= state.selected.length) return {}; // 無效索引，不觸發重新渲染
+    if (currentIndex < 0 || currentIndex >= state.selected.length) {
+      return {}; // 無效索引，不觸發重新渲染
+    }
+
+    // 獲取上次點擊的索引，如果 state.lastSelectedIndex 為 null/undefined/無效，則預設為當前點擊的索引
+    let lastSelectedIndex = state.lastSelectedIndex;
+    if (lastSelectedIndex === null || lastSelectedIndex < 0 || lastSelectedIndex >= state.selected.length) {
+      lastSelectedIndex = currentIndex;
+    }
+
     const newSelected = [...state.selected];
-    newSelected[index] = (1 - newSelected[index]) as 0 | 1;
-    return { ...state, selected: newSelected };
+    let targetIndices: number[] = [];
+
+    // --- 修改器1 isRange ---
+    if (isRange) {
+      const start = Math.min(lastSelectedIndex, currentIndex);
+      const end = Math.max(lastSelectedIndex, currentIndex);
+      for (let i = start; i <= end; i++) targetIndices.push(i);
+    } else {
+      targetIndices.push(currentIndex);
+    }
+
+    // --- 修改器2 isAdditive ---
+    if (!isAdditive) {
+      newSelected.fill(0);
+      for (const index of targetIndices) newSelected[index] = 1;
+    } else {
+      const targetState = newSelected[currentIndex] === 0 ? 1 : 0;
+      for (const index of targetIndices) newSelected[index] = targetState;
+    }
+
+    return { selected: newSelected, lastSelectedIndex: currentIndex };
   });
 };
 
@@ -142,7 +174,7 @@ const selectRow = (index: number) => {
 const selectAll = () => {
   fileSystemViewDataStore.setState((state) => {
     const newSelected = Array<0 | 1>(state.selected.length).fill(1);
-    return { ...state, selected: newSelected };
+    return { selected: newSelected, lastSelectedIndex: null };
   });
 };
 
@@ -150,7 +182,7 @@ const selectAll = () => {
 const selectNone = () => {
   fileSystemViewDataStore.setState((state) => {
     const newSelected = Array<0 | 1>(state.selected.length).fill(0);
-    return { ...state, selected: newSelected };
+    return { selected: newSelected, lastSelectedIndex: null };
   });
 };
 
@@ -158,7 +190,7 @@ const selectNone = () => {
 const selectInvert = () => {
   fileSystemViewDataStore.setState((state) => {
     const newSelected = state.selected.map((value) => (1 - value) as 0 | 1);
-    return { ...state, selected: newSelected };
+    return { selected: newSelected, lastSelectedIndex: null };
   });
 };
 

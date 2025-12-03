@@ -29,7 +29,7 @@ function createRowBackgroundSx({ index, selected }: { index: number; selected: b
  */
 const createHandleRowClick =
   (fileType: string, filePath: string, index: number) => (e: React.MouseEvent<HTMLButtonElement>) => {
-    selectRow(index);
+    selectRow({ index, isAdditive: e.ctrlKey || e.metaKey, isRange: e.shiftKey });
 
     if (e.detail !== 2) return;
 
