@@ -1,9 +1,9 @@
 import React from "react";
 import { Box, LinearProgress } from "@mui/material";
-import { fileSystemDataStore } from "./data/data";
 import { FileSystemHeader } from "./header/FileSystemHeader";
 import { FileSystemTable } from "./table/FileSystemTable";
 import { FileSystemFooter } from "./footer/FileSystemFooter";
+import { fileSystemLoadingStore } from "./data/queue";
 
 const loadingContainerSx = {
   position: "absolute",
@@ -20,7 +20,7 @@ const loadingContainerSx = {
 };
 
 const LoadingDisplay = () => {
-  const loading = fileSystemDataStore((state) => state.loading);
+  const loading = fileSystemLoadingStore((state) => state.loading);
 
   if (!loading) return null;
 

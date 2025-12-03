@@ -15,9 +15,8 @@ if (!initialData) {
   throw new Error("無法取得檔案系統初始資料");
 }
 
-const fileSystemDataStore = create<FileSystemInitialData & { loading: boolean }>(() => ({
+const fileSystemDataStore = create<FileSystemInitialData>(() => ({
   ...initialData,
-  loading: true,
 }));
 
 /** 初始化 */

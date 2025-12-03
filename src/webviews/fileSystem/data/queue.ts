@@ -1,5 +1,5 @@
 import { tryCatch, defer } from "@/utils";
-import { fileSystemDataStore } from "./data";
+import { create } from "zustand";
 
 // ------------------------------------------------------------------------------------------
 // 用於避免 race condition 的請求佇列，同時也可以實現精準的 loading 狀態判斷，給 UI 使用
@@ -46,8 +46,12 @@ function createRequestQueue(onLoadingChange: (loading: boolean) => void) {
   return { add };
 }
 
+const fileSystemLoadingStore = create<{ loading: boolean }>(() => ({
+  loading: true,
+}));
+
 const requestQueue = createRequestQueue((loading) => {
-  fileSystemDataStore.setState({ loading });
+  fileSystemLoadingStore.setState({ loading });
 });
 
-export { requestQueue };
+export { requestQueue, fileSystemLoadingStore };
