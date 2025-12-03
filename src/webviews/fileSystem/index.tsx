@@ -6,6 +6,7 @@ import { Providers } from "@/utils/ui";
 import { registerInitData } from "./data/data";
 import { registerSelectionEvents } from "./data/selection";
 import { registerMessageEvents } from "./data/message";
+import { registerNavigateShortcuts } from "./data/navigate";
 
 const App = () => {
   return (
@@ -19,6 +20,7 @@ const container = document.getElementById("root");
 if (container) {
   registerInitData();
   registerSelectionEvents();
+  registerNavigateShortcuts();
   registerMessageEvents();
   createRoot(container).render(<App />);
 }
