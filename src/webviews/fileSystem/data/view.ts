@@ -34,11 +34,13 @@ export type { FileProperties };
 type ViewDataStore = {
   entries: FileProperties[];
   selected: (0 | 1)[];
+  lastSelectedIndex: number | null;
 };
 
 const initialViewData: ViewDataStore = {
   entries: [],
   selected: [],
+  lastSelectedIndex: null,
 };
 
 const fileSystemViewDataStore = create<ViewDataStore>(() => initialViewData);
@@ -115,7 +117,7 @@ const handleDataUpdate = () => {
   const entriesWithIcons = assignIconToEntries(entriesSorted);
 
   const selected = Array<0 | 1>(entriesWithIcons.length).fill(0);
-  fileSystemViewDataStore.setState({ entries: entriesWithIcons, selected });
+  fileSystemViewDataStore.setState({ entries: entriesWithIcons, selected, lastSelectedIndex: null });
 };
 
 /**
@@ -127,40 +129,6 @@ fileSystemDataStore.subscribe(handleDataUpdate);
 // ----------------------------------------------------------------------------
 // 定義用於更改檔案系統檢視狀態的行為
 // ----------------------------------------------------------------------------
-
-/** 選取某個項目 */
-const selectRow = (index: number) => {
-  fileSystemViewDataStore.setState((state) => {
-    if (index < 0 || index >= state.selected.length) return {}; // 無效索引，不觸發重新渲染
-    const newSelected = [...state.selected];
-    newSelected[index] = (1 - newSelected[index]) as 0 | 1;
-    return { ...state, selected: newSelected };
-  });
-};
-
-/** 全選 */
-const selectAll = () => {
-  fileSystemViewDataStore.setState((state) => {
-    const newSelected = Array<0 | 1>(state.selected.length).fill(1);
-    return { ...state, selected: newSelected };
-  });
-};
-
-/** 清空選取 */
-const selectNone = () => {
-  fileSystemViewDataStore.setState((state) => {
-    const newSelected = Array<0 | 1>(state.selected.length).fill(0);
-    return { ...state, selected: newSelected };
-  });
-};
-
-/** 反轉選取 */
-const selectInvert = () => {
-  fileSystemViewDataStore.setState((state) => {
-    const newSelected = state.selected.map((value) => (1 - value) as 0 | 1);
-    return { ...state, selected: newSelected };
-  });
-};
 
 /** 設定排序欄位與順序，如果點擊的是同一欄位，切換順序；否則使用預設升序 */
 const setSorting = (field: ViewStateStore["sortField"]) => {
@@ -174,4 +142,4 @@ const setFilter = (filter: ViewStateStore["filter"]) => {
   fileSystemViewStore.setState({ filter });
 };
 
-export { selectRow, selectNone, selectAll, selectInvert, setSorting, setFilter };
+export { setSorting, setFilter };

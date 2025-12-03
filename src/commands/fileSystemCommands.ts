@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
-import { FileSystemPanelProvider, type ReadDirAPI } from "@/providers/fileSystemProvider";
+import type { CreateFileAPI, CreateDirAPI, ReadDirAPI } from "@/providers/fileSystemProvider";
+import { FileSystemPanelProvider } from "@/providers/fileSystemProvider";
 import { forwardCommandToWebview } from "@/utils/message_host";
 import { createCommandManager } from "@/utils/command";
 
@@ -38,5 +39,17 @@ export function registerFileSystemCommands(context: vscode.ExtensionContext) {
     const panel = fileSystemProvider.getCurrentPanel();
     if (!panel) return;
     forwardCommandToWebview<ReadDirAPI>(panel, "readDirectory");
+  });
+
+  commandManager.register("1ureka.fileSystem.createFolder", () => {
+    const panel = fileSystemProvider.getCurrentPanel();
+    if (!panel) return;
+    forwardCommandToWebview<CreateDirAPI>(panel, "createDir");
+  });
+
+  commandManager.register("1ureka.fileSystem.createFile", () => {
+    const panel = fileSystemProvider.getCurrentPanel();
+    if (!panel) return;
+    forwardCommandToWebview<CreateFileAPI>(panel, "createFile");
   });
 }

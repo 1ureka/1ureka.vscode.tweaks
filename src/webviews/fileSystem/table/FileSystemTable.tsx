@@ -6,8 +6,9 @@ import { NoItemDisplay } from "./NoItemDisplay";
 
 import { fileSystemDataStore } from "../data/data";
 import { navigateToFolder, navigateUp } from "../data/navigate";
-import { fileSystemViewDataStore, selectRow } from "../data/view";
+import { fileSystemViewDataStore } from "../data/view";
 import { openFile } from "../data/action";
+import { selectRow } from "../data/selection";
 
 /**
  * 用於呈現每一列的背景樣式
@@ -29,7 +30,7 @@ function createRowBackgroundSx({ index, selected }: { index: number; selected: b
  */
 const createHandleRowClick =
   (fileType: string, filePath: string, index: number) => (e: React.MouseEvent<HTMLButtonElement>) => {
-    selectRow(index);
+    selectRow({ index, isAdditive: e.ctrlKey || e.metaKey, isRange: e.shiftKey });
 
     if (e.detail !== 2) return;
 
