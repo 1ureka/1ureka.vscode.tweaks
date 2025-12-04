@@ -3,8 +3,7 @@ import * as fs from "fs";
 import * as path from "path";
 
 import { tryCatch } from "@/utils";
-import { formatPathToArray } from "@/utils/formatter";
-import { readDirectory, inspectDirectory, isRootDirectory } from "@/utils/system";
+import { readDirectory, inspectDirectory, isRootDirectory, pathToArray } from "@/utils/system";
 import type { InspectDirectoryEntry } from "@/utils/system";
 
 type ReadDirectoryResult = {
@@ -24,10 +23,11 @@ type ReadDirectoryResult = {
  * 處理初始資料注入
  */
 const handleInitialData = (params: { dirPath: string }): ReadDirectoryResult => {
+  const currentPath = path.resolve(params.dirPath);
   return {
-    currentPath: params.dirPath,
-    currentPathParts: formatPathToArray(params.dirPath),
-    isCurrentRoot: isRootDirectory(params.dirPath),
+    currentPath,
+    currentPathParts: pathToArray(currentPath),
+    isCurrentRoot: isRootDirectory(currentPath),
     fileCount: 0,
     folderCount: 0,
     entries: [],
@@ -39,8 +39,8 @@ const handleInitialData = (params: { dirPath: string }): ReadDirectoryResult => 
  * 掃描資料夾內容，讀取檔案系統資訊並回傳
  */
 const handleReadDirectory = async (params: { dirPath: string }): Promise<ReadDirectoryResult> => {
-  const currentPath = params.dirPath;
-  const currentPathParts = formatPathToArray(currentPath);
+  const currentPath = path.resolve(params.dirPath);
+  const currentPathParts = pathToArray(currentPath);
   const isCurrentRoot = isRootDirectory(currentPath);
   const entries = await readDirectory(currentPath);
 

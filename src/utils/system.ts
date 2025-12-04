@@ -104,5 +104,13 @@ function isRootDirectory(dirPath: string): boolean {
   return path.normalize(absolutePath) === path.normalize(parentPath);
 }
 
-export { readDirectory, inspectDirectory, isRootDirectory };
+/**
+ * 將路徑轉換為陣列
+ */
+function pathToArray(inputPath: string): string[] {
+  const normalized = path.normalize(inputPath);
+  return normalized.split(path.sep).filter(Boolean);
+}
+
+export { readDirectory, inspectDirectory, isRootDirectory, pathToArray };
 export type { ReadDirectoryEntry, InspectDirectoryEntry };
