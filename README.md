@@ -67,6 +67,7 @@
 
 - 右鍵 `.blend` 檔案快速以裝置中最新的 Blender 開啟
 - 右鍵 `.spp` 檔案快速以裝置中最新的 Substance Painter 開啟
+- 右鍵 `.html` 檔案快速以預設瀏覽器開啟
 - 命令選擇區也可直接啟動 Substance Painter 或 Blender
 - 若應用位置特殊或想指定版本，可在 VsCode 設定中自訂路徑
 

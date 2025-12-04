@@ -20,4 +20,8 @@ export function registerExternalAppCommands(context: vscode.ExtensionContext) {
   commandManager.register("1ureka.openWithPainter", (uri: vscode.Uri) => {
     handleOpenFile(uri);
   });
+
+  commandManager.register("1ureka.openWithBrowser", (uri: vscode.Uri) => {
+    handleOpenFile(uri);
+  });
 }
