@@ -151,6 +151,31 @@ const handleOpenInTarget = async (params: { dirPath: string; target: "workspace"
   }
 };
 
+/**
+ * 開啟一個可以填入路徑的的輸入框，並在輸入後返回該路徑，若路徑是檔案則返回該檔案所在目錄
+ */
+const handleOpenPathInputBox = async (params: { dirPath: string }) => {
+  const inputPath = await vscode.window.showInputBox({
+    title: "前往...",
+    prompt: "輸入路徑",
+    placeHolder: "/path/to/directory/or/file",
+    value: params.dirPath,
+  });
+
+  if (!inputPath) return null;
+
+  const resolvedPath = path.resolve(inputPath);
+  const stats = await fs.promises.stat(resolvedPath).catch(() => null);
+  if (!stats) {
+    vscode.window.showErrorMessage("路徑不存在");
+    return null;
+  }
+
+  if (stats.isFile()) return path.dirname(resolvedPath);
+  if (stats.isDirectory()) return resolvedPath;
+  return null;
+};
+
 export { handleShowInformationMessage, handleInitialData };
 export { handleCreateFile, handleCreateDir };
-export { handleReadDirectory, handleOpenFile, handleOpenInTarget };
+export { handleReadDirectory, handleOpenFile, handleOpenInTarget, handleOpenPathInputBox };

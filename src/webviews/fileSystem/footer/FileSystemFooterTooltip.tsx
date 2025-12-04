@@ -16,7 +16,14 @@ const tooltipContainerSx: SxProps = {
   m: 1,
 };
 
-const tooltipContainerSelector = '&.MuiTooltip-popper[data-popper-placement*="top"] .MuiTooltip-tooltip';
+const tooltipContainerSelectors = [
+  '&.MuiTooltip-popper[data-popper-placement*="top"] .MuiTooltip-tooltip',
+  '&.MuiTooltip-popper[data-popper-placement*="bottom"] .MuiTooltip-tooltip',
+  '&.MuiTooltip-popper[data-popper-placement*="left"] .MuiTooltip-tooltip',
+  '&.MuiTooltip-popper[data-popper-placement*="right"] .MuiTooltip-tooltip',
+];
+
+const tooltipContainerSelector = tooltipContainerSelectors.join(", ");
 
 const FooterTooltip = ({ children, actionName, actionShortcut }: TooltipProps) => (
   <Tooltip
