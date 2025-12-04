@@ -2,6 +2,7 @@ import React from "react";
 import { Breadcrumbs, Link, Typography } from "@mui/material";
 import { fileSystemDataStore } from "../data/data";
 import { navigateToBreadcrumb } from "../data/navigate";
+import { formatPathArray } from "@/utils/formatter";
 
 const FileSystemBreadcrumb: React.FC = () => {
   const currentPathParts = fileSystemDataStore((state) => state.currentPathParts);
@@ -12,7 +13,7 @@ const FileSystemBreadcrumb: React.FC = () => {
       separator={<span className="codicon codicon-chevron-right" />}
       sx={{ "& .MuiBreadcrumbs-separator": { mx: 0.5 }, "& .MuiBreadcrumbs-li": { display: "flex" } }}
     >
-      {currentPathParts.map((part, index) => {
+      {formatPathArray(currentPathParts).map((part, index) => {
         const isLast = index === currentPathParts.length - 1;
 
         if (isLast) {
