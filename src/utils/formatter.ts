@@ -1,31 +1,10 @@
-import * as path from "path";
-
-/** 將路徑轉換為陣列 */
-function pathToArray(inputPath: string): string[] {
-  const normalized = path.normalize(inputPath);
-  return normalized.split(path.sep).filter(Boolean);
-}
-
-/** 格式化路徑為美觀的字串 */
-function formatPath(inputPath: string): string {
-  const parts = pathToArray(inputPath);
-
-  if (parts.length > 0 && /^[a-zA-Z]:$/.test(parts[0])) {
-    parts[0] = parts[0].toUpperCase();
+/** 格式化路徑陣列 (用於在 windows 系統將磁碟機大寫顯示) */
+function formatPathArray(array: string[]): string[] {
+  const newArray = [...array];
+  if (newArray.length > 0 && /^[a-zA-Z]:$/.test(newArray[0])) {
+    newArray[0] = newArray[0].toUpperCase();
   }
-
-  return path.posix.join(...parts);
-}
-
-/** 將任意格式的路徑轉為美觀的字串陣列 */
-function formatPathToArray(inputPath: string): string[] {
-  const parts = pathToArray(inputPath);
-
-  if (parts.length > 0 && /^[a-zA-Z]:$/.test(parts[0])) {
-    parts[0] = parts[0].toUpperCase();
-  }
-
-  return parts;
+  return newArray;
 }
 
 /** 格式化日期為 "MM-DD HH:mm" */
@@ -56,4 +35,4 @@ function formatFileSize(size: number): string {
   else return `${(size / (1024 * 1024 * 1024)).toFixed(2)} GB`;
 }
 
-export { formatPath, formatPathToArray, formatDateCompact, formatDateFull, formatFileSize };
+export { formatPathArray, formatDateCompact, formatDateFull, formatFileSize };

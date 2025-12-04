@@ -7,6 +7,7 @@ import { registerInitData } from "./data/data";
 import { registerSelectionEvents } from "./data/selection";
 import { registerMessageEvents } from "./data/message";
 import { registerNavigateShortcuts } from "./data/navigate";
+import { registerClipboardEvents } from "./data/clipboard";
 
 const App = () => {
   return (
@@ -22,6 +23,7 @@ if (container) {
   registerSelectionEvents();
   registerNavigateShortcuts();
   registerMessageEvents();
+  registerClipboardEvents();
   createRoot(container).render(<App />);
 }
 

@@ -1,9 +1,10 @@
 import * as vscode from "vscode";
+import * as path from "path";
 import { randomUUID, type UUID } from "crypto";
 
 import { generateThumbnail, openImages, type ExtendedMetadata } from "@/utils/image";
-import { formatPath, formatPathToArray } from "@/utils/formatter";
 import { copyImage } from "@/utils/system_windows";
+import { pathToArray } from "@/utils/system";
 
 /**
  * 由插件主機一開始就注入 html (類似 SSR)的資料型別
@@ -31,7 +32,9 @@ const IMAGES_PER_PAGE = 100;
 /**
  * 準備圖片牆開啟所需的初始資料，以及建立圖片牆所有圖片的元資料與 ID 關係，以便後續圖片事件處理能找到對應的圖片
  */
-const handlePrepareInitialData = async ({ folderPath }: { folderPath: string }) => {
+const handlePrepareInitialData = async (params: { folderPath: string }) => {
+  const folderPath = path.resolve(params.folderPath);
+
   const imageMetadata = await vscode.window.withProgress(
     { location: vscode.ProgressLocation.Notification, title: "開啟圖片牆中", cancellable: false },
     (progress) => {
@@ -51,8 +54,8 @@ const handlePrepareInitialData = async ({ folderPath }: { folderPath: string }) 
   }));
 
   const initialData: ImageWallInitialData = {
-    folderPath: formatPath(folderPath),
-    folderPathParts: formatPathToArray(folderPath),
+    folderPath,
+    folderPathParts: pathToArray(folderPath),
     page: 1,
     pages: Math.ceil(images.length / IMAGES_PER_PAGE),
     totalImages: images.length,

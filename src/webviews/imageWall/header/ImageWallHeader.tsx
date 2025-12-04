@@ -1,6 +1,7 @@
 import React from "react";
 import { Box, Breadcrumbs, Typography } from "@mui/material";
 import { imageWallDataStore } from "../data/data";
+import { formatPathArray } from "@/utils/formatter";
 
 const ImageWallHeader = () => {
   const folderPathParts = imageWallDataStore((state) => state.folderPathParts);
@@ -13,7 +14,7 @@ const ImageWallHeader = () => {
         separator={<span className="codicon codicon-chevron-right" />}
         sx={{ "& .MuiBreadcrumbs-separator": { mx: 0.5 } }}
       >
-        {folderPathParts.map((part, index) => (
+        {formatPathArray(folderPathParts).map((part, index) => (
           <Typography
             key={index}
             variant="body2"

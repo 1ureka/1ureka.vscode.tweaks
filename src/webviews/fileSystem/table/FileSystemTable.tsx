@@ -9,6 +9,7 @@ import { navigateToFolder, navigateUp } from "../data/navigate";
 import { fileSystemViewDataStore } from "../data/view";
 import { openFile } from "../data/action";
 import { selectRow } from "../data/selection";
+import { extensionTypeMap } from "../data_static/fileExtMap";
 
 /**
  * 用於呈現每一列的背景樣式
@@ -52,6 +53,24 @@ const fileTypeLabels: Record<string, string> = {
 };
 
 /**
+ * 獲取用於顯示的檔案類型名稱
+ */
+const getFileTypeLabel = (params: { fileName: string; fileType: string }): string => {
+  let label = fileTypeLabels[params.fileType] || "未知類型";
+
+  if (params.fileType !== "file") return label;
+
+  const fileName = params.fileName.toLowerCase();
+  const extension = fileName.includes(".") ? fileName.split(".").pop() || "" : "";
+
+  if (extension in extensionTypeMap) {
+    label = extensionTypeMap[extension];
+  }
+
+  return label;
+};
+
+/**
  * 用於呈現表格主體的組件
  */
 const TableBody = () => {
@@ -59,10 +78,11 @@ const TableBody = () => {
   const viewEntries = fileSystemViewDataStore((state) => state.entries);
   const selected = fileSystemViewDataStore((state) => state.selected);
 
-  const rows = viewEntries.map(({ fileType, mtime, ctime, fileSize, size, ...rest }) => ({
+  const rows = viewEntries.map(({ fileName, fileType, mtime, ctime, fileSize, size, ...rest }) => ({
     ...rest,
     rawFileType: fileType,
-    fileType: fileTypeLabels[fileType],
+    fileName,
+    fileType: getFileTypeLabel({ fileName, fileType }),
     mtime: new Date(mtime).toLocaleString(),
     ctime: new Date(ctime).toLocaleDateString(),
     size: size > 0 ? fileSize : "",
