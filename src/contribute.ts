@@ -10,6 +10,7 @@ const commandIds = [
   "1ureka.openWithBlender",
   "1ureka.openPainter",
   "1ureka.openWithPainter",
+  "1ureka.openWithBrowser",
 
   // Image Wall Commands
   "1ureka.openImageWall",
@@ -113,6 +114,12 @@ const explorerContextMenuEntries: ContextMenuEntries = [
     group: "navigation@100",
   },
   {
+    id: "1ureka.openWithBrowser",
+    title: "以網頁瀏覽器開啟",
+    when: "resourceExtname == .html",
+    group: "navigation@100",
+  },
+  {
     id: "1ureka.openFileSystemFromExplorer",
     title: "以檔案系統瀏覽器顯示",
     when: "explorerResourceIsFolder",
@@ -137,6 +144,12 @@ const editorTitleContextMenuEntries: ContextMenuEntries = [
     id: "1ureka.openWithPainter",
     title: "以 Painter 開啟",
     when: "resourceExtname == .spp",
+    group: "navigation@100",
+  },
+  {
+    id: "1ureka.openWithBrowser",
+    title: "以網頁瀏覽器開啟",
+    when: "resourceExtname == .html",
     group: "navigation@100",
   },
 ];

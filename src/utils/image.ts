@@ -5,7 +5,11 @@ import type { Progress } from "vscode";
 
 const supportedExtensions = [".jpg", ".jpeg", ".png", ".bmp", ".gif", ".webp", ".tiff", ".tif"];
 
-type ExtendedMetadata = sharp.Metadata & { filePath: string; fileName: string };
+// 修復 icc, exif 等資料可能導致序列化錯誤的問題，改為只保留必要的欄位
+type ExtendedMetadata = { filePath: string; fileName: string } & Pick<
+  sharp.Metadata,
+  "width" | "height" | "format" | "space" | "channels" | "hasAlpha"
+>;
 
 /**
  * 打開單一圖片檔案，並回傳其 metadata，若非圖片或無法讀取則回傳 null
@@ -18,7 +22,17 @@ async function openImage(filePath: string): Promise<ExtendedMetadata | null> {
 
   try {
     const metadata = await sharp(filePath).metadata();
-    return { ...metadata, filePath, fileName: path.basename(filePath) };
+
+    return {
+      filePath,
+      fileName: path.basename(filePath),
+      width: metadata.width,
+      height: metadata.height,
+      format: metadata.format,
+      space: metadata.space,
+      channels: metadata.channels,
+      hasAlpha: metadata.hasAlpha,
+    };
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
     return null;

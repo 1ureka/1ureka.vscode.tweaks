@@ -66,18 +66,23 @@ const selectInvert = () => {
 
 /** 在全局註冊有關選取的事件 */
 const registerSelectionEvents = () => {
-  window.addEventListener("keydown", (e) => {
-    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "a") {
-      e.preventDefault();
-      if (e.shiftKey) selectNone();
-      else selectAll();
-    }
+  window.addEventListener(
+    "keydown",
+    (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "a") {
+        e.preventDefault();
+        e.stopPropagation();
+        if (e.shiftKey) selectNone();
+        else selectAll();
+      }
 
-    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "i") {
-      e.preventDefault();
-      selectInvert();
-    }
-  });
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "i") {
+        e.preventDefault();
+        selectInvert();
+      }
+    },
+    true
+  );
 };
 
 export { selectRow, selectNone, selectAll, selectInvert, registerSelectionEvents };

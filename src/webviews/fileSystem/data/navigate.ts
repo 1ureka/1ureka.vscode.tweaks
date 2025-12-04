@@ -44,13 +44,18 @@ const navigateUp = () => {
  * 註冊有關導航的快捷鍵
  */
 const registerNavigateShortcuts = () => {
-  window.addEventListener("keydown", (e) => {
-    // Ctrl + R 或 Cmd + R：重新整理
-    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "r") {
-      e.preventDefault();
-      refresh();
-    }
-  });
+  window.addEventListener(
+    "keydown",
+    (e) => {
+      // Ctrl + R 或 Cmd + R：重新整理
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "r") {
+        e.preventDefault();
+        e.stopPropagation();
+        refresh();
+      }
+    },
+    true
+  );
 };
 
 export { refresh, navigateToFolder, navigateUp, navigateToBreadcrumb, registerNavigateShortcuts };
