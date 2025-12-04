@@ -1,7 +1,7 @@
 import { fileSystemDataStore } from "./data";
 import { requestQueue } from "./queue";
 import { invoke } from "@/utils/message_client";
-import type { ReadDirAPI } from "@/providers/fileSystemProvider";
+import type { ReadDirAPI, OpenPathInputBoxAPI } from "@/providers/fileSystemProvider";
 
 /**
  * 重新整理
@@ -41,6 +41,14 @@ const navigateUp = () => {
 };
 
 /**
+ * 前往指定路徑 (Go to...)
+ */
+const navigateToPath = async () => {
+  const dirPath = fileSystemDataStore.getState().currentPath;
+  const inputPath = await requestQueue.add(() => invoke<OpenPathInputBoxAPI>("openPathInputBox", { dirPath }));
+  if (inputPath) navigateToFolder({ dirPath: inputPath });
+};
+/**
  * 註冊有關導航的快捷鍵
  */
 const registerNavigateShortcuts = () => {
@@ -58,4 +66,5 @@ const registerNavigateShortcuts = () => {
   );
 };
 
-export { refresh, navigateToFolder, navigateUp, navigateToBreadcrumb, registerNavigateShortcuts };
+export { navigateToPath, navigateToFolder, navigateUp, navigateToBreadcrumb };
+export { refresh, registerNavigateShortcuts };
