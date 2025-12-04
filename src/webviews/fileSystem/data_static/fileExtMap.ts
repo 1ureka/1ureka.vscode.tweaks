@@ -196,6 +196,208 @@ const extensionIconMap: Record<string, `codicon codicon-${string}`> = {
   dylib: "codicon codicon-library",
   iso: "codicon codicon-file-zip",
   img: "codicon codicon-file-zip",
-};
+} as const;
 
 export { extensionIconMap };
+
+/**
+ * 常見副檔名對應的檔案類型名稱
+ */
+const extensionTypeMap: Record<keyof typeof extensionIconMap, string> = {
+  // Web 相關
+  html: "HTML 文件",
+  htm: "HTML 文件",
+  xhtml: "XHTML 文件",
+  css: "CSS 來源檔案",
+  scss: "Sass 來源檔案",
+  sass: "Sass 來源檔案",
+  less: "LESS 來源檔案",
+
+  // JavaScript / TypeScript
+  js: "JavaScript 指令檔",
+  mjs: "JavaScript 來源檔案",
+  cjs: "JavaScript 來源檔案",
+  jsx: "JavaScript 來源檔案",
+  ts: "TypeScript 來源檔案",
+  tsx: "TypeScript 來源檔案",
+  d: "D 來源檔案",
+  "d.ts": "TypeScript 定義檔案",
+
+  // 其他程式語言
+  php: "PHP 來源檔案",
+  py: "Python 來源檔案",
+  pyw: "Python 來源檔案 (無主控台)",
+  pyc: "Python 編譯檔案",
+  ipynb: "Jupyter 來源檔案",
+  java: "Java 來源檔案",
+  class: "Java Class 檔案",
+  jar: "Java Archive 檔案",
+  c: "C 來源檔案",
+  cpp: "C++ 來源檔案",
+  cc: "C++ 來源檔案",
+  cxx: "C++ 來源檔案",
+  h: "C Header 來源檔案",
+  hpp: "C++ Header 來源檔案",
+  cs: "C# 來源檔案",
+  go: "Go 來源檔案",
+  rs: "Rust 來源檔案",
+  rb: "Ruby 來源檔案",
+  swift: "Swift 來源檔案",
+  kt: "Kotlin 來源檔案",
+  scala: "Scala 來源檔案",
+  dart: "Dart 來源檔案",
+  lua: "Lua 來源檔案",
+  r: "R 來源檔案",
+  m: "Objective-C 來源檔案",
+  pl: "Perl 來源檔案",
+  sh: "Shell Script",
+  bash: "Bash 來源檔案",
+  zsh: "ZSH 來源檔案",
+  fish: "Fish 來源檔案",
+  ps1: "Windows PowerShell 指令碼",
+  bat: "Windows 批次檔案",
+  cmd: "Windows 命令指令碼",
+
+  // 數據格式
+  json: "JSON 來源檔案",
+  jsonc: "JSON 含註解檔案",
+  json5: "JSON5 檔案",
+  yaml: "YAML 來源檔案",
+  yml: "YAML 來源檔案",
+  xml: "XML 文件",
+  toml: "TOML 來源檔案",
+  csv: "逗點分隔值檔案",
+
+  // 文檔
+  md: "Markdown 來源檔案",
+  markdown: "Markdown 來源檔案",
+  txt: "文字文件",
+  rtf: "RTF 格式",
+  doc: "Microsoft Word 97-2003 文件",
+  docx: "Microsoft Word 文件",
+  odt: "OpenDocument 文字",
+  tex: "LaTeX 來源檔案",
+  log: "日誌檔案",
+
+  // 配置文件
+  ini: "組態設定",
+  conf: "組態檔案",
+  config: "Configuration 來源檔案",
+  properties: "Properties 來源檔案",
+  env: "環境變數檔案",
+  editorconfig: "Editor Config 來源檔案",
+  gitignore: "Git Ignore 檔案",
+  dockerignore: "Docker Ignore 檔案",
+  npmrc: "NPM 組態檔案",
+  eslintrc: "ESLint 組態檔案",
+
+  // 資料庫
+  db: "資料庫檔案",
+  sql: "SQL 來源檔案",
+  sqlite: "SQLite 資料庫",
+  sqlite3: "SQLite3 資料庫",
+  mdb: "Microsoft Access 資料庫",
+
+  // 3D / 圖形
+  blend: "Blender 檔案",
+  blend1: "Blender 備份檔案",
+  obj: "3D Object",
+  fbx: "3D Object",
+  dae: "COLLADA 檔案",
+  stl: "STL 檔案",
+  gltf: "3D Object",
+  glb: "3D Object",
+  spp: "Substance Painter 檔案",
+  psd: "Photoshop 文件",
+  ai: "Adobe Illustrator 檔案",
+  sketch: "Sketch 檔案",
+  fig: "Figma 檔案",
+  xd: "Adobe XD 檔案",
+
+  // 圖片
+  png: "PNG 檔案",
+  jpg: "JPEG 檔案",
+  jpeg: "JPEG 檔案",
+  webp: "WebP 檔案",
+  gif: "GIF 檔案",
+  svg: "SVG 檔案",
+  tiff: "TIFF 檔案",
+  tif: "TIFF 檔案",
+  bmp: "BMP 檔案",
+  ico: "圖示",
+  icns: "圖示檔案",
+  heic: "HEIC 檔案",
+  heif: "HEIF 檔案",
+  raw: "RAW 檔案",
+  cr2: "Canon RAW 檔案",
+  nef: "Nikon RAW 檔案",
+
+  // 音訊
+  mp3: "MP3 檔案",
+  wav: "WAV 檔案",
+  flac: "FLAC 檔案",
+  aac: "AAC 檔案",
+  ogg: "OGG 檔案",
+  wma: "WMA 檔案",
+  m4a: "M4A 檔案",
+  opus: "Opus 檔案",
+
+  // 影片
+  mp4: "MP4 檔案",
+  mov: "MOV 檔案",
+  avi: "AVI 檔案",
+  mkv: "MKV 檔案",
+  flv: "FLV 檔案",
+  wmv: "WMV 檔案",
+  webm: "WebM 檔案",
+  m4v: "M4V 檔案",
+  mpeg: "MPEG 檔案",
+  mpg: "MPEG 檔案",
+
+  // PDF
+  pdf: "可攜式文件",
+
+  // 壓縮檔
+  zip: "壓縮的 (zipped) 資料夾",
+  rar: "RAR 檔案",
+  tar: "TAR 檔案",
+  gz: "GZ 檔案",
+  bz2: "BZ2 檔案",
+  xz: "XZ 檔案",
+  "7z": "7-Zip 檔案",
+  tgz: "TAR.GZ 檔案",
+  bak: "備份檔案",
+  old: "舊檔案",
+
+  // 可執行檔 / 套件
+  exe: "應用程式",
+  msi: "Windows Installer 封裝",
+  app: "應用程式",
+  dmg: "磁碟映像檔",
+  deb: "Debian 套件",
+  rpm: "RPM 套件",
+  apk: "Android 套件",
+  vsix: "VS Code 擴充套件",
+
+  // 字型
+  ttf: "TrueType 字型檔案",
+  otf: "OpenType 字型檔案",
+  woff: "Web 字型檔案",
+  woff2: "Web 字型檔案 2",
+  eot: "Embedded OpenType 字型",
+
+  // 其他
+  lock: "鎖定檔案",
+  key: "金鑰檔案",
+  pem: "PEM 憑證",
+  crt: "安全性憑證",
+  cert: "憑證檔案",
+  gpg: "GPG 金鑰",
+  dll: "應用程式擴充",
+  so: "Shared Object",
+  dylib: "動態函式庫",
+  iso: "光碟映像檔",
+  img: "光碟映像檔",
+};
+
+export { extensionTypeMap };

@@ -46,14 +46,14 @@ const tableColumns: TableColumn[] = [
     field: "fileName",
     align: "left",
     label: "名稱",
-    weight: 4.5,
+    weight: 3.5,
     sortable: true,
   },
   {
     field: "fileType",
     align: "right",
     label: "類型",
-    weight: 1,
+    weight: 2,
     sortable: false,
   },
   {
