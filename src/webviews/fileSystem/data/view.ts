@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { fileSystemDataStore } from "./data";
+import { extensionIconMap } from "../data_static/extensionIconMap";
 import type { InspectDirectoryEntry } from "@/utils/system";
 import type { Prettify } from "@/utils";
 
@@ -99,7 +100,20 @@ const sortEntries = (entries: InspectDirectoryEntry[]) => {
  * 將檔案屬性陣列擴展成帶有圖示的檔案屬性陣列
  */
 const assignIconToEntries = (entries: InspectDirectoryEntry[]): FileProperties[] => {
-  return entries.map((entry) => ({ ...entry, icon: `codicon codicon-${entry.fileType}` }));
+  return entries.map((entry) => {
+    let icon: `codicon codicon-${string}` = `codicon codicon-${entry.fileType}`;
+
+    if (entry.fileType !== "file") return { ...entry, icon };
+
+    const fileName = entry.fileName.toLowerCase();
+    const extension = fileName.includes(".") ? fileName.split(".").pop() || "" : "";
+
+    if (extension in extensionIconMap) {
+      icon = extensionIconMap[extension];
+    }
+
+    return { ...entry, icon };
+  });
 };
 
 // ----------------------------------------------------------------------------
