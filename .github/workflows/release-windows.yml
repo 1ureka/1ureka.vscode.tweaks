@@ -1,0 +1,56 @@
+name: Release (Windows)
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version (e.g. v0.4.7)"
+        required: true
+
+jobs:
+  release:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v5
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: "npm"
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Build and package extension
+        run: npm run build
+
+      - name: Verify VSIX file exists
+        shell: pwsh
+        run: |
+          $vsixFile = Get-ChildItem -Path "." -Filter "*.vsix" | Select-Object -First 1
+          if (!$vsixFile) {
+            Write-Error "No .vsix file found"
+            exit 1
+          }
+          Write-Host "Found VSIX: $($vsixFile.Name)"
+
+      - name: Rename VSIX with version
+        id: rename
+        shell: pwsh
+        run: |
+          $vsixFile = Get-ChildItem -Path "." -Filter "*.vsix" | Select-Object -First 1
+          $newName = "1ureka-vscode-extension-${{ github.event.inputs.version }}.vsix"
+          Rename-Item -Path $vsixFile.FullName -NewName $newName
+          Write-Host "Renamed to: $newName"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.version }}
+          name: "Release ${{ github.event.inputs.version }}"
+          files: "1ureka-vscode-extension-${{ github.event.inputs.version }}.vsix"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
