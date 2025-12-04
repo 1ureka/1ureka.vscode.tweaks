@@ -6,6 +6,7 @@ import { FooterButton, FooterContainer, FooterGroup, FooterGroups } from "./File
 import { fileSystemDataStore } from "../data/data";
 import { fileSystemViewDataStore } from "../data/view";
 import { selectAll, selectInvert, selectNone } from "../data/selection";
+import { setClipboard, useClipboardCount } from "../data/clipboard";
 import { refresh } from "../data/navigate";
 
 const FileSystemFooter = () => {
@@ -16,6 +17,9 @@ const FileSystemFooter = () => {
   const selectedCount = selected.filter((item) => item).length;
   const allSelected = selectedCount === selected.length && selected.length > 0;
   const selectionCaption = selectedCount > 0 ? `選取了 ${selectedCount} 個項目` : "未選取任何項目";
+
+  const clipboardCount = useClipboardCount();
+  const clipboardCaption = clipboardCount > 0 ? `剪貼簿有 ${clipboardCount} 個項目` : "剪貼簿是空的";
 
   return (
     <FooterContainer>
@@ -62,17 +66,17 @@ const FileSystemFooter = () => {
 
         <FooterGroup>
           <Typography variant="caption" sx={{ display: "flex", alignItems: "center", color: "text.secondary" }}>
-            剪貼簿有 0 個項目
+            {clipboardCaption}
           </Typography>
 
           <FooterTooltip actionName="複製選取項目到剪貼簿" actionShortcut={["Ctrl", "C"]}>
-            <FooterButton disabled={selectedCount === 0}>
+            <FooterButton disabled={selectedCount === 0} onClick={() => setClipboard({ type: "copy" })}>
               <i className="codicon codicon-git-stash-apply" />
             </FooterButton>
           </FooterTooltip>
 
           <FooterTooltip actionName="剪下選取項目到剪貼簿" actionShortcut={["Ctrl", "X"]}>
-            <FooterButton disabled={selectedCount === 0}>
+            <FooterButton disabled={selectedCount === 0} onClick={() => setClipboard({ type: "cut" })}>
               <i className="codicon codicon-git-stash-pop" />
             </FooterButton>
           </FooterTooltip>
