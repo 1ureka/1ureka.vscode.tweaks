@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
 import { randomUUID } from "crypto";
 import type { OneOf } from "@/utils";
+import type { WebviewId } from "@/contribute";
 
 /**
  * 將資料序列化為適合插入 HTML 的字串
@@ -71,7 +72,7 @@ type CreateWebviewPanelParams<T> = {
   resourceUri: vscode.Uri;
   initialData: T;
   iconPath?: { light: vscode.Uri; dark: vscode.Uri };
-} & OneOf<[{ panelId: string; panelTitle: string }, { panel: vscode.WebviewPanel }]>;
+} & OneOf<[{ panelId: WebviewId; panelTitle: string }, { panel: vscode.WebviewPanel }]>;
 
 /**
  * 建立一個新的 Webview Panel 或者根據 Editor 提供的 Panel 初始化 Webview Panel

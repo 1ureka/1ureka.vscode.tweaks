@@ -26,7 +26,7 @@ export function registerImageWallCommands(context: vscode.ExtensionContext) {
     else imageWallPanelProvider.createPanel(folders[0].fsPath);
   });
 
-  commandManager.register("1ureka.imageWall.openImageWallFromFolder", (folderPath: string) => {
+  commandManager.registerInternal("1ureka.imageWall.openImageWallFromFolder", (folderPath: string) => {
     imageWallPanelProvider.createPanel(folderPath);
   });
 
