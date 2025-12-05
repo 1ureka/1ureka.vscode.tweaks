@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 import React, { useEffect, useState } from "react";
 import { Box, Container, Skeleton, Typography } from "@mui/material";
 import { TransformWrapper, TransformComponent, useControls } from "react-zoom-pan-pinch";
@@ -55,19 +53,14 @@ const ImageDisplay = ({ src: initialSrc, alt, width, height }: ImageDisplayProps
 
   return (
     <TransformWrapper centerOnInit onPanningStart={handlePanStart} onPanningStop={handlePanStop}>
-      {/* eslint-disable-next-line @typescript-eslint/no-unused-vars */}
-      {({ resetTransform, ...rest }) => (
-        <>
-          <TransformComponent wrapperStyle={{ width: "100%", height: "100dvh" }} contentStyle={{ cursor }}>
-            {loaded && src ? (
-              <img src={src} alt={alt} style={{ display: "block", ...getContainLayout(width, height) }} />
-            ) : (
-              <Skeleton variant="rectangular" animation="wave" sx={getContainLayout(width, height)} />
-            )}
-          </TransformComponent>
-          <Controls />
-        </>
-      )}
+      <TransformComponent wrapperStyle={{ width: "100%", height: "100dvh" }} contentStyle={{ cursor }}>
+        {loaded && src ? (
+          <img src={src} alt={alt} style={{ display: "block", ...getContainLayout(width, height) }} />
+        ) : (
+          <Skeleton variant="rectangular" animation="wave" sx={getContainLayout(width, height)} />
+        )}
+      </TransformComponent>
+      <Controls />
     </TransformWrapper>
   );
 };
