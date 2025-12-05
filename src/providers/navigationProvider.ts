@@ -14,25 +14,25 @@ interface NavigationOption extends vscode.QuickPickItem {
 const navigationOptions: NavigationOption[] = [
   {
     label: "系統瀏覽器",
-    description: "當前目錄",
+    description: "$(root-folder) 當前目錄",
     detail: "使用系統瀏覽器開啟當前工作目錄",
     commandId: "1ureka.openFileSystem",
   },
   {
     label: "系統瀏覽器",
-    description: "指定目錄",
+    description: "$(link-external) 指定目錄",
     detail: "在預設的瀏覽器中選擇目錄後以系統瀏覽器開啟",
     commandId: "1ureka.openFileSystem",
   },
   {
     label: "圖片牆",
-    description: "當前目錄",
+    description: "$(root-folder) 當前目錄",
     detail: "在圖片牆中瀏覽當前目錄的圖片檔案",
     commandId: "1ureka.openImageWall",
   },
   {
     label: "圖片牆",
-    description: "指定目錄",
+    description: "$(link-external) 指定目錄",
     detail: "在預設的瀏覽器中選擇目錄後以圖片牆開啟",
     commandId: "1ureka.openImageWall",
   },

@@ -92,8 +92,8 @@ type CustomEditor = {
 const commandPaletteEntries: CommandPaletteEntries = [
   { id: "1ureka.openBlender", title: "開啟 Blender", when: "isWindows" },
   { id: "1ureka.openPainter", title: "開啟 Painter", when: "isWindows" },
-  { id: "1ureka.openImageWall", title: "開啟圖片牆" },
-  { id: "1ureka.openFileSystem", title: "開啟系統瀏覽器" },
+  { id: "1ureka.openImageWall", title: "開啟圖片牆", icon: "$(repo)" },
+  { id: "1ureka.openFileSystem", title: "開啟系統瀏覽器", icon: "$(folder-library)" },
   { id: "1ureka.injectStyles", title: "注入自訂樣式" },
   { id: "1ureka.restoreStyles", title: "還原樣式設定" },
   { id: "1ureka.restoreAndReinjectStyles", title: "還原並重新注入樣式" },
