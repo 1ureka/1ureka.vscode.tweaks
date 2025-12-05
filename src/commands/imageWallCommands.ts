@@ -22,7 +22,7 @@ export function registerImageWallCommands(context: vscode.ExtensionContext) {
       openLabel: "選擇資料夾",
     });
 
-    if (!folders || folders.length === 0) vscode.window.showErrorMessage("請選擇一個資料夾來開啟圖片牆");
+    if (!folders || folders.length === 0) return;
     else imageWallPanelProvider.createPanel(folders[0].fsPath);
   });
 

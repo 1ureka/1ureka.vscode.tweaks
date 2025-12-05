@@ -4,57 +4,56 @@ import type { OneOf } from "@/utils";
 // Command IDs and Webview IDs
 // ============================================================================
 
-const commandIds = [
+type CommandId =
+  | "1ureka.main.openNavigation"
   // External App Commands
-  "1ureka.openBlender",
-  "1ureka.openWithBlender",
-  "1ureka.openPainter",
-  "1ureka.openWithPainter",
-  "1ureka.openWithBrowser",
-
+  | "1ureka.openBlender"
+  | "1ureka.openWithBlender"
+  | "1ureka.openPainter"
+  | "1ureka.openWithPainter"
+  | "1ureka.openWithBrowser"
   // Image Wall Commands
-  "1ureka.openImageWall",
-  "1ureka.openImageWallFromExplorer",
-  "1ureka.imageWall.setLayoutStandard",
-  "1ureka.imageWall.setLayoutWoven",
-  "1ureka.imageWall.setLayoutMasonry",
-  "1ureka.imageWall.setSizeSmall",
-  "1ureka.imageWall.setSizeMedium",
-  "1ureka.imageWall.setSizeLarge",
-
+  | "1ureka.openImageWall"
+  | "1ureka.openImageWallFromExplorer"
+  | "1ureka.imageWall.setLayoutStandard"
+  | "1ureka.imageWall.setLayoutWoven"
+  | "1ureka.imageWall.setLayoutMasonry"
+  | "1ureka.imageWall.setSizeSmall"
+  | "1ureka.imageWall.setSizeMedium"
+  | "1ureka.imageWall.setSizeLarge"
   // Image Viewer Commands
-  "1ureka.imageViewer.resetTransform",
-  "1ureka.imageViewer.eyeDropper",
-  "1ureka.imageViewer.exportAs",
-
+  | "1ureka.imageViewer.resetTransform"
+  | "1ureka.imageViewer.eyeDropper"
+  | "1ureka.imageViewer.exportAs"
   // File System Commands
-  "1ureka.openFileSystem",
-  "1ureka.openFileSystemFromExplorer",
-  "1ureka.fileSystem.refresh",
-  "1ureka.fileSystem.createFolder",
-  "1ureka.fileSystem.createFile",
-  "1ureka.fileSystem.openInWorkspace",
-  "1ureka.fileSystem.openInTerminal",
-  "1ureka.fileSystem.openInImageWall",
-  "1ureka.fileSystem.filterAll",
-  "1ureka.fileSystem.filterFolders",
-  "1ureka.fileSystem.filterFiles",
-
+  | "1ureka.openFileSystem"
+  | "1ureka.openFileSystemFromExplorer"
+  | "1ureka.fileSystem.refresh"
+  | "1ureka.fileSystem.createFolder"
+  | "1ureka.fileSystem.createFile"
+  | "1ureka.fileSystem.openInWorkspace"
+  | "1ureka.fileSystem.openInTerminal"
+  | "1ureka.fileSystem.openInImageWall"
+  | "1ureka.fileSystem.filterAll"
+  | "1ureka.fileSystem.filterFolders"
+  | "1ureka.fileSystem.filterFiles"
   // Inject Styles Commands
-  "1ureka.injectStyles",
-  "1ureka.restoreStyles",
-  "1ureka.restoreAndReinjectStyles",
-] as const;
+  | "1ureka.injectStyles"
+  | "1ureka.restoreStyles"
+  | "1ureka.restoreAndReinjectStyles";
 
-const webviewIds = ["1ureka.imageViewer", "1ureka.imageWall", "1ureka.fileSystem"] as const;
+type WebviewId = "1ureka.imageViewer" | "1ureka.imageWall" | "1ureka.fileSystem";
+
+export type { CommandId, WebviewId };
 
 // ============================================================================
 // Type Definitions
 // ============================================================================
 
 type CommandEntry = {
-  id: (typeof commandIds)[number];
+  id: CommandId;
   title: string;
+  icon?: `$(${string})`;
   when?: string;
   group?: string;
 };
@@ -68,11 +67,11 @@ type SubmenuEntry = {
 };
 
 type WebviewCommandEntry = Omit<CommandEntry, "when"> & {
-  webviewId: (typeof webviewIds)[number];
+  webviewId: WebviewId;
 };
 
 type WebviewSubmenuEntry = Omit<SubmenuEntry, "when"> & {
-  webviewId: (typeof webviewIds)[number];
+  webviewId: WebviewId;
 };
 
 type CommandPaletteEntries = CommandEntry[];
@@ -94,10 +93,30 @@ const commandPaletteEntries: CommandPaletteEntries = [
   { id: "1ureka.openBlender", title: "開啟 Blender", when: "isWindows" },
   { id: "1ureka.openPainter", title: "開啟 Painter", when: "isWindows" },
   { id: "1ureka.openImageWall", title: "開啟圖片牆" },
-  { id: "1ureka.openFileSystem", title: "開啟檔案系統瀏覽器" },
+  { id: "1ureka.openFileSystem", title: "開啟系統瀏覽器" },
   { id: "1ureka.injectStyles", title: "注入自訂樣式" },
   { id: "1ureka.restoreStyles", title: "還原樣式設定" },
   { id: "1ureka.restoreAndReinjectStyles", title: "還原並重新注入樣式" },
+];
+
+const explorerTitleMenuEntries: ContextMenuEntries = [
+  {
+    id: "1ureka.main.openNavigation",
+    title: "1ureka 的擴展插件",
+    when: "view == workbench.explorer.fileView",
+    group: "navigation",
+    icon: "$(sparkle)",
+  },
+];
+
+const editorTitleMenuEntries: ContextMenuEntries = [
+  {
+    id: "1ureka.main.openNavigation",
+    title: "1ureka 的擴展插件",
+    when: "true",
+    group: "navigation",
+    icon: "$(sparkle)",
+  },
 ];
 
 const explorerContextMenuEntries: ContextMenuEntries = [
@@ -121,15 +140,15 @@ const explorerContextMenuEntries: ContextMenuEntries = [
   },
   {
     id: "1ureka.openFileSystemFromExplorer",
-    title: "以檔案系統瀏覽器顯示",
+    title: "在系統瀏覽器中顯示",
     when: "explorerResourceIsFolder",
-    group: "navigation@100",
+    group: "extension@100",
   },
   {
     id: "1ureka.openImageWallFromExplorer",
-    title: "以圖片牆顯示",
+    title: "在圖片牆中顯示",
     when: "explorerResourceIsFolder",
-    group: "navigation@101",
+    group: "extension@101",
   },
 ];
 
@@ -164,7 +183,7 @@ const webviewContextMenuEntries: WebviewContextMenuEntries = [
   },
   {
     id: "1ureka.imageViewer.eyeDropper",
-    title: "吸取顏色並複製到剪貼簿",
+    title: "吸取顏色並複製",
     webviewId: "1ureka.imageViewer",
     group: "navigation@100",
   },
@@ -285,8 +304,9 @@ const customEditors: CustomEditor[] = [
  * @returns 包含 commands、customEditors、menus 和 submenus 的完整 contributes 物件
  */
 export function generateContribute() {
-  const allCommandIds = new Set<(typeof commandIds)[number]>();
+  const allCommandIds = new Set<CommandId>();
   const commandTitleMap = new Map<string, string>();
+  const commandIconMap = new Map<string, `$(${string})`>();
   const submenus: Array<{ id: string; label: string }> = [];
   const submenuMenus: Record<string, Array<{ command?: string; submenu?: string; group?: string }>> = {};
 
@@ -297,6 +317,7 @@ export function generateContribute() {
   function extractFromCommandEntry(entry: CommandEntry): void {
     allCommandIds.add(entry.id);
     commandTitleMap.set(entry.id, entry.title);
+    if (entry.icon) commandIconMap.set(entry.id, entry.icon);
   }
 
   /**
@@ -346,9 +367,11 @@ export function generateContribute() {
 
   // 收集來自各個來源的命令和子選單
   extract(commandPaletteEntries);
+  extract(explorerTitleMenuEntries);
   extract(explorerContextMenuEntries);
-  extract(webviewContextMenuEntries);
+  extract(editorTitleMenuEntries);
   extract(editorTitleContextMenuEntries);
+  extract(webviewContextMenuEntries);
 
   // ---------------------------------------------------------------------------
 
@@ -357,10 +380,11 @@ export function generateContribute() {
    * @returns 命令註冊陣列
    */
   function generateCommandsRegistration() {
-    return Array.from(allCommandIds).map((id) => ({
-      command: id,
-      title: commandTitleMap.get(id) || id,
-    }));
+    return Array.from(allCommandIds).map((id) => {
+      const base = { command: id, title: commandTitleMap.get(id) || id };
+      const icon = commandIconMap.get(id);
+      return icon ? { ...base, icon } : base;
+    });
   }
 
   /**
@@ -406,6 +430,8 @@ export function generateContribute() {
   const commands = generateCommandsRegistration();
   const commandPaletteMenu = generateCommandPaletteRegistration(commandPaletteEntries);
   const explorerContextMenu = generateMenuRegistration(explorerContextMenuEntries);
+  const explorerTitleMenu = generateMenuRegistration(explorerTitleMenuEntries);
+  const editorTitleMenu = generateMenuRegistration(editorTitleMenuEntries);
   const editorTitleContextMenu = generateMenuRegistration(editorTitleContextMenuEntries);
   const webviewContextMenu = generateWebviewMenuRegistration(webviewContextMenuEntries);
 
@@ -418,6 +444,8 @@ export function generateContribute() {
     "explorer/context": explorerContextMenu,
     "editor/title/context": editorTitleContextMenu,
     "webview/context": webviewContextMenu,
+    "view/title": explorerTitleMenu,
+    "editor/title": editorTitleMenu,
     ...submenuMenus,
   };
 
