@@ -32,7 +32,7 @@ type TableTextColumn = {
 type TableColumn = OneOf<[TableIconColumn, TableTextColumn]>;
 
 /**
- * 定義檔案系統表格的所有 column 及其屬性
+ * 定義系統瀏覽器表格的所有 column 及其屬性
  */
 const tableColumns: TableColumn[] = [
   {

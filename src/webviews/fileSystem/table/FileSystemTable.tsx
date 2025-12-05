@@ -113,7 +113,7 @@ const TableBody = () => {
 };
 
 /**
- * 用於顯示檔案系統的表格組件
+ * 用於顯示系統瀏覽器的表格組件
  */
 const FileSystemTable = () => {
   const isCurrentRoot = fileSystemDataStore((state) => state.isCurrentRoot);

@@ -23,7 +23,7 @@ type OpenInTargetAPI = { id: "openInTarget"; handler: typeof handleOpenInTarget 
 type OpenPathInputBoxAPI = { id: "openPathInputBox"; handler: typeof handleOpenPathInputBox };
 
 /**
- * 提供檔案系統面板的管理功能，包括創建和獲取當前面板
+ * 提供系統瀏覽器面板的管理功能，包括創建和獲取當前面板
  */
 function FileSystemPanelProvider(context: vscode.ExtensionContext) {
   const panelManager = createWebviewPanelManager(context);
@@ -32,7 +32,7 @@ function FileSystemPanelProvider(context: vscode.ExtensionContext) {
     const initialData = handleInitialData({ dirPath });
     const panel = panelManager.create<FileSystemInitialData>({
       panelId: "1ureka.fileSystem",
-      panelTitle: "檔案系統",
+      panelTitle: "系統瀏覽器",
       webviewType: "fileSystem",
       extensionUri: context.extensionUri,
       resourceUri: vscode.Uri.file(dirPath),

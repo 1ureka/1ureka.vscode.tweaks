@@ -7,7 +7,7 @@ import { forwardCommandToWebview } from "@/utils/message_host";
 import { createCommandManager } from "@/utils/command";
 
 /**
- * 註冊檔案系統相關命令與面板
+ * 註冊系統瀏覽器相關命令與面板
  */
 export function registerFileSystemCommands(context: vscode.ExtensionContext) {
   const fileSystemProvider = FileSystemPanelProvider(context);
@@ -16,7 +16,7 @@ export function registerFileSystemCommands(context: vscode.ExtensionContext) {
   /** 開啟面板，從檔案總管右鍵開啟 */
   commandManager.register("1ureka.openFileSystemFromExplorer", (uri: vscode.Uri) => {
     if (!uri || !uri.fsPath) {
-      vscode.window.showErrorMessage("請選擇一個資料夾來開啟檔案系統");
+      vscode.window.showErrorMessage("請選擇一個資料夾來開啟系統瀏覽器");
     } else {
       fileSystemProvider.createPanel(uri.fsPath);
     }
