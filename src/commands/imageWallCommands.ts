@@ -9,12 +9,22 @@ export function registerImageWallCommands(context: vscode.ExtensionContext) {
   const commandManager = createCommandManager(context);
   const imageWallPanelProvider = ImageWallPanelProvider(context);
 
-  commandManager.register("1ureka.openImageWallFromExplorer", (uri: vscode.Uri) => {
-    if (!uri || !uri.fsPath) vscode.window.showErrorMessage("請選擇一個資料夾來開啟圖片牆");
-    else imageWallPanelProvider.createPanel(uri.fsPath);
+  commandManager.register("1ureka.imageWall.openFromPath", async (params: vscode.Uri | string | undefined) => {
+    if (params instanceof vscode.Uri) {
+      imageWallPanelProvider.createPanel(params.fsPath);
+    } else if (typeof params === "string") {
+      imageWallPanelProvider.createPanel(params);
+    } else {
+      const { workspaceFolders } = vscode.workspace;
+      if (workspaceFolders?.length) {
+        imageWallPanelProvider.createPanel(workspaceFolders[0].uri.fsPath);
+      } else {
+        vscode.window.showErrorMessage("請提供資料夾路徑或先開啟一個工作區資料夾");
+      }
+    }
   });
 
-  commandManager.register("1ureka.openImageWall", async () => {
+  commandManager.register("1ureka.imageWall.openFromDialog", async () => {
     const folders = await vscode.window.showOpenDialog({
       canSelectFiles: false,
       canSelectFolders: true,
@@ -24,10 +34,6 @@ export function registerImageWallCommands(context: vscode.ExtensionContext) {
 
     if (!folders || folders.length === 0) return;
     else imageWallPanelProvider.createPanel(folders[0].fsPath);
-  });
-
-  commandManager.registerInternal("1ureka.imageWall.openImageWallFromFolder", (folderPath: string) => {
-    imageWallPanelProvider.createPanel(folderPath);
   });
 
   commandManager.register("1ureka.imageWall.setLayoutStandard", () => {

@@ -146,7 +146,7 @@ const handleOpenInTarget = async (params: { dirPath: string; target: "workspace"
     return;
   }
   if (target === "imageWall") {
-    vscode.commands.executeCommand("1ureka.imageWall.openImageWallFromFolder", dirPath);
+    vscode.commands.executeCommand("1ureka.imageWall.openFromPath", dirPath);
     return;
   }
 };

@@ -13,8 +13,8 @@ type CommandId =
   | "1ureka.external.openWithPainter"
   | "1ureka.external.openWithBrowser"
   // Image Wall Commands
-  | "1ureka.openImageWall"
-  | "1ureka.openImageWallFromExplorer"
+  | "1ureka.imageWall.openFromPath"
+  | "1ureka.imageWall.openFromDialog"
   | "1ureka.imageWall.setLayoutStandard"
   | "1ureka.imageWall.setLayoutWoven"
   | "1ureka.imageWall.setLayoutMasonry"
@@ -92,7 +92,7 @@ type CustomEditor = {
 const commandPaletteEntries: CommandPaletteEntries = [
   { id: "1ureka.external.openBlender", title: "開啟 Blender", when: "isWindows" },
   { id: "1ureka.external.openPainter", title: "開啟 Painter", when: "isWindows" },
-  { id: "1ureka.openImageWall", title: "開啟圖片牆", icon: "$(repo)" },
+  { id: "1ureka.imageWall.openFromDialog", title: "開啟圖片牆", icon: "$(repo)" },
   { id: "1ureka.openFileSystem", title: "開啟系統瀏覽器", icon: "$(folder-library)" },
   { id: "1ureka.injectStyles", title: "注入自訂樣式" },
   { id: "1ureka.restoreStyles", title: "還原樣式設定" },
@@ -145,7 +145,7 @@ const explorerContextMenuEntries: ContextMenuEntries = [
     group: "extension@100",
   },
   {
-    id: "1ureka.openImageWallFromExplorer",
+    id: "1ureka.imageWall.openFromPath",
     title: "在圖片牆中顯示",
     when: "explorerResourceIsFolder",
     group: "extension@101",
