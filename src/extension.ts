@@ -5,6 +5,7 @@ import { registerImageViewerCommands } from "./commands/imageViewerCommands";
 import { registerFileMetadataCommands } from "./commands/fileMetadataCommands";
 import { registerFileSystemCommands } from "./commands/fileSystemCommands";
 import { registerInjectStylesCommands } from "./commands/injectStylesCommands";
+import { registerNavigationCommands } from "./commands/navigationCommands";
 
 export function activate(context: vscode.ExtensionContext) {
   if (process.platform === "win32") {
@@ -16,6 +17,7 @@ export function activate(context: vscode.ExtensionContext) {
   registerFileMetadataCommands(context);
   registerFileSystemCommands(context);
   registerInjectStylesCommands(context);
+  registerNavigationCommands(context);
 }
 
 export function deactivate() {}

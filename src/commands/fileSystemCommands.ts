@@ -7,23 +7,28 @@ import { forwardCommandToWebview } from "@/utils/message_host";
 import { createCommandManager } from "@/utils/command";
 
 /**
- * 註冊檔案系統相關命令與面板
+ * 註冊系統瀏覽器相關命令與面板
  */
 export function registerFileSystemCommands(context: vscode.ExtensionContext) {
   const fileSystemProvider = FileSystemPanelProvider(context);
   const commandManager = createCommandManager(context);
 
-  /** 開啟面板，從檔案總管右鍵開啟 */
-  commandManager.register("1ureka.openFileSystemFromExplorer", (uri: vscode.Uri) => {
-    if (!uri || !uri.fsPath) {
-      vscode.window.showErrorMessage("請選擇一個資料夾來開啟檔案系統");
+  commandManager.register("1ureka.fileSystem.openFromPath", async (params: vscode.Uri | string | undefined) => {
+    if (params instanceof vscode.Uri) {
+      fileSystemProvider.createPanel(params.fsPath);
+    } else if (typeof params === "string") {
+      fileSystemProvider.createPanel(params);
     } else {
-      fileSystemProvider.createPanel(uri.fsPath);
+      const { workspaceFolders } = vscode.workspace;
+      if (workspaceFolders?.length) {
+        fileSystemProvider.createPanel(workspaceFolders[0].uri.fsPath);
+      } else {
+        vscode.window.showErrorMessage("請提供資料夾路徑或先開啟一個工作區資料夾");
+      }
     }
   });
 
-  /** 開啟面板，從命令選單面板開啟 */
-  commandManager.register("1ureka.openFileSystem", async () => {
+  commandManager.register("1ureka.fileSystem.openFromDialog", async () => {
     const folders = await vscode.window.showOpenDialog({
       canSelectFiles: false,
       canSelectFolders: true,
@@ -31,10 +36,8 @@ export function registerFileSystemCommands(context: vscode.ExtensionContext) {
       openLabel: "選擇資料夾",
     });
 
-    // 不須要顯示錯誤訊息，因為可能使用者只是取消選擇
-    if (folders && folders.length > 0) {
-      fileSystemProvider.createPanel(folders[0].fsPath);
-    }
+    if (!folders || folders.length === 0) return;
+    else fileSystemProvider.createPanel(folders[0].fsPath);
   });
 
   commandManager.register("1ureka.fileSystem.refresh", () => {

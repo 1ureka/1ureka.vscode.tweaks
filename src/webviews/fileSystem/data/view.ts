@@ -5,7 +5,7 @@ import type { InspectDirectoryEntry } from "@/utils/system";
 import type { Prettify } from "@/utils";
 
 // ----------------------------------------------------------------------------
-// 定義檔案系統可以如何被檢視的狀態
+// 定義系統瀏覽器可以如何被檢視的狀態
 // ----------------------------------------------------------------------------
 
 type FileProperties = Prettify<InspectDirectoryEntry & { icon: `codicon codicon-${string}` }>;
@@ -141,7 +141,7 @@ fileSystemViewStore.subscribe(handleDataUpdate);
 fileSystemDataStore.subscribe(handleDataUpdate);
 
 // ----------------------------------------------------------------------------
-// 定義用於更改檔案系統檢視狀態的行為
+// 定義用於更改系統瀏覽器檢視狀態的行為
 // ----------------------------------------------------------------------------
 
 /** 設定排序欄位與順序，如果點擊的是同一欄位，切換順序；否則使用預設升序 */

@@ -5,23 +5,23 @@ import { createCommandManager } from "@/utils/command";
 export function registerExternalAppCommands(context: vscode.ExtensionContext) {
   const commandManager = createCommandManager(context);
 
-  commandManager.register("1ureka.openBlender", () => {
+  commandManager.register("1ureka.external.openBlender", () => {
     handleOpenApp("blender");
   });
 
-  commandManager.register("1ureka.openPainter", () => {
+  commandManager.register("1ureka.external.openPainter", () => {
     handleOpenApp("painter");
   });
 
-  commandManager.register("1ureka.openWithBlender", (uri: vscode.Uri) => {
+  commandManager.register("1ureka.external.openWithBlender", (uri: vscode.Uri) => {
     handleOpenFile(uri);
   });
 
-  commandManager.register("1ureka.openWithPainter", (uri: vscode.Uri) => {
+  commandManager.register("1ureka.external.openWithPainter", (uri: vscode.Uri) => {
     handleOpenFile(uri);
   });
 
-  commandManager.register("1ureka.openWithBrowser", (uri: vscode.Uri) => {
+  commandManager.register("1ureka.external.openWithBrowser", (uri: vscode.Uri) => {
     handleOpenFile(uri);
   });
 }
