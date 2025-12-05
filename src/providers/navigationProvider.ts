@@ -16,13 +16,13 @@ const navigationOptions: NavigationOption[] = [
     label: "系統瀏覽器",
     description: "$(root-folder) 當前目錄",
     detail: "使用系統瀏覽器開啟當前工作目錄",
-    commandId: "1ureka.openFileSystem",
+    commandId: "1ureka.fileSystem.openFromPath",
   },
   {
     label: "系統瀏覽器",
     description: "$(link-external) 指定目錄",
     detail: "在預設的瀏覽器中選擇目錄後以系統瀏覽器開啟",
-    commandId: "1ureka.openFileSystem",
+    commandId: "1ureka.fileSystem.openFromDialog",
   },
   {
     label: "圖片牆",
