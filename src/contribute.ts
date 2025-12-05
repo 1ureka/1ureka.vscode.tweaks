@@ -7,11 +7,11 @@ import type { OneOf } from "@/utils";
 type CommandId =
   | "1ureka.main.openNavigation"
   // External App Commands
-  | "1ureka.openBlender"
-  | "1ureka.openWithBlender"
-  | "1ureka.openPainter"
-  | "1ureka.openWithPainter"
-  | "1ureka.openWithBrowser"
+  | "1ureka.external.openBlender"
+  | "1ureka.external.openWithBlender"
+  | "1ureka.external.openPainter"
+  | "1ureka.external.openWithPainter"
+  | "1ureka.external.openWithBrowser"
   // Image Wall Commands
   | "1ureka.openImageWall"
   | "1ureka.openImageWallFromExplorer"
@@ -90,8 +90,8 @@ type CustomEditor = {
 // ============================================================================
 
 const commandPaletteEntries: CommandPaletteEntries = [
-  { id: "1ureka.openBlender", title: "開啟 Blender", when: "isWindows" },
-  { id: "1ureka.openPainter", title: "開啟 Painter", when: "isWindows" },
+  { id: "1ureka.external.openBlender", title: "開啟 Blender", when: "isWindows" },
+  { id: "1ureka.external.openPainter", title: "開啟 Painter", when: "isWindows" },
   { id: "1ureka.openImageWall", title: "開啟圖片牆", icon: "$(repo)" },
   { id: "1ureka.openFileSystem", title: "開啟系統瀏覽器", icon: "$(folder-library)" },
   { id: "1ureka.injectStyles", title: "注入自訂樣式" },
@@ -121,19 +121,19 @@ const editorTitleMenuEntries: ContextMenuEntries = [
 
 const explorerContextMenuEntries: ContextMenuEntries = [
   {
-    id: "1ureka.openWithBlender",
+    id: "1ureka.external.openWithBlender",
     title: "以 Blender 開啟",
     when: "resourceExtname == .blend",
     group: "navigation@100",
   },
   {
-    id: "1ureka.openWithPainter",
+    id: "1ureka.external.openWithPainter",
     title: "以 Painter 開啟",
     when: "resourceExtname == .spp",
     group: "navigation@100",
   },
   {
-    id: "1ureka.openWithBrowser",
+    id: "1ureka.external.openWithBrowser",
     title: "以網頁瀏覽器開啟",
     when: "resourceExtname == .html",
     group: "navigation@100",
@@ -154,19 +154,19 @@ const explorerContextMenuEntries: ContextMenuEntries = [
 
 const editorTitleContextMenuEntries: ContextMenuEntries = [
   {
-    id: "1ureka.openWithBlender",
+    id: "1ureka.external.openWithBlender",
     title: "以 Blender 開啟",
     when: "resourceExtname == .blend",
     group: "navigation@100",
   },
   {
-    id: "1ureka.openWithPainter",
+    id: "1ureka.external.openWithPainter",
     title: "以 Painter 開啟",
     when: "resourceExtname == .spp",
     group: "navigation@100",
   },
   {
-    id: "1ureka.openWithBrowser",
+    id: "1ureka.external.openWithBrowser",
     title: "以網頁瀏覽器開啟",
     when: "resourceExtname == .html",
     group: "navigation@100",
