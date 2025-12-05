@@ -6,6 +6,7 @@ import { FooterButton, FooterContainer, FooterGroup, FooterGroups } from "./File
 import { fileSystemDataStore } from "../data/data";
 import { fileSystemViewDataStore } from "../data/view";
 import { selectAll, selectInvert, selectNone } from "../data/selection";
+import { useIsBoxSelecting, toggleBoxSelectionMode } from "../data/selection";
 import { setClipboard, useClipboardCount } from "../data/clipboard";
 import { refresh } from "../data/navigate";
 
@@ -20,6 +21,8 @@ const FileSystemFooter = () => {
 
   const clipboardCount = useClipboardCount();
   const clipboardCaption = clipboardCount > 0 ? `剪貼簿有 ${clipboardCount} 個項目` : "剪貼簿是空的";
+
+  const isBoxSelecting = useIsBoxSelecting();
 
   return (
     <FooterContainer>
@@ -58,6 +61,12 @@ const FileSystemFooter = () => {
           <FooterTooltip actionName="反轉選取" actionShortcut={["Ctrl", "I"]}>
             <FooterButton onClick={selectInvert}>
               <i className="codicon codicon-arrow-swap" />
+            </FooterButton>
+          </FooterTooltip>
+
+          <FooterTooltip actionName="框選模式" actionShortcut={["Ctrl", "B"]}>
+            <FooterButton active={isBoxSelecting} onClick={() => toggleBoxSelectionMode()}>
+              <i className="codicon codicon-inspect" />
             </FooterButton>
           </FooterTooltip>
         </FooterGroup>

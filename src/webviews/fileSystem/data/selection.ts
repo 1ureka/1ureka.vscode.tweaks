@@ -1,4 +1,17 @@
+import { create } from "zustand";
 import { fileSystemViewDataStore } from "./view";
+
+const fileSystemBoxSelectionStore = create<{ isBoxSelecting: boolean }>(() => ({ isBoxSelecting: false }));
+
+/** 開關框選模式 */
+const toggleBoxSelectionMode = (forceMode?: boolean) => {
+  fileSystemBoxSelectionStore.setState((state) => ({ isBoxSelecting: forceMode ?? !state.isBoxSelecting }));
+};
+
+/** 取得是否處於框選模式的 hook */
+const useIsBoxSelecting = () => {
+  return fileSystemBoxSelectionStore((state) => state.isBoxSelecting);
+};
 
 /** 選取某個項目 */
 const selectRow = (params: { index: number; isAdditive: boolean; isRange: boolean }) => {
@@ -80,9 +93,24 @@ const registerSelectionEvents = () => {
         e.preventDefault();
         selectInvert();
       }
+
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "b") {
+        e.preventDefault();
+        e.stopPropagation();
+        toggleBoxSelectionMode();
+      }
+
+      const { isBoxSelecting } = fileSystemBoxSelectionStore.getState();
+
+      if (e.key === "Escape" && isBoxSelecting) {
+        e.preventDefault();
+        e.stopPropagation();
+        toggleBoxSelectionMode(false);
+      }
     },
     true
   );
 };
 
+export { toggleBoxSelectionMode, useIsBoxSelecting };
 export { selectRow, selectNone, selectAll, selectInvert, registerSelectionEvents };
