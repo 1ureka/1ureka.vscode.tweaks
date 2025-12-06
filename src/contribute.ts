@@ -37,6 +37,8 @@ type CommandId =
   | "1ureka.fileSystem.filterAll"
   | "1ureka.fileSystem.filterFolders"
   | "1ureka.fileSystem.filterFiles"
+  | "1ureka.fileSystem.copyPaths"
+  | "1ureka.fileSystem.copyNames"
   // Inject Styles Commands
   | "1ureka.injectStyles"
   | "1ureka.restoreStyles"
@@ -257,10 +259,23 @@ const webviewContextMenuEntries: WebviewContextMenuEntries = [
       { id: "1ureka.fileSystem.filterFiles", title: "僅顯示檔案", group: "1_filter@3" },
     ],
   },
+  {
+    id: "1ureka.fileSystem.copyPaths",
+    title: "複製路徑",
+    webviewId: "1ureka.fileSystem",
+    // group: "5_cutcopypaste@1", 這是預設的位置
+    group: "6_cutcopypaste@1",
+  },
+  {
+    id: "1ureka.fileSystem.copyNames",
+    title: "複製名稱",
+    webviewId: "1ureka.fileSystem",
+    group: "6_cutcopypaste@1",
+  },
 ];
 
 const configuration = {
-  title: "1ureka VSCode 擴展設定",
+  title: "1ureka's Extensions",
   properties: {
     "1ureka.vscodeResourcePath": {
       type: "string",
