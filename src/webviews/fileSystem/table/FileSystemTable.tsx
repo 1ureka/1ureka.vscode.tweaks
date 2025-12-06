@@ -98,7 +98,10 @@ const TableBody = () => {
   const virtualItemWrapperSx: SxProps = { position: "absolute", top: 0, left: 0, width: 1 };
 
   return (
-    <Box sx={{ position: "relative", height: `${rowVirtualizer.getTotalSize()}px`, width: 1 }}>
+    <Box
+      id="file-system-virtualizer"
+      sx={{ position: "relative", height: `${rowVirtualizer.getTotalSize()}px`, width: 1 }}
+    >
       {rowVirtualizer.getVirtualItems().map(({ key, size, start, index }) => (
         <Box key={key} sx={{ ...virtualItemWrapperSx, height: `${size}px`, transform: `translateY(${start}px)` }}>
           <TableRow

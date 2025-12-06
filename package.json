@@ -3,7 +3,7 @@
   "author": "1ureka",
   "publisher": "1ureka",
   "description": "A Visual Studio Code extension developed for personal use.",
-  "version": "0.4.8",
+  "version": "0.4.9",
   "main": "./dist/extension.js",
   "type": "module",
   "engines": {
