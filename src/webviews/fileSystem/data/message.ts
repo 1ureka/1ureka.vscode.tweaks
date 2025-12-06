@@ -1,6 +1,7 @@
 import { onReceiveCommand } from "@/utils/message_client";
 import { refresh } from "./navigate";
 import { setFilter } from "./view";
+import { handleCopyToSystem } from "./clipboard";
 import { createNewFile, createNewFolder, openInWorkspace, openInTerminal, openInImageWall } from "./action";
 import type { ReadDirAPI, CreateDirAPI, CreateFileAPI } from "@/providers/fileSystemProvider";
 
@@ -16,6 +17,11 @@ type OpenInWorkspaceAPI = { id: "openInWorkspace"; handler: () => void };
 
 export type { OpenInWorkspaceAPI, OpenInTerminalAPI, OpenInImageWallAPI };
 
+type CopyNameAPI = { id: "copyNamesToSystemClipboard"; handler: () => void };
+type CopyPathAPI = { id: "copyPathsToSystemClipboard"; handler: () => void };
+
+export type { CopyNameAPI, CopyPathAPI };
+
 const registerMessageEvents = async () => {
   onReceiveCommand<ReadDirAPI>("readDirectory", refresh);
   onReceiveCommand<CreateDirAPI>("createDir", createNewFolder);
@@ -26,6 +32,8 @@ const registerMessageEvents = async () => {
   onReceiveCommand<FilterAllAPI>("filterAll", () => setFilter("all"));
   onReceiveCommand<FilterFoldersAPI>("filterFolders", () => setFilter("folder"));
   onReceiveCommand<FilterFilesAPI>("filterFiles", () => setFilter("file"));
+  onReceiveCommand<CopyNameAPI>("copyNamesToSystemClipboard", () => handleCopyToSystem({ mode: "names" }));
+  onReceiveCommand<CopyPathAPI>("copyPathsToSystemClipboard", () => handleCopyToSystem({ mode: "paths" }));
 };
 
 export { registerMessageEvents };

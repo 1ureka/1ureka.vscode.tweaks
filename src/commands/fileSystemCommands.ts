@@ -2,6 +2,7 @@ import * as vscode from "vscode";
 import type { CreateFileAPI, CreateDirAPI, ReadDirAPI } from "@/providers/fileSystemProvider";
 import type { OpenInWorkspaceAPI, OpenInTerminalAPI, OpenInImageWallAPI } from "@/webviews/fileSystem/data/message";
 import type { FilterAllAPI, FilterFoldersAPI, FilterFilesAPI } from "@/webviews/fileSystem/data/message";
+import type { CopyNameAPI, CopyPathAPI } from "@/webviews/fileSystem/data/message";
 import { FileSystemPanelProvider } from "@/providers/fileSystemProvider";
 import { forwardCommandToWebview } from "@/utils/message_host";
 import { createCommandManager } from "@/utils/command";
@@ -92,5 +93,17 @@ export function registerFileSystemCommands(context: vscode.ExtensionContext) {
     const panel = fileSystemProvider.getCurrentPanel();
     if (!panel) return;
     forwardCommandToWebview<FilterFilesAPI>(panel, "filterFiles");
+  });
+
+  commandManager.register("1ureka.fileSystem.copyNames", () => {
+    const panel = fileSystemProvider.getCurrentPanel();
+    if (!panel) return;
+    forwardCommandToWebview<CopyNameAPI>(panel, "copyNamesToSystemClipboard");
+  });
+
+  commandManager.register("1ureka.fileSystem.copyPaths", () => {
+    const panel = fileSystemProvider.getCurrentPanel();
+    if (!panel) return;
+    forwardCommandToWebview<CopyPathAPI>(panel, "copyPathsToSystemClipboard");
   });
 }

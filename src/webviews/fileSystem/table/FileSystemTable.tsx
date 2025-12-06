@@ -105,6 +105,7 @@ const TableBody = () => {
       {rowVirtualizer.getVirtualItems().map(({ key, size, start, index }) => (
         <Box key={key} sx={{ ...virtualItemWrapperSx, height: `${size}px`, transform: `translateY(${start}px)` }}>
           <TableRow
+            isDraggable={rows[index].rawFileType === "file"}
             row={rows[index]}
             onClick={createHandleRowClick(rows[index].rawFileType, rows[index].filePath, index)}
             sx={createRowBackgroundSx({ index: isCurrentRoot ? index : index + 1, selected: Boolean(selected[index]) })}

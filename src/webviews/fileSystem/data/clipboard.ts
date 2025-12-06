@@ -1,6 +1,8 @@
 import { create } from "zustand";
+import { invoke } from "@/utils/message_client";
 import { fileSystemViewDataStore } from "./view";
 import type { InspectDirectoryEntry } from "@/utils/system";
+import type { SetSystemClipboardAPI } from "@/providers/fileSystemProvider";
 
 type FileSystemClipboard = {
   entries: { [filePath: string]: { entry: InspectDirectoryEntry; type: "copy" | "cut" } };
@@ -10,7 +12,9 @@ const fileSystemClipboardStore = create<FileSystemClipboard>(() => ({
   entries: {},
 }));
 
-/** 將目前選取的檔案設定到剪貼簿，會覆蓋先前的內容 */
+/**
+ * 將目前選取的檔案設定到剪貼簿，會覆蓋先前的內容
+ */
 const setClipboard = ({ type }: { type: "copy" | "cut" }) => {
   const selected = fileSystemViewDataStore.getState().selected;
   const files = fileSystemViewDataStore.getState().entries;
@@ -28,32 +32,60 @@ const setClipboard = ({ type }: { type: "copy" | "cut" }) => {
   fileSystemClipboardStore.setState({ entries: clipboardEntries });
 };
 
-/** 清空剪貼簿 */
-const clearClipboard = () => {
-  fileSystemClipboardStore.setState({ entries: {} });
-};
-
-/** 獲取剪貼簿中的項目 (給 react 外部使用) */
+/**
+ * 獲取剪貼簿中的項目 (給 react 外部使用)
+ */
 const getClipboardList = () => {
   const entries = fileSystemClipboardStore.getState().entries;
   return Object.values(entries).map(({ entry, type }) => ({ entry, type }));
 };
 
-/** 一個 filePath 是否在剪貼簿中的 hook */
+/**
+ * 將選擇中的項目的路徑寫入系統剪貼簿
+ */
+const handleCopyToSystem = ({ mode }: { mode: "paths" | "names" }) => {
+  const selected = fileSystemViewDataStore.getState().selected;
+  const files = fileSystemViewDataStore.getState().entries;
+  const fileList = files.filter((_, index) => Boolean(selected[index]));
+
+  if (fileList.length === 0) return;
+
+  if (mode === "names") {
+    const names = fileList.map(({ fileName }) => fileName).join("\n");
+    return invoke<SetSystemClipboardAPI>("setSystemClipboard", { text: names });
+  } else if (mode === "paths") {
+    const paths = fileList.map(({ filePath }) => filePath).join("\n");
+    return invoke<SetSystemClipboardAPI>("setSystemClipboard", { text: paths });
+  }
+};
+
+export { setClipboard, getClipboardList, handleCopyToSystem };
+
+// ------------------------------------------------------------------------------
+
+/**
+ * 給定的 filePath 是否在剪貼簿中的 hook
+ */
 const useIsInClipboard = (filePath: string): "copy" | "cut" | false => {
   const entries = fileSystemClipboardStore((state) => state.entries);
   return entries[filePath]?.type ?? false;
 };
 
-/** 目前剪貼簿中有的項目數量的 hook */
+/**
+ * 目前剪貼簿中有的項目數量的 hook
+ */
 const useClipboardCount = () => {
   const entries = fileSystemClipboardStore((state) => state.entries);
   return Object.keys(entries).length;
 };
 
-export { setClipboard, clearClipboard, getClipboardList, useIsInClipboard, useClipboardCount };
+export { useIsInClipboard, useClipboardCount };
 
-/** 註冊剪貼簿事件 */
+// ------------------------------------------------------------------------------
+
+/**
+ * 註冊剪貼簿事件
+ */
 const registerClipboardEvents = () => {
   window.addEventListener("copy", () => setClipboard({ type: "copy" }));
   window.addEventListener("cut", () => setClipboard({ type: "cut" }));

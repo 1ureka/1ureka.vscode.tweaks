@@ -176,6 +176,13 @@ const handleOpenPathInputBox = async (params: { dirPath: string }) => {
   return null;
 };
 
-export { handleShowInformationMessage, handleInitialData };
+/**
+ * 將提供的字串寫入系統剪貼簿
+ */
+const handleSetSystemClipboard = async (params: { text: string }) => {
+  vscode.env.clipboard.writeText(params.text);
+};
+
+export { handleShowInformationMessage, handleInitialData, handleSetSystemClipboard };
 export { handleCreateFile, handleCreateDir };
 export { handleReadDirectory, handleOpenFile, handleOpenInTarget, handleOpenPathInputBox };
