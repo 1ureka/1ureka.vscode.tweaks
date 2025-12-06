@@ -13,6 +13,11 @@ const useIsBoxSelecting = () => {
   return fileSystemBoxSelectionStore((state) => state.isBoxSelecting);
 };
 
+/** 取得是否處於框選模式的普通函式 */
+const getIsBoxSelecting = () => {
+  return fileSystemBoxSelectionStore.getState().isBoxSelecting;
+};
+
 /** 選取某個項目 */
 const selectRow = (params: { index: number; isAdditive: boolean; isRange: boolean }) => {
   const { index: currentIndex, isAdditive, isRange } = params;
@@ -112,5 +117,5 @@ const registerSelectionEvents = () => {
   );
 };
 
-export { toggleBoxSelectionMode, useIsBoxSelecting };
+export { toggleBoxSelectionMode, useIsBoxSelecting, getIsBoxSelecting };
 export { selectRow, selectNone, selectAll, selectInvert, registerSelectionEvents };

@@ -1,6 +1,6 @@
 import React from "react";
 import { Box } from "@mui/material";
-import { toggleBoxSelectionMode, useIsBoxSelecting } from "@/webviews/fileSystem/data/selection";
+import { getIsBoxSelecting, toggleBoxSelectionMode, useIsBoxSelecting } from "@/webviews/fileSystem/data/selection";
 import { tableRowHeight } from "@/webviews/fileSystem/table/FileSystemTableRow";
 import { fileSystemViewDataStore } from "../data/view";
 
@@ -148,7 +148,8 @@ const handleMouseDown = (e: React.MouseEvent) => {
     handleAutoScroll(clientY, scrollContainer);
     handleCaculateSelection(clientY);
     handleUpdateBox({ clientX, clientY });
-    requestAnimationFrame(handleUpdate);
+    if (!getIsBoxSelecting()) handleMouseUp();
+    else requestAnimationFrame(handleUpdate);
   };
 
   const handleMouseMove = (event: MouseEvent) => {
