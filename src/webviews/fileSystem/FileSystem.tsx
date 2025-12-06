@@ -1,52 +1,29 @@
 import React from "react";
-import { Box, LinearProgress } from "@mui/material";
+import { Box } from "@mui/material";
 import { FileSystemHeader } from "./header/FileSystemHeader";
 import { FileSystemTable } from "./table/FileSystemTable";
 import { FileSystemFooter } from "./footer/FileSystemFooter";
-import { fileSystemLoadingStore } from "./data/queue";
-
-const loadingContainerSx = {
-  position: "absolute",
-  inset: "0",
-  pointerEvents: "none",
-  display: "flex",
-  alignItems: "flex-end",
-  justifyContent: "stretch",
-  animation: "progressDelay 0.15s steps(1, end)",
-  "@keyframes progressDelay": {
-    from: { opacity: 0 },
-    to: { opacity: 1 },
-  },
-};
-
-const LoadingDisplay = () => {
-  const loading = fileSystemLoadingStore((state) => state.loading);
-
-  if (!loading) return null;
-
-  return (
-    <Box sx={loadingContainerSx}>
-      <LinearProgress sx={{ width: 1, height: 6 }} color="info" />
-    </Box>
-  );
-};
-
-const FileSystemBodyWrapper = ({ children }: { children: React.ReactNode }) => (
-  <Box
-    id="file-system-body-wrapper"
-    sx={{ position: "relative", display: "flex", flexDirection: "column", overflow: "auto", flex: 1, minHeight: 0 }}
-  >
-    {children}
-  </Box>
-);
+import { LoadingDisplay } from "./global/LoadingDisplay";
+import { BoxSelectionOverlay } from "./global/BoxSelectionOverlay";
 
 const FileSystem = () => (
   <Box sx={{ height: "100vh", display: "flex", flexDirection: "column" }}>
-    <FileSystemBodyWrapper>
-      <FileSystemHeader />
-      <FileSystemTable />
+    {/* 外層讓 LoadingDisplay 可以拿到 scrollContainer 的底部，但不被 scroll 影響 */}
+    <Box sx={{ position: "relative", flex: 1, minHeight: 0 }}>
+      {/* 外層提供 scollContainer，內層讓 BoxSelectionOverlay 可以拿到所有可滾動的總高度 */}
+      <Box id="file-system-body-wrapper" sx={{ position: "relative", overflow: "auto", height: 1, minHeight: 0 }}>
+        <Box sx={{ position: "relative", display: "flex", flexDirection: "column", minHeight: 1 }}>
+          <FileSystemHeader />
+
+          <FileSystemTable />
+
+          <BoxSelectionOverlay />
+        </Box>
+      </Box>
+
       <LoadingDisplay />
-    </FileSystemBodyWrapper>
+    </Box>
+
     <FileSystemFooter />
   </Box>
 );
