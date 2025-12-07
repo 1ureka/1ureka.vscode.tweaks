@@ -78,15 +78,9 @@ const FileSystemFooter = () => {
             {clipboardCaption}
           </Typography>
 
-          <FooterTooltip actionName="複製選取項目到剪貼簿" actionShortcut={["Ctrl", "C"]}>
-            <FooterButton disabled={selectedCount === 0} onClick={() => setClipboard({ type: "copy" })}>
+          <FooterTooltip actionName="將選取紀錄到剪貼簿" actionShortcut={["Ctrl", "C"]}>
+            <FooterButton disabled={selectedCount === 0} onClick={setClipboard}>
               <i className="codicon codicon-git-stash-apply" />
-            </FooterButton>
-          </FooterTooltip>
-
-          <FooterTooltip actionName="剪下選取項目到剪貼簿" actionShortcut={["Ctrl", "X"]}>
-            <FooterButton disabled={selectedCount === 0} onClick={() => setClipboard({ type: "cut" })}>
-              <i className="codicon codicon-git-stash-pop" />
             </FooterButton>
           </FooterTooltip>
 
