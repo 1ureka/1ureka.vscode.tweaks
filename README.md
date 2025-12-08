@@ -277,7 +277,7 @@ invoke("id", {...}); // 錯誤：無法將類型 'string' 分配給類型 'never
 - Webview Panel 建立、追蹤、銷毀
 - StatusBar 生命週期管理
 - 當有 Webview 需求時，將 Handlers 的處理函數包裝為 API，以及使用 `onDidReceiveInvoke`
-- 為 Handlers 提供流程依賴注入，比如將 `vscode.window.showQuickPick` 作為 `getActionType` 的參數傳入
+- 為 Handlers 提供流程依賴注入，比如將 `vscode.window.showQuickPick` 作為 `getActionType` 參數傳入
 
 ## Handlers
 
@@ -287,7 +287,7 @@ invoke("id", {...}); // 錯誤：無法將類型 'string' 分配給類型 'never
 
 - 單純接收參數 → 使用 nodeJS 模組 → 回傳結果的純函數
 - 用 `fs`、`path` 等模組進行檔案系統操作的非同步函數
-- 處理圖片（`sharp`）等二進位檔案的函數
+- 處理圖片（`sharp`）等二進位檔案的非同步函數
 - 若是流程式的，則會在簽名中帶有 `getInput`、`getActionType` 等 `() => Promise<any>` 的依賴需求，由 Providers 注入
 
 ## Webviews
