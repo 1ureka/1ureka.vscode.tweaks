@@ -38,6 +38,14 @@ type Promised<T extends (...args: any) => any> = Promise<Awaited<ReturnType<T>>>
  */
 type PromiseOpt<T extends any> = Promise<T | undefined>;
 
+/**
+ * 一個可以執行需要報告進度的函數的函數
+ */
+type WithProgress<T extends unknown = void> = (
+  taskName: string,
+  taskFn: (report: (increment: number) => void) => Promise<T>
+) => Promise<T>;
+
 // ------------------------------------------------------------------------------
 
 type Success<T> = { data: T; error: null };
@@ -71,5 +79,5 @@ function defer<T>() {
   return { promise, resolve, reject };
 }
 
-export type { Prettify, OneOf, Promised, PromiseOpt };
+export type { Prettify, OneOf, Promised, PromiseOpt, WithProgress };
 export { tryCatch, defer };
