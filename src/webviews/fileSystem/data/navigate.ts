@@ -8,7 +8,7 @@ import type { ReadDirAPI, OpenPathInputBoxAPI } from "@/providers/fileSystemProv
  */
 const refresh = () => {
   const { currentPath } = fileSystemDataStore.getState();
-  navigateToFolder({ dirPath: currentPath });
+  return navigateToFolder({ dirPath: currentPath });
 };
 
 /**

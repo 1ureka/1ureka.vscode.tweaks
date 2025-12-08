@@ -60,10 +60,10 @@ const tableRowBadgeSx: SxProps = {
 /**
  * 用於呈現某 row 正在被複製或剪下的徽章
  */
-const TableRowBadge = ({ mode }: { mode: "copy" | "cut" }) => (
-  <Box sx={{ ...tableRowBadgeAnchorSx, color: mode === "copy" ? "text.secondary" : "text.primary" }}>
+const TableRowBadge = () => (
+  <Box sx={{ ...tableRowBadgeAnchorSx, color: "text.secondary" }}>
     <Box sx={tableRowBadgeSx}>
-      {mode === "copy" ? <i className="codicon codicon-copy" /> : <i className="codicon codicon-go-to-file" />}
+      <i className="codicon codicon-copy" />
     </Box>
   </Box>
 );
@@ -139,7 +139,7 @@ const TableRow = ({ sx, row, isDraggable, ...props }: TableRowProps) => {
       {isInClipboard && (
         <Box sx={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
           <TableRowClipboardBorder />
-          <TableRowBadge mode={isInClipboard} />
+          <TableRowBadge />
         </Box>
       )}
     </ButtonBase>
