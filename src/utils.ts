@@ -33,6 +33,11 @@ type OneOf<TypesArray extends any[], Res = never, AllProps = MergeTypes<TypesArr
  */
 type Promised<T extends (...args: any) => any> = Promise<Awaited<ReturnType<T>>>;
 
+/**
+ * Promise<T | undefined> 的語法糖
+ */
+type PromiseOpt<T extends any> = Promise<T | undefined>;
+
 // ------------------------------------------------------------------------------
 
 type Success<T> = { data: T; error: null };
@@ -66,5 +71,5 @@ function defer<T>() {
   return { promise, resolve, reject };
 }
 
-export type { Prettify, OneOf, Promised };
+export type { Prettify, OneOf, Promised, PromiseOpt };
 export { tryCatch, defer };
