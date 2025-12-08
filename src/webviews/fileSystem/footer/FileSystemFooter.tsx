@@ -7,7 +7,7 @@ import { fileSystemDataStore } from "../data/data";
 import { fileSystemViewDataStore } from "../data/view";
 import { selectAll, selectInvert, selectNone } from "../data/selection";
 import { useIsBoxSelecting, toggleBoxSelectionMode } from "../data/selection";
-import { setClipboard, useClipboardCount } from "../data/clipboard";
+import { invokeClipboardPaste, setClipboard, useClipboardCount } from "../data/clipboard";
 import { refresh } from "../data/navigate";
 
 const FileSystemFooter = () => {
@@ -85,7 +85,7 @@ const FileSystemFooter = () => {
           </FooterTooltip>
 
           <FooterTooltip actionName="貼上剪貼簿中的項目" actionShortcut={["Ctrl", "V"]}>
-            <FooterButton>
+            <FooterButton onClick={invokeClipboardPaste} disabled={clipboardCount === 0}>
               <i className="codicon codicon-git-stash" />
             </FooterButton>
           </FooterTooltip>

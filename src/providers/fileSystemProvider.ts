@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 
 import { createWebviewPanelManager } from "@/utils/webview";
-import { handleInitialData, handleShowInformationMessage } from "@/handlers/fileSystemHandlers";
+import { handleInitialData, handlePaste, handleShowInformationMessage } from "@/handlers/fileSystemHandlers";
 import { handleSetSystemClipboard, handleOpenPathInputBox } from "@/handlers/fileSystemHandlers";
 import { handleReadDirectory, handleOpenFile, handleOpenInTarget } from "@/handlers/fileSystemHandlers";
 import { handleCreateFile, handleCreateDir } from "@/handlers/fileSystemHandlers";
@@ -23,6 +23,7 @@ type CreateDirAPI = { id: "createDir"; handler: typeof handleCreateDir };
 type OpenFileAPI = { id: "openFile"; handler: typeof handleOpenFile };
 type OpenInTargetAPI = { id: "openInTarget"; handler: typeof handleOpenInTarget };
 type OpenPathInputBoxAPI = { id: "openPathInputBox"; handler: typeof handleOpenPathInputBox };
+type PasteAPI = { id: "paste"; handler: typeof handlePaste };
 
 /**
  * 提供系統瀏覽器面板的管理功能，包括創建和獲取當前面板
@@ -50,6 +51,7 @@ function FileSystemPanelProvider(context: vscode.ExtensionContext) {
     onDidReceiveInvoke<OpenFileAPI>(panel, "openFile", handleOpenFile);
     onDidReceiveInvoke<OpenInTargetAPI>(panel, "openInTarget", handleOpenInTarget);
     onDidReceiveInvoke<OpenPathInputBoxAPI>(panel, "openPathInputBox", handleOpenPathInputBox);
+    onDidReceiveInvoke<PasteAPI>(panel, "paste", handlePaste);
   };
 
   return { getCurrentPanel: panelManager.getCurrent, createPanel };
@@ -57,5 +59,5 @@ function FileSystemPanelProvider(context: vscode.ExtensionContext) {
 
 export { FileSystemPanelProvider };
 export type { FileSystemInitialData };
-export type { ShowInfoAPI, SetSystemClipboardAPI, ReadDirAPI, CreateFileAPI, CreateDirAPI };
+export type { ShowInfoAPI, SetSystemClipboardAPI, ReadDirAPI, CreateFileAPI, CreateDirAPI, PasteAPI };
 export type { OpenFileAPI, OpenInTargetAPI, OpenPathInputBoxAPI };
