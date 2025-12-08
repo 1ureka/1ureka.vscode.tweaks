@@ -116,7 +116,7 @@ function pathToArray(inputPath: string): string[] {
  * 檢查錯誤物件是否為 Node.js 環境中常見的系統級錯誤 (帶有 string code 屬性)
  */
 function isSystemError(error: unknown): error is Error & { code: string } {
-  return typeof error === "object" && error !== null && "code" in error && typeof (error as any).code === "string";
+  return typeof error === "object" && error !== null && "code" in error && typeof error.code === "string";
 }
 
 export { readDirectory, inspectDirectory, isRootDirectory, pathToArray, isSystemError };
