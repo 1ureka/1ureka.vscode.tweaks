@@ -277,18 +277,18 @@ invoke("id", {...}); // 錯誤：無法將類型 'string' 分配給類型 'never
 - Webview Panel 建立、追蹤、銷毀
 - StatusBar 生命週期管理
 - 當有 Webview 需求時，將 Handlers 的處理函數包裝為 API，以及使用 `onDidReceiveInvoke`
+- 為 Handlers 提供流程依賴注入，比如將 `vscode.window.showQuickPick` 作為 `getActionType` 的參數傳入
 
 ## Handlers
 
-**定位**：所有可被 Commands / Providers 呼叫的「無狀態」處理函數，可以是純函數，也可以是帶有流程控制的非同步函數
+**定位**：所有可被 Commands / Providers 呼叫的「無狀態」處理函數，可以是純函數，也可以是帶有 IO 的非同步函數
 
 **涵蓋範圍**：
 
 - 單純接收參數 → 使用 nodeJS 模組 → 回傳結果的純函數
-- 需要與使用者互動（`vscode.window.showQuickPick`）或顯示進度（`vscode.window.withProgress`）的非同步函數
-- 用 `fs`、`path` 等模組進行檔案系統操作的函數
+- 用 `fs`、`path` 等模組進行檔案系統操作的非同步函數
 - 處理圖片（`sharp`）等二進位檔案的函數
-- 關鍵在於與專案的訊息框架無關
+- 若是流程式的，則會在簽名中帶有 `getInput`、`getActionType` 等 `() => Promise<any>` 的依賴需求，由 Providers 注入
 
 ## Webviews
 
