@@ -3,7 +3,7 @@
   "author": "1ureka",
   "publisher": "1ureka",
   "description": "A Visual Studio Code extension developed for personal use.",
-  "version": "0.4.11",
+  "version": "0.4.12",
   "main": "./dist/extension.js",
   "type": "module",
   "engines": {
@@ -15,7 +15,8 @@
   "scripts": {
     "build": "tsx src/build.ts",
     "compile": "tsc --noEmit",
-    "lint": "eslint . --ext .ts,.tsx"
+    "lint": "eslint . --ext .ts,.tsx",
+    "test": "vitest run"
   },
   "dependencies": {
     "@vscode/codicons": "^0.0.43",
@@ -43,6 +44,7 @@
     "react-zoom-pan-pinch": "^3.7.0",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
+    "vitest": "^4.0.15",
     "zustand": "^5.0.8"
   }
 }

@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unnecessary-type-constraint */
 
 /**
  * 將型別展開成較易閱讀的形式
@@ -33,6 +33,19 @@ type OneOf<TypesArray extends any[], Res = never, AllProps = MergeTypes<TypesArr
  */
 type Promised<T extends (...args: any) => any> = Promise<Awaited<ReturnType<T>>>;
 
+/**
+ * Promise<T | undefined> 的語法糖
+ */
+type PromiseOpt<T extends any> = Promise<T | undefined>;
+
+/**
+ * 一個可以執行需要報告進度的函數的函數
+ */
+type WithProgress<T extends unknown = void> = (
+  taskName: string,
+  taskFn: (report: (increment: number) => void) => Promise<T>
+) => Promise<T>;
+
 // ------------------------------------------------------------------------------
 
 type Success<T> = { data: T; error: null };
@@ -66,5 +79,5 @@ function defer<T>() {
   return { promise, resolve, reject };
 }
 
-export type { Prettify, OneOf, Promised };
+export type { Prettify, OneOf, Promised, PromiseOpt, WithProgress };
 export { tryCatch, defer };
