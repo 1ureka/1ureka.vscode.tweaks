@@ -32,7 +32,7 @@ function openApplication(appName: string, appPath: string, showError: (message: 
     child.on("error", () => showError(`無法啟動 ${displayName}，請確認是否有安裝該應用程式與有足夠的權限`));
     child.unref();
   } catch (e) {
-    showError(`無法啟動 ${displayName}，請確認是否有安裝該應用程式與有足夠的權限`);
+    showError(`無法啟動 ${displayName}: ${e instanceof Error ? e.message : String(e)}`);
   }
 }
 

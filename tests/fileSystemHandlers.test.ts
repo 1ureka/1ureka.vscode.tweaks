@@ -2,9 +2,9 @@ import * as path from "path";
 import * as fs from "fs";
 import * as fsExtra from "fs-extra";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { handleInitialData, handleReadDirectory } from "./fileSystemHandlers";
+import { handleInitialData, handleReadDirectory } from "@/handlers/fileSystemHandlers";
 
-const TEMP_DIR = path.join(process.cwd(), "tests", "temp");
+const TEST_DIR = path.join(process.cwd(), "tests");
 
 // --------------------------------------------------------------------
 
@@ -64,7 +64,7 @@ describe("handleReadDirectory", () => {
 
   beforeEach(async () => {
     // 建立臨時測試目錄
-    testDir = path.join(TEMP_DIR, `vscode-test-${Date.now()}`);
+    testDir = path.join(TEST_DIR, `vscode-test-${Date.now()}`);
     await fs.promises.mkdir(testDir, { recursive: true });
 
     // 建立測試檔案和資料夾
