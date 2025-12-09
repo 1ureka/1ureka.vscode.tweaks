@@ -15,7 +15,7 @@
   "scripts": {
     "build": "tsx src/build.ts",
     "compile": "tsc --noEmit",
-    "lint": "eslint src --ext .ts,.tsx",
+    "lint": "eslint . --ext .ts,.tsx",
     "test": "vitest run"
   },
   "dependencies": {

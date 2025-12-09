@@ -23,23 +23,37 @@ describe("handleInitialData", () => {
     });
   });
 
-  it("應該正確解析路徑為絕對路徑", () => {
-    const result = handleInitialData({ dirPath: "../test" });
+  it("應該正確解析相對路徑為絕對路徑", () => {
+    const result = handleInitialData({ dirPath: "./relative/path" });
     expect(path.isAbsolute(result.currentPath)).toBe(true);
   });
 
-  // TODO: 確保該測試有被專門的 CI/CD 執行到，不然實際上只測試了 win32 平台，也不一定要在 release 前跑，可以先實現一個手動觸發的 CI/CD
-  it("應該正確識別根目錄", () => {
-    const rootPath = process.platform === "win32" ? "C:\\" : "/";
-    const result = handleInitialData({ dirPath: rootPath });
+  it("應該正確識別根目錄(Windows)", () => {
+    if (process.platform !== "win32") return;
+    const result = handleInitialData({ dirPath: "C:\\" });
     expect(result.isCurrentRoot).toBe(true);
   });
 
-  // TODO: 確保該測試有被專門的 CI/CD 執行到，不然實際上只測試了 win32 平台
-  it("應該正確處理不同平台的路徑分隔符", () => {
-    const testPath = process.platform === "win32" ? "C:\\Users\\test\\file.txt" : "/home/test/file.txt";
+  it("應該正確識別根目錄(Unix)", () => {
+    if (process.platform === "win32") return;
+    const result = handleInitialData({ dirPath: "/" });
+    expect(result.isCurrentRoot).toBe(true);
+  });
+
+  it("應該正確分割路徑為陣列", () => {
+    const testPath = process.cwd();
+    const expectedParts = testPath.split(path.sep).filter((part) => part !== "");
     const result = handleInitialData({ dirPath: testPath });
-    expect(result.currentPath).toBe(path.resolve(testPath));
+    expect(result.currentPathParts.length).toBeGreaterThan(0);
+    expect(result.currentPathParts).toEqual(expectedParts);
+  });
+
+  it("timestamp 應該是有效的時間戳記", () => {
+    const before = Date.now();
+    const result = handleInitialData({ dirPath: "/test" });
+    const after = Date.now();
+    expect(result.timestamp).toBeGreaterThanOrEqual(before);
+    expect(result.timestamp).toBeLessThanOrEqual(after);
   });
 });
 
