@@ -46,6 +46,14 @@ type WithProgress<T extends unknown = void> = (
   taskFn: (report: (increment: number) => void) => Promise<T>
 ) => Promise<T>;
 
+/**
+ * 一個可以執行需要報告 進度 + 進度訊息 的函數的函數
+ */
+type WithProgressMessage<T extends unknown = void> = (
+  taskName: string,
+  taskFn: (report: (params: { increment: number; message: string }) => void) => Promise<T>
+) => Promise<T>;
+
 // ------------------------------------------------------------------------------
 
 type Success<T> = { data: T; error: null };
@@ -79,5 +87,5 @@ function defer<T>() {
   return { promise, resolve, reject };
 }
 
-export type { Prettify, OneOf, Promised, PromiseOpt, WithProgress };
+export type { Prettify, OneOf, Promised, PromiseOpt, WithProgress, WithProgressMessage };
 export { tryCatch, defer };
