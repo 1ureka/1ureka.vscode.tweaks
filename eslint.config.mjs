@@ -19,6 +19,10 @@ export default [
           message: "請使用 @/utils/command.ts 中的輔助函數來確保命令資源會正確釋放。",
         },
         {
+          selector: "CallExpression[callee.property.name='getConfiguration'][callee.object.property.name='workspace']",
+          message: "請使用 @/utils/command.ts 中的輔助函數來確保統一獲取使用者配置的途徑。",
+        },
+        {
           selector: "CallExpression[callee.property.name='postMessage']",
           message: "請使用 @/utils/message_client.ts 處理前端發送，或使用 @/utils/message_host.ts 處理延伸主機發送。",
         },

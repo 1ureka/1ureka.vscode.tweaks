@@ -22,6 +22,7 @@ function createCommandManager(context: vscode.ExtensionContext) {
  */
 function getConfig<T = string>(id: ConfigId): T | undefined {
   const parts = id.split(".");
+  if (parts.length !== 2) return undefined;
 
   const prefix = parts[0];
   if (prefix !== "1ureka") return undefined;

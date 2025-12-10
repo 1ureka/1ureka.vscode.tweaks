@@ -3,15 +3,14 @@ import * as fs from "fs";
 
 import { handleOpenApp } from "@/handlers/externalAppHandlers";
 import { openWithDefaultApp } from "@/utils/system_windows";
-import { createCommandManager } from "@/utils/command";
+import { createCommandManager, getConfig } from "@/utils/command";
 
 export function registerExternalAppCommands(context: vscode.ExtensionContext) {
   const commandManager = createCommandManager(context);
 
   commandManager.register("1ureka.external.openBlender", () => {
     // 優先使用使用者配置的路徑
-    const vscodeConfig = vscode.workspace.getConfiguration("1ureka");
-    const userPath = vscodeConfig.get<string>("blenderPath");
+    const userPath = getConfig("1ureka.blenderPath");
     const isPathProvided = userPath && userPath.trim() !== "";
 
     let openAppParams: Parameters<typeof handleOpenApp>[0] = {
@@ -30,8 +29,7 @@ export function registerExternalAppCommands(context: vscode.ExtensionContext) {
 
   commandManager.register("1ureka.external.openPainter", () => {
     // 優先使用使用者配置的路徑
-    const vscodeConfig = vscode.workspace.getConfiguration("1ureka");
-    const userPath = vscodeConfig.get<string>("painterPath");
+    const userPath = getConfig("1ureka.painterPath");
     const isPathProvided = userPath && userPath.trim() !== "";
 
     let openAppParams: Parameters<typeof handleOpenApp>[0] = {
