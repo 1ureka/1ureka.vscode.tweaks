@@ -3,18 +3,13 @@ import * as path from "path";
 import * as vscode from "vscode";
 import customStyle from "@/assets/customStyle.css";
 import { parse as parseHtml } from "node-html-parser";
-import { createCommandManager } from "@/utils/command";
-
-function getConfiguredPath(): string | undefined {
-  const config = vscode.workspace.getConfiguration("1ureka");
-  return config.get<string>("vscodeResourcePath");
-}
+import { createCommandManager, getConfig } from "@/utils/command";
 
 /**
  * 定位 VSCode 的 workbench HTML 檔案路徑
  */
 function locateHtml() {
-  const resourceDir = getConfiguredPath();
+  const resourceDir = getConfig("1ureka.vscodeResourcePath");
   if (!resourceDir) {
     vscode.window.showInformationMessage("請先在設定中指定 VSCode 資源目錄路徑，以啟用自訂樣式功能。");
     return null;
