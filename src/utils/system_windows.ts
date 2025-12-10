@@ -101,6 +101,31 @@ function copyFile(filePath: string) {
   return runPowerShell(powerShellScript);
 }
 
+const listSpecialFoldersScript = `
+$shell = New-Object -ComObject Shell.Application
+# 0x11 = "My Computer" / "This PC"
+$root = $shell.Namespace(0x11)
+$result = @()
+
+foreach ($item in $root.Items()) {
+    $path = $item.Path
+    if ([string]::IsNullOrWhiteSpace($path)) { continue }
+    $obj = [PSCustomObject]@{
+        Name = $item.Name
+        Path = $path
+    }
+    $result += $obj
+}
+
+$result | ConvertTo-Json -Depth 3
+`;
+
+/** 列出 Windows 特殊資料夾 */
+async function listSpecialFolders() {
+  const stdout = await runPowerShell(listSpecialFoldersScript);
+  return JSON.parse(stdout);
+}
+
 /** Windows 檔案的屬性狀態，只針對對使用者有意義的回傳描述，比如 A 就不需要，因為無意義 */
 const fileStatusDescription = {
   O: "離線 (僅線上)",
@@ -155,5 +180,5 @@ async function getFileStatus(filePath: string): Promise<FileStatus | null> {
   }
 }
 
-export { openWithDefaultApp, openApplication, copyImage, copyFile, getFileStatus };
+export { openWithDefaultApp, openApplication, copyImage, copyFile, getFileStatus, listSpecialFolders };
 export type { FileStatus as WindowsFileStatus };
