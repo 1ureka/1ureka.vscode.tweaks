@@ -1,4 +1,3 @@
-import * as vscode from "vscode";
 import * as path from "path";
 import * as fs from "fs";
 import { exec, spawn } from "child_process";
@@ -6,25 +5,38 @@ import { generateBase64 } from "@/utils/image";
 
 // 之所以有些沒有印出 error.message，是因為 Windows 命令提示字元預設使用的是 CP950 (Big5) 或 CP936 (GBK) 編碼，但是 Node.js 原生沒有支援這些編碼，只有 utf-8。, utf-16le 等。
 
+/** 允許開啟的副檔名白名單 */
+const ALLOWED_EXTENSIONS = [".blend", ".spp", ".html"];
+
 /** 使用系統預設應用打開指定檔案 */
-function openWithDefaultApp(filePath: string) {
+function openWithDefaultApp(filePath: string, showError: (message: string) => void) {
+  const fileExt = path.extname(filePath).toLowerCase();
+
+  if (!ALLOWED_EXTENSIONS.includes(fileExt)) {
+    showError(`此功能只支援開啟 [${ALLOWED_EXTENSIONS.join(", ")}]，檔案類型不符，操作已取消。`);
+    return; // 阻止執行惡意或不相關的檔案
+  }
+
   // 使用 start "" 讓 Windows 用預設應用程式開啟檔案
   exec(`start "" "${filePath}"`, (error) => {
-    if (error) vscode.window.showErrorMessage("無法開啟檔案，請確認檔案存在且有對應的應用程式");
+    if (error) showError("無法開啟檔案，請確認檔案存在且有對應的應用程式");
   });
 }
 
 /** 啟動指定應用程式 */
-function openApplication(appName: string, appPath: string) {
-  // 第一個字母大寫其餘小寫
+function openApplication(appName: string, appPath: string, showError: (message: string) => void) {
   const displayName = appName.charAt(0).toUpperCase() + appName.slice(1).toLowerCase();
 
-  // 直接啟動應用程式(不帶檔案)
-  exec(`"${appPath}"`, (error) => {
-    if (error) vscode.window.showErrorMessage(`無法啟動 ${displayName}，請確認是否有安裝該應用程式與有足夠的權限`);
-  });
+  try {
+    const child = spawn(appPath, { detached: true, stdio: "ignore", windowsHide: true });
+    child.on("error", () => showError(`無法啟動 ${displayName}，請確認是否有安裝該應用程式與有足夠的權限`));
+    child.unref();
+  } catch (e) {
+    showError(`無法啟動 ${displayName}: ${e instanceof Error ? e.message : String(e)}`);
+  }
 }
 
+/** 將 PowerShell 環境設為英文的腳本 */
 const setEnglishPrefix = `
 [System.Threading.Thread]::CurrentThread.CurrentUICulture = 'en-US'
 [System.Threading.Thread]::CurrentThread.CurrentCulture = 'en-US'\n

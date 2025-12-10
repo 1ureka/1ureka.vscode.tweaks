@@ -1,27 +1,65 @@
 import * as vscode from "vscode";
-import { handleOpenApp, handleOpenFile } from "../handlers/externalAppHandlers";
+import * as fs from "fs";
+
+import { handleOpenApp } from "@/handlers/externalAppHandlers";
+import { openWithDefaultApp } from "@/utils/system_windows";
 import { createCommandManager } from "@/utils/command";
 
 export function registerExternalAppCommands(context: vscode.ExtensionContext) {
   const commandManager = createCommandManager(context);
 
   commandManager.register("1ureka.external.openBlender", () => {
-    handleOpenApp("blender");
+    // 優先使用使用者配置的路徑
+    const vscodeConfig = vscode.workspace.getConfiguration("1ureka");
+    const userPath = vscodeConfig.get<string>("blenderPath");
+    const isPathProvided = userPath && userPath.trim() !== "";
+
+    let openAppParams: Parameters<typeof handleOpenApp>[0] = {
+      app: "blender",
+      showError: vscode.window.showErrorMessage,
+    };
+
+    if (isPathProvided && fs.existsSync(userPath)) {
+      openAppParams.appPath = userPath;
+    } else if (isPathProvided) {
+      vscode.window.showWarningMessage(`配置的 Blender 路徑不存在: ${userPath}，將嘗試自動搜尋安裝路徑。`);
+    }
+
+    handleOpenApp(openAppParams);
   });
 
   commandManager.register("1ureka.external.openPainter", () => {
-    handleOpenApp("painter");
+    // 優先使用使用者配置的路徑
+    const vscodeConfig = vscode.workspace.getConfiguration("1ureka");
+    const userPath = vscodeConfig.get<string>("painterPath");
+    const isPathProvided = userPath && userPath.trim() !== "";
+
+    let openAppParams: Parameters<typeof handleOpenApp>[0] = {
+      app: "painter",
+      showError: vscode.window.showErrorMessage,
+    };
+
+    if (isPathProvided && fs.existsSync(userPath)) {
+      openAppParams.appPath = userPath;
+    } else if (isPathProvided) {
+      vscode.window.showWarningMessage(`配置的 Substance 3D Painter 路徑不存在: ${userPath}，將嘗試自動搜尋安裝路徑。`);
+    }
+
+    handleOpenApp(openAppParams);
   });
 
   commandManager.register("1ureka.external.openWithBlender", (uri: vscode.Uri) => {
-    handleOpenFile(uri);
+    if (!uri) return;
+    openWithDefaultApp(uri.fsPath, vscode.window.showErrorMessage);
   });
 
   commandManager.register("1ureka.external.openWithPainter", (uri: vscode.Uri) => {
-    handleOpenFile(uri);
+    if (!uri) return;
+    openWithDefaultApp(uri.fsPath, vscode.window.showErrorMessage);
   });
 
   commandManager.register("1ureka.external.openWithBrowser", (uri: vscode.Uri) => {
-    handleOpenFile(uri);
+    if (!uri) return;
+    openWithDefaultApp(uri.fsPath, vscode.window.showErrorMessage);
   });
 }
