@@ -1,9 +1,12 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+
 import * as path from "path";
+import * as fs from "fs";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { cleanupFixtures, getFixturesPath, setupFixtures } from "./fixtures.helpers";
 
 import { handleInitialData, handleReadDirectory, handleGoto } from "@/handlers/fileSystemHandlers";
-import { handleCreateDir, handleCreateFile } from "@/handlers/fileSystemHandlers";
+import { handleCreateDir, handleCreateFile, handlePaste } from "@/handlers/fileSystemHandlers";
 
 // --------------------------------------------------------------------
 
@@ -400,3 +403,227 @@ describe("handleGoto", () => {
 });
 
 // --------------------------------------------------------------------
+
+describe("handlePaste - 複製操作", () => {
+  beforeEach(async () => {
+    await setupFixtures();
+  });
+
+  afterEach(async () => {
+    await cleanupFixtures();
+  });
+
+  it("應該成功複製單一檔案 (不覆蓋)", async () => {
+    const srcList = [getFixturesPath("copy-move-source", "copy-file2.txt")];
+    const destDir = getFixturesPath("copy-move-target");
+
+    const result = await handlePaste({
+      srcList,
+      destDir,
+      type: "copy",
+      overwrite: false,
+      withProgress: async (_title, fn) => await fn((_progress) => {}),
+      showErrorReport: (content) => console.error(content),
+    });
+
+    expect(result).not.toBeNull();
+    expect(result?.entries).toHaveLength(2); // 原本的 copy-file1.txt + 新的 copy-file2.txt
+  });
+
+  it("應該成功複製多個檔案", async () => {
+    const srcList = [getFixturesPath("multiple-files", "file1.txt"), getFixturesPath("multiple-files", "file2.txt")];
+    const destDir = getFixturesPath("empty-folder");
+
+    const result = await handlePaste({
+      srcList,
+      destDir,
+      type: "copy",
+      overwrite: false,
+      withProgress: async (_title, fn) => await fn((_progress) => {}),
+      showErrorReport: (content) => console.error(content),
+    });
+
+    expect(result?.entries).toHaveLength(2);
+  });
+
+  it("應該成功複製資料夾及其內容", async () => {
+    const srcList = [getFixturesPath("copy-move-source", "copy-folder")];
+    const destDir = getFixturesPath("empty-folder");
+
+    const result = await handlePaste({
+      srcList,
+      destDir,
+      type: "copy",
+      overwrite: false,
+      withProgress: async (_title, fn) => await fn((_progress) => {}),
+      showErrorReport: (content) => console.error(content),
+    });
+
+    expect(result?.entries).toHaveLength(1);
+
+    // 驗證內部檔案也被複製
+    const copiedFolder = getFixturesPath("empty-folder", "copy-folder");
+    const nestedFileExists = await fs.promises
+      .access(path.join(copiedFolder, "nested-file.txt"))
+      .then(() => true)
+      .catch(() => false);
+    expect(nestedFileExists).toBe(true);
+  });
+
+  it("不覆蓋模式下，應該跳過同名檔案且其它不同名項目仍然被複製", async () => {
+    // TODO: 複製完成後，檢查預期被跳過的 target 內容是否仍是原本的內容，檢查預期要複製的項目是否有被正確複製
+  });
+
+  it("覆蓋模式下應該成功覆蓋同名檔案", async () => {
+    const srcList = [getFixturesPath("copy-move-source", "copy-file1.txt")];
+    const destDir = getFixturesPath("copy-move-target");
+
+    const result = await handlePaste({
+      srcList,
+      destDir,
+      type: "copy",
+      overwrite: true,
+      withProgress: async (_title, fn) => await fn((_progress) => {}),
+      showErrorReport: (content) => console.error(content),
+    });
+
+    expect(result).not.toBeNull();
+
+    // 驗證內容被覆蓋
+    const content = await fs.promises.readFile(getFixturesPath("copy-move-target", "copy-file1.txt"), "utf-8");
+    expect(content).toBe("Source file 1 content");
+  });
+
+  it("複製後來源檔案應該仍然存在", async () => {
+    const srcFile = getFixturesPath("multiple-files", "file1.txt");
+    const srcList = [srcFile];
+    const destDir = getFixturesPath("empty-folder");
+
+    await handlePaste({
+      srcList,
+      destDir,
+      type: "copy",
+      overwrite: false,
+      withProgress: async (_title, fn) => await fn((_progress) => {}),
+      showErrorReport: (content) => console.error(content),
+    });
+
+    // 來源檔案應該仍然存在
+    const srcExists = await fs.promises
+      .access(srcFile)
+      .then(() => true)
+      .catch(() => false);
+    expect(srcExists).toBe(true);
+  });
+});
+
+// --------------------------------------------------------------------
+
+describe("handlePaste - 移動操作", () => {
+  beforeEach(async () => {
+    await setupFixtures();
+  });
+
+  afterEach(async () => {
+    await cleanupFixtures();
+  });
+
+  it("應該成功移動單一檔案 (不覆蓋)", async () => {
+    const srcList = [getFixturesPath("copy-move-source", "copy-file2.txt")];
+    const destDir = getFixturesPath("copy-move-target");
+
+    const result = await handlePaste({
+      srcList,
+      destDir,
+      type: "move",
+      overwrite: false,
+      withProgress: async (_title, fn) => await fn((_progress) => {}),
+      showErrorReport: (content) => console.error(content),
+    });
+
+    expect(result).not.toBeNull();
+    expect(result?.entries).toHaveLength(2);
+
+    // 來源檔案應該不存在
+    const srcExists = await fs.promises
+      .access(srcList[0])
+      .then(() => true)
+      .catch(() => false);
+    expect(srcExists).toBe(false);
+  });
+
+  it("應該成功移動多個檔案", async () => {
+    const srcList = [getFixturesPath("multiple-files", "file1.txt"), getFixturesPath("multiple-files", "file2.txt")];
+    const destDir = getFixturesPath("empty-folder");
+
+    const result = await handlePaste({
+      srcList,
+      destDir,
+      type: "move",
+      overwrite: false,
+      withProgress: async (_title, fn) => await fn((_progress) => {}),
+      showErrorReport: (content) => console.error(content),
+    });
+
+    expect(result?.entries).toHaveLength(2);
+
+    // 來源資料夾應該只剩 file3.txt
+    const remainingInSrc = await handleReadDirectory({
+      dirPath: getFixturesPath("multiple-files"),
+    });
+    expect(remainingInSrc.entries).toHaveLength(1);
+  });
+
+  it("應該成功移動資料夾及其內容", async () => {
+    const srcList = [getFixturesPath("copy-move-source", "copy-folder")];
+    const destDir = getFixturesPath("empty-folder");
+
+    const result = await handlePaste({
+      srcList,
+      destDir,
+      type: "move",
+      overwrite: false,
+      withProgress: async (_title, fn) => await fn((_progress) => {}),
+      showErrorReport: (content) => console.error(content),
+    });
+
+    expect(result?.entries).toHaveLength(1);
+
+    // 來源資料夾應該不存在
+    const srcExists = await fs.promises
+      .access(srcList[0])
+      .then(() => true)
+      .catch(() => false);
+    expect(srcExists).toBe(false);
+  });
+
+  it("不覆蓋模式下，應該跳過同名檔案且其它不同名項目仍然被移動", async () => {
+    // TODO: 移動完成後，檢查預期被跳過的 target 內容是否仍是原本的內容，檢查預期要移動的項目是否有被正確移動 (檢查新內容與來源要不存在)
+  });
+
+  it("覆蓋模式下應該成功覆蓋同名檔案", async () => {
+    const srcList = [getFixturesPath("copy-move-source", "copy-file1.txt")];
+    const destDir = getFixturesPath("copy-move-target");
+
+    const result = await handlePaste({
+      srcList,
+      destDir,
+      type: "move",
+      overwrite: true,
+      withProgress: async (_title, fn) => await fn((_progress) => {}),
+      showErrorReport: (content) => console.error(content),
+    });
+
+    expect(result).not.toBeNull();
+
+    // 驗證內容被覆蓋且來源不存在
+    const content = await fs.promises.readFile(getFixturesPath("copy-move-target", "copy-file1.txt"), "utf-8");
+    expect(content).toBe("Source file 1 content");
+
+    const srcExists = await fs.promises
+      .access(srcList[0])
+      .then(() => true)
+      .catch(() => false);
+    expect(srcExists).toBe(false);
+  });
+});
