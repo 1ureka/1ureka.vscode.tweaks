@@ -44,7 +44,7 @@ const handleEyeDropper = async (color: string) => {
 /**
  * 開始導出圖片流程
  */
-const startExportImage = async (sourceFilePath: string, savePath: string, format: ExportFormat) => {
+const startExportImage = async (sourcePath: string, savePath: string, format: ExportFormat) => {
   const withProgressOptions = {
     title: "正在導出圖片",
     location: vscode.ProgressLocation.Notification,
@@ -53,7 +53,7 @@ const startExportImage = async (sourceFilePath: string, savePath: string, format
 
   await vscode.window.withProgress(withProgressOptions, async (progress) => {
     try {
-      await exportImage((options) => progress.report(options), sourceFilePath, savePath, format);
+      await exportImage({ report: (options) => progress.report(options), sourcePath, savePath, format });
 
       const openAction = "開啟檔案";
       const result = await vscode.window.showInformationMessage(`圖片已成功導出至：\n${savePath}`, openAction);

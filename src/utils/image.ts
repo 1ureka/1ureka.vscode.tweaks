@@ -1,7 +1,6 @@
 import sharp from "sharp";
 import * as fs from "fs";
 import * as path from "path";
-import type { Progress } from "vscode";
 
 const supportedExtensions = [".jpg", ".jpeg", ".png", ".bmp", ".gif", ".webp", ".tiff", ".tif"];
 
@@ -139,12 +138,17 @@ async function generateBase64(filePath: string, format: "png" | "jpeg" | "webp" 
  */
 type ExportFormat = "png" | "jpeg" | "webp" | "webp-lossless";
 
-type ProgressReport = Progress<{ message: string; increment: number }>["report"];
-
 /**
  * 執行圖片轉換與導出
  */
-async function exportImage(report: ProgressReport, sourcePath: string, savePath: string, format: ExportFormat) {
+async function exportImage(params: {
+  sourcePath: string;
+  savePath: string;
+  format: ExportFormat;
+  report: (params: { message: string; increment: number }) => void;
+}) {
+  const { report, sourcePath, savePath, format } = params;
+
   report({ message: "讀取原始圖片...", increment: 0 });
   let image = sharp(sourcePath);
 
