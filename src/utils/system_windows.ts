@@ -1,9 +1,8 @@
+import iconv from "iconv-lite";
 import * as path from "path";
 import * as fs from "fs";
 import { exec, spawn } from "child_process";
 import { generateBase64 } from "@/utils/image";
-
-// 之所以有些沒有印出 error.message，是因為 Windows 命令提示字元預設使用的是 CP950 (Big5) 或 CP936 (GBK) 編碼，但是 Node.js 原生沒有支援這些編碼，只有 utf-8。, utf-16le 等。
 
 /** 允許開啟的副檔名白名單 */
 const ALLOWED_EXTENSIONS = [".blend", ".spp", ".html"];
@@ -36,16 +35,12 @@ function openApplication(appName: string, appPath: string, showError: (message: 
   }
 }
 
-/** 將 PowerShell 環境設為英文的腳本 */
-const setEnglishPrefix = `
-[System.Threading.Thread]::CurrentThread.CurrentUICulture = 'en-US'
-[System.Threading.Thread]::CurrentThread.CurrentCulture = 'en-US'\n
-`;
+// -------------------------------------------------------------------------------------------
 
-/** 執行 PowerShell 指令並回傳 stdout（字串），強制使用英文環境避免亂碼 */
+/** 執行 PowerShell 指令並回傳 stdout（字串），假設 windows 系統是繁體中文環境 (使用 big5 編碼輸出) */
 function runPowerShell(command: string, stdinData?: string): Promise<string> {
   return new Promise<string>((resolve, reject) => {
-    const args = ["-NoProfile", "-Command", setEnglishPrefix + command];
+    const args = ["-NoProfile", "-Command", command];
     const ps = spawn("powershell.exe", args, { windowsHide: true });
 
     if (stdinData) {
@@ -57,11 +52,11 @@ function runPowerShell(command: string, stdinData?: string): Promise<string> {
     let stderr = "";
 
     ps.stdout.on("data", (data) => {
-      stdout += data.toString();
+      stdout += iconv.decode(data, "big5");
     });
 
     ps.stderr.on("data", (data) => {
-      stderr += data.toString();
+      stderr += iconv.decode(data, "big5");
     });
 
     ps.on("exit", (code) => {
@@ -74,6 +69,8 @@ function runPowerShell(command: string, stdinData?: string): Promise<string> {
     });
   });
 }
+
+// -------------------------------------------------------------------------------------------
 
 const copyImagePowerShellScript = `
 Add-Type -AssemblyName System.Convert
