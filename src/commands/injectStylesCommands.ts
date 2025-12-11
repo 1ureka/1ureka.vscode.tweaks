@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { createCommandManager } from "@/utils/command";
-import { injectStyles, restoreStyles, restoreAndReinjectStyles } from "@/handlers/commonHandlers";
+import { injectStyles, restoreStyles, restoreAndReinjectStyles } from "@/handlers/injectStylesHandlers";
 
 /**
  * 提示使用者重新啟動 VSCode
