@@ -35,10 +35,21 @@ export default [
           message: "請使用 @/utils/message_client.ts 中的所提供的訊息處理機制來接收訊息",
         },
       ],
+      "no-restricted-imports": [
+        "error",
+        {
+          name: "vscode",
+          message: "只能在 src/providers, src/commands, src/utils 相關的檔案中使用 'import \"vscode\"'。",
+        },
+      ],
     },
   },
   {
     files: ["src/utils/message_client.ts", "src/utils/message_host.ts", "src/utils/command.ts"],
     rules: { "no-restricted-syntax": "off" },
+  },
+  {
+    files: ["src/providers/**", "src/commands/**", "src/utils/**", "extension.ts"],
+    rules: { "no-restricted-imports": "off" },
   },
 ];
