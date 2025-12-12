@@ -46,7 +46,13 @@ type CommandId =
 
 type WebviewId = "1ureka.imageViewer" | "1ureka.imageWall" | "1ureka.fileSystem";
 
-export type { CommandId, WebviewId };
+type ConfigPrefix = "1ureka";
+
+type ConfigKey = "vscodeResourcePath" | "blenderPath" | "painterPath";
+
+type ConfigId = `${ConfigPrefix}.${ConfigKey}`;
+
+export type { CommandId, WebviewId, ConfigId };
 
 // ============================================================================
 // Type Definitions
@@ -274,7 +280,8 @@ const webviewContextMenuEntries: WebviewContextMenuEntries = [
   },
 ];
 
-const configuration = {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const configuration: { title: string; properties: Record<ConfigId, any> } = {
   title: "1ureka's Extensions",
   properties: {
     "1ureka.vscodeResourcePath": {

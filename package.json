@@ -3,7 +3,7 @@
   "author": "1ureka",
   "publisher": "1ureka",
   "description": "A Visual Studio Code extension developed for personal use.",
-  "version": "0.4.14",
+  "version": "0.4.15",
   "main": "./dist/extension.js",
   "type": "module",
   "engines": {
@@ -20,8 +20,9 @@
   },
   "dependencies": {
     "@vscode/codicons": "^0.0.43",
-    "sharp": "^0.34.5",
-    "fs-extra": "^11.3.2"
+    "fs-extra": "^11.3.2",
+    "iconv-lite": "^0.7.0",
+    "sharp": "^0.34.5"
   },
   "devDependencies": {
     "@emotion/react": "^11.14.0",

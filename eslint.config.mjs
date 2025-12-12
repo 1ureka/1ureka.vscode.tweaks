@@ -19,6 +19,10 @@ export default [
           message: "請使用 @/utils/command.ts 中的輔助函數來確保命令資源會正確釋放。",
         },
         {
+          selector: "CallExpression[callee.property.name='getConfiguration'][callee.object.property.name='workspace']",
+          message: "請使用 @/utils/command.ts 中的輔助函數來確保統一獲取使用者配置的途徑。",
+        },
+        {
           selector: "CallExpression[callee.property.name='postMessage']",
           message: "請使用 @/utils/message_client.ts 處理前端發送，或使用 @/utils/message_host.ts 處理延伸主機發送。",
         },
@@ -31,10 +35,21 @@ export default [
           message: "請使用 @/utils/message_client.ts 中的所提供的訊息處理機制來接收訊息",
         },
       ],
+      "no-restricted-imports": [
+        "error",
+        {
+          name: "vscode",
+          message: "只能在 src/providers, src/commands, src/utils 相關的檔案中使用 'import \"vscode\"'。",
+        },
+      ],
     },
   },
   {
     files: ["src/utils/message_client.ts", "src/utils/message_host.ts", "src/utils/command.ts"],
     rules: { "no-restricted-syntax": "off" },
+  },
+  {
+    files: ["src/providers/**", "src/commands/**", "src/utils/**", "src/extension.ts"],
+    rules: { "no-restricted-imports": "off" },
   },
 ];

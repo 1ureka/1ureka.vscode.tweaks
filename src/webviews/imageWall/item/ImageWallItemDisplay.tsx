@@ -1,53 +1,55 @@
-import React, { useEffect, useRef, useState } from "react";
-import { Box, Skeleton } from "@mui/material";
-import type { GenerateThumbnailAPI } from "@/providers/imageWallProvider";
-import { invoke } from "@/utils/message_client";
+import React, { useEffect, useRef } from "react";
+import { Box, Skeleton, type SxProps } from "@mui/material";
+import { useImageCache, imageWallIntersectionObserver } from "../data/cache";
 
 type ImageDisplayProps = {
-  id: string;
+  filePath: string;
   fileName: string;
   width: number;
   height: number;
 };
 
-const ImageWallItemDisplay = ({ id, fileName, width, height }: ImageDisplayProps) => {
-  const imgRef = useRef<HTMLImageElement>(null);
-  const [isLoaded, setIsLoaded] = useState(false);
+const containerBaseSx: SxProps = {
+  position: "relative",
+  width: 1,
+  height: "auto",
+  minHeight: "100%",
+};
+
+const ImageWallItemDisplay = ({ filePath, fileName, width, height }: ImageDisplayProps) => {
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    invoke<GenerateThumbnailAPI>("generateThumbnail", id).then((base64) => {
-      if (base64 && imgRef.current) {
-        // 命令式更新 DOM，避免將 base64 存入 state
-        imgRef.current.src = `data:image/webp;base64,${base64}`;
-        setIsLoaded(true);
-      }
-    });
-  }, [id]);
+    const element = containerRef.current;
+
+    if (element) {
+      imageWallIntersectionObserver.observe(element);
+      return () => {
+        imageWallIntersectionObserver.unobserve(element);
+      };
+    }
+  }, []);
+
+  const cache = useImageCache(filePath);
 
   return (
-    <Box
-      sx={{
-        position: "relative",
-        width: 1,
-        height: "auto",
-        aspectRatio: `${width} / ${height}`,
-        minHeight: "100%",
-      }}
-    >
+    <Box id={filePath} ref={containerRef} sx={{ ...containerBaseSx, aspectRatio: `${width} / ${height}` }}>
       <Skeleton variant="rectangular" width="100%" height="100%" animation="wave" />
-      <img
-        ref={imgRef}
-        alt={fileName}
-        loading="lazy"
-        style={{
-          position: "absolute",
-          inset: 0,
-          display: isLoaded ? "block" : "none",
-          width: "100%",
-          height: "100%",
-          objectFit: "cover",
-        }}
-      />
+
+      {cache?.status === "loaded" && (
+        <img
+          alt={fileName}
+          src={"data:image/webp;base64," + cache.data}
+          loading="lazy"
+          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
+        />
+      )}
+
+      {cache?.status === "error" && (
+        <Box sx={{ position: "absolute", inset: 0, display: "grid", placeItems: "center" }}>
+          <i className="codicon codicon-warning" style={{ fontSize: 32, color: "var(--vscode-errorForeground)" }} />
+        </Box>
+      )}
     </Box>
   );
 };

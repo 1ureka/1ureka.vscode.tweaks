@@ -3,6 +3,9 @@ import * as path from "path";
 import { openImage } from "@/utils/image";
 import type { FileInfo, ImageInfo } from "@/providers/fileMetadataProvider";
 
+/**
+ * 根據檔案路徑取得檔案的基本資訊，並且在檔案是圖片時，額外取得圖片的相關資訊。
+ */
 async function handleGetFileMetadata(filePath: string): Promise<FileInfo | ImageInfo | null> {
   try {
     const stats = fs.statSync(filePath);

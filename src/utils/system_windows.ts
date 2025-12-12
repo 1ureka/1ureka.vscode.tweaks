@@ -1,9 +1,7 @@
+import iconv from "iconv-lite";
 import * as path from "path";
 import * as fs from "fs";
 import { exec, spawn } from "child_process";
-import { generateBase64 } from "@/utils/image";
-
-// 之所以有些沒有印出 error.message，是因為 Windows 命令提示字元預設使用的是 CP950 (Big5) 或 CP936 (GBK) 編碼，但是 Node.js 原生沒有支援這些編碼，只有 utf-8。, utf-16le 等。
 
 /** 允許開啟的副檔名白名單 */
 const ALLOWED_EXTENSIONS = [".blend", ".spp", ".html"];
@@ -36,16 +34,12 @@ function openApplication(appName: string, appPath: string, showError: (message: 
   }
 }
 
-/** 將 PowerShell 環境設為英文的腳本 */
-const setEnglishPrefix = `
-[System.Threading.Thread]::CurrentThread.CurrentUICulture = 'en-US'
-[System.Threading.Thread]::CurrentThread.CurrentCulture = 'en-US'\n
-`;
+// -------------------------------------------------------------------------------------------
 
-/** 執行 PowerShell 指令並回傳 stdout（字串），強制使用英文環境避免亂碼 */
+/** 執行 PowerShell 指令並回傳 stdout（字串），假設 windows 系統是繁體中文環境 (使用 big5 編碼輸出) */
 function runPowerShell(command: string, stdinData?: string): Promise<string> {
   return new Promise<string>((resolve, reject) => {
-    const args = ["-NoProfile", "-Command", setEnglishPrefix + command];
+    const args = ["-NoProfile", "-Command", command];
     const ps = spawn("powershell.exe", args, { windowsHide: true });
 
     if (stdinData) {
@@ -57,11 +51,11 @@ function runPowerShell(command: string, stdinData?: string): Promise<string> {
     let stderr = "";
 
     ps.stdout.on("data", (data) => {
-      stdout += data.toString();
+      stdout += iconv.decode(data, "big5");
     });
 
     ps.stderr.on("data", (data) => {
-      stderr += data.toString();
+      stderr += iconv.decode(data, "big5");
     });
 
     ps.on("exit", (code) => {
@@ -74,6 +68,8 @@ function runPowerShell(command: string, stdinData?: string): Promise<string> {
     });
   });
 }
+
+// -------------------------------------------------------------------------------------------
 
 const copyImagePowerShellScript = `
 Add-Type -AssemblyName System.Convert
@@ -90,18 +86,33 @@ $ms.Dispose()
 `;
 
 /** 將圖片複製到剪貼簿，可以直接貼在比如瀏覽器的 google keep, chatGPT 或是 Word 等 */
-async function copyImage(filePath: string, onProgress?: (message: string, percent: number) => void) {
-  onProgress?.("正在轉碼中...", 10);
-  const base64 = await generateBase64(filePath, "png");
-  if (!base64) throw new Error("file is not an image");
-  onProgress?.("正在傳送至剪貼簿...", 70);
+async function copyImageBinaryToSystem(base64: string) {
   return runPowerShell(copyImagePowerShellScript, base64);
 }
 
-/** 將檔案路徑複製到剪貼簿，可以直接貼到 Explore檔案總管 或是 VsCode檔案總管等 */
-function copyFile(filePath: string) {
-  const powerShellScript = `Set-Clipboard -Path "${path.resolve(filePath)}"`;
-  return runPowerShell(powerShellScript);
+const listSpecialFoldersScript = `
+$shell = New-Object -ComObject Shell.Application
+# 0x11 = "My Computer" / "This PC"
+$root = $shell.Namespace(0x11)
+$result = @()
+
+foreach ($item in $root.Items()) {
+    $path = $item.Path
+    if ([string]::IsNullOrWhiteSpace($path)) { continue }
+    $obj = [PSCustomObject]@{
+        Name = $item.Name
+        Path = $path
+    }
+    $result += $obj
+}
+
+$result | ConvertTo-Json -Depth 3
+`;
+
+/** 列出 Windows 特殊資料夾 */
+async function listSpecialFolders() {
+  const stdout = await runPowerShell(listSpecialFoldersScript);
+  return JSON.parse(stdout);
 }
 
 /** Windows 檔案的屬性狀態，只針對對使用者有意義的回傳描述，比如 A 就不需要，因為無意義 */
@@ -158,5 +169,5 @@ async function getFileStatus(filePath: string): Promise<FileStatus | null> {
   }
 }
 
-export { openWithDefaultApp, openApplication, copyImage, copyFile, getFileStatus };
+export { openWithDefaultApp, openApplication, copyImageBinaryToSystem, getFileStatus, listSpecialFolders };
 export type { FileStatus as WindowsFileStatus };
