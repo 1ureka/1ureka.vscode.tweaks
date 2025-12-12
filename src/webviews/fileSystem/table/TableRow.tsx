@@ -67,27 +67,21 @@ const TableRow = ({ sx, row, isDraggable, isRenaming, ...props }: TableRowProps)
           );
         }
 
+        let formatted: string;
+
         if (field === "fileType") {
-          const formatted = formatFileType(row);
-          return <TableCell key={field} variant={textVariant} text={formatted} column={column} />;
+          formatted = formatFileType({ fileName: row.fileName, fileType: row.fileType });
+        } else if (field === "ctime") {
+          formatted = new Date(row.ctime).toLocaleDateString();
+        } else if (field === "mtime") {
+          formatted = new Date(row.mtime).toLocaleString();
+        } else if (field === "size") {
+          formatted = row.fileType === "file" ? formatFileSize(row.size) : "";
+        } else {
+          formatted = String(row[field]);
         }
 
-        if (field === "ctime") {
-          const formatted = new Date(row.ctime).toLocaleDateString();
-          return <TableCell key={field} variant={textVariant} text={formatted} column={column} />;
-        }
-
-        if (field === "mtime") {
-          const formatted = new Date(row.mtime).toLocaleString();
-          return <TableCell key={field} variant={textVariant} text={formatted} column={column} />;
-        }
-
-        if (field === "size") {
-          const formatted = row.fileType === "file" ? formatFileSize(row.size) : "";
-          return <TableCell key={field} variant={textVariant} text={formatted} column={column} />;
-        }
-
-        return <TableCell key={field} variant={textVariant} text={row[field]} column={column} />;
+        return <TableCell key={field} variant={textVariant} text={formatted} column={column} />;
       })}
 
       <TableRowClipboardDecorator filePath={row.filePath} />
