@@ -3,10 +3,7 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 import { Box, type SxProps } from "@mui/material";
 
 import { fileSystemDataStore } from "../data/data";
-import { navigateToFolder } from "../data/navigate";
 import { fileSystemViewDataStore } from "../data/view";
-import { openFile } from "../data/action";
-import { selectRow } from "../data/selection";
 
 import { tableRowHeight } from "./common";
 import { NoItemDisplay } from "./NoItemDisplay";
@@ -28,22 +25,6 @@ function createRowBackgroundSx({ index, selected }: { index: number; selected: b
 
   return { borderRadius: 1, pointerEvents: "auto", bgcolor, "&:hover": { bgcolor: hoverBgcolor } };
 }
-
-/**
- * 為每列元素創建點擊監聽
- */
-const createHandleRowClick =
-  (fileType: string, filePath: string, index: number) => (e: React.MouseEvent<HTMLButtonElement>) => {
-    selectRow({ index, isAdditive: e.ctrlKey || e.metaKey, isRange: e.shiftKey });
-
-    if (e.detail !== 2) return;
-
-    if (fileType === "folder" || fileType === "file-symlink-directory") {
-      navigateToFolder({ dirPath: filePath });
-    } else if (fileType === "file" || fileType === "file-symlink-file") {
-      openFile(filePath);
-    }
-  };
 
 /**
  * 用於呈現表格主體的組件
@@ -71,7 +52,6 @@ const TableBody = () => {
         <Box key={key} sx={{ ...virtualItemWrapperSx, height: `${size}px`, transform: `translateY(${start}px)` }}>
           <TableRow
             index={index}
-            onClick={createHandleRowClick(viewEntries[index].fileType, viewEntries[index].filePath, index)}
             sx={createRowBackgroundSx({ index: isCurrentRoot ? index : index + 1, selected: Boolean(selected[index]) })}
           />
         </Box>

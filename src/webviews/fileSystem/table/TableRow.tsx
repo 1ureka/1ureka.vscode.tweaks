@@ -2,9 +2,12 @@ import React from "react";
 import type { ButtonBaseProps, SxProps } from "@mui/material";
 import { ButtonBase } from "@mui/material";
 import { formatFileSize, formatFileType } from "@/utils/formatter";
-import { endRenaming } from "../data/action";
 
-import { fileSystemViewDataStore } from "@/webviews/fileSystem/data/view";
+import { endRenaming, openFile } from "../data/action";
+import { fileSystemViewDataStore } from "../data/view";
+import { selectRow } from "../data/selection";
+import { navigateToFolder } from "../data/navigate";
+
 import { tableColumns, tableRowBaseSx } from "./common";
 import { TableIconCell, TableCell, TableEditingCell } from "./TableRowCell";
 import { TableRowClipboardDecorator } from "./TableRowDecorators";
@@ -41,6 +44,25 @@ const createHandleSendEdit = (name: string) => {
 };
 
 /**
+ * 根據檔案類型和路徑創建點擊事件處理器
+ */
+const createHandleClick = (params: { fileType: string; filePath: string; index: number }) => {
+  const { fileType, filePath, index } = params;
+
+  return (e: React.MouseEvent<HTMLButtonElement>) => {
+    selectRow({ index, isAdditive: e.ctrlKey || e.metaKey, isRange: e.shiftKey });
+
+    if (e.detail !== 2) return;
+
+    if (fileType === "folder" || fileType === "file-symlink-directory") {
+      navigateToFolder({ dirPath: filePath });
+    } else if (fileType === "file" || fileType === "file-symlink-file") {
+      openFile(filePath);
+    }
+  };
+};
+
+/**
  * 用於呈現一個普通的資料列
  */
 const TableRow = ({ sx, index, ...props }: ButtonBaseProps & { index: number }) => {
@@ -58,8 +80,10 @@ const TableRow = ({ sx, index, ...props }: ButtonBaseProps & { index: number }) 
 
   const mergedSx: SxProps = { ...tableRowBaseSx, ...sx } as SxProps;
 
+  const handleClick = createHandleClick({ ...row, index });
+
   return (
-    <ButtonBase focusRipple disabled={isRenaming} sx={mergedSx} {...draggableProps} {...props}>
+    <ButtonBase focusRipple disabled={isRenaming} sx={mergedSx} onClick={handleClick} {...draggableProps} {...props}>
       {tableColumns.map((column) => {
         const { field } = column;
         const textVariant = field === "fileName" ? "primary" : "secondary";
