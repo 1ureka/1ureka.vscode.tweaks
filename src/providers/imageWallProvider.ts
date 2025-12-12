@@ -36,7 +36,7 @@ type ClickImageAPI = {
 };
 type CopyImageAPI = {
   id: "copyImage";
-  handler: (params: { filePath: string }) => void;
+  handler: (params: { filePath: string | null }) => void;
 };
 
 export type { ShowInfoAPI, ShowErrorAPI, GenerateMetadataAPI, GenerateThumbnailAPI, ClickImageAPI, CopyImageAPI };
@@ -106,7 +106,11 @@ function ImageWallPanelProvider(context: vscode.ExtensionContext) {
       vscode.commands.executeCommand("vscode.open", uri, vscode.ViewColumn.Active);
     });
     onDidReceiveInvoke<CopyImageAPI>(panel, "copyImage", ({ filePath }) => {
-      return copyImage(filePath);
+      if (!filePath) {
+        vscode.window.showWarningMessage("未選中任何圖片，無法複製");
+      } else {
+        return copyImage(filePath);
+      }
     });
   };
 

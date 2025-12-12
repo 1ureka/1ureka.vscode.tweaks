@@ -17,7 +17,7 @@ const registerClipboardEvent = () => {
   window.addEventListener("pointerdown", handlePointerDown, true);
 
   const handleCopy = () => {
-    if (lastPointerDownImagePath) invoke<CopyImageAPI>("copyImage", { filePath: lastPointerDownImagePath });
+    invoke<CopyImageAPI>("copyImage", { filePath: lastPointerDownImagePath });
   };
 
   window.addEventListener("copy", handleCopy);
