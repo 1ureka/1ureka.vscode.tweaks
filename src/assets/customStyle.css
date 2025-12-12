@@ -46,4 +46,5 @@
   background-position: center center !important;
   background-size: contain !important;
   width: 60% !important;
+  max-width: 100% !important;
 }
