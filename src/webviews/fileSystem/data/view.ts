@@ -5,8 +5,6 @@ import type { InspectDirectoryEntry } from "@/utils/system";
 import type { Prettify } from "@/utils";
 
 // ----------------------------------------------------------------------------
-// 定義系統瀏覽器可以如何被檢視的狀態
-// ----------------------------------------------------------------------------
 
 type FileProperties = Prettify<InspectDirectoryEntry & { icon: `codicon codicon-${string}` }>;
 
@@ -22,31 +20,32 @@ const initialViewState: ViewStateStore = {
   filter: "all",
 };
 
+/**
+ * 定義系統瀏覽器可以如何被檢視的狀態
+ */
 const fileSystemViewStore = create<ViewStateStore>(() => initialViewState);
-
-export { fileSystemViewStore };
-export type { FileProperties };
-
-// ----------------------------------------------------------------------------
-// 定義用於實際呈現在表格中的檔案系統資料狀態
-// (以及同樣需要依賴於原始資料與檢視條件的選取狀態)
-// ----------------------------------------------------------------------------
 
 type ViewDataStore = {
   entries: FileProperties[];
   selected: (0 | 1)[];
   lastSelectedIndex: number | null;
+  renamingIndex: number | null;
 };
 
 const initialViewData: ViewDataStore = {
   entries: [],
   selected: [],
   lastSelectedIndex: null,
+  renamingIndex: null,
 };
 
+/**
+ * 定義需要依賴於原始資料與檢視條件的狀態，比如根據檢視狀態計算後的列表或是以索引為基礎的選取狀態等
+ */
 const fileSystemViewDataStore = create<ViewDataStore>(() => initialViewData);
 
-export { fileSystemViewDataStore };
+export { fileSystemViewStore, fileSystemViewDataStore };
+export type { FileProperties };
 
 // ----------------------------------------------------------------------------
 // 定義用於根據檔案系統資料與檢視條件計算 viewData 的輔助函式
@@ -131,7 +130,13 @@ const handleDataUpdate = () => {
   const entriesWithIcons = assignIconToEntries(entriesSorted);
 
   const selected = Array<0 | 1>(entriesWithIcons.length).fill(0);
-  fileSystemViewDataStore.setState({ entries: entriesWithIcons, selected, lastSelectedIndex: null });
+
+  fileSystemViewDataStore.setState({
+    entries: entriesWithIcons,
+    selected,
+    lastSelectedIndex: null,
+    renamingIndex: null,
+  });
 };
 
 /**

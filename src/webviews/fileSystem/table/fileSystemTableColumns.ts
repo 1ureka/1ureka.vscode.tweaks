@@ -1,5 +1,5 @@
 import type { OneOf } from "@/utils";
-import { FileProperties } from "@/webviews/fileSystem/data/view";
+import type { FileProperties } from "@/webviews/fileSystem/data/view";
 
 type TableCellAlign = "left" | "right" | "center";
 type TableFields = Exclude<keyof FileProperties, "filePath" | "fileSize">;

@@ -133,3 +133,4 @@ const FileMetadataProvider = (context: vscode.ExtensionContext) => {
 };
 
 export { FileMetadataProvider };
+export type { FileInfo, ImageInfo };
