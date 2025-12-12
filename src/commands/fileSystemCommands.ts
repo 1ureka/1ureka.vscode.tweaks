@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import type { CreateFileAPI, CreateDirAPI, ReadDirAPI } from "@/providers/fileSystemProvider";
+import type { CreateFileAPI, CreateDirAPI, ReadDirAPI, RenameAPI } from "@/providers/fileSystemProvider";
 import type { OpenInWorkspaceAPI, OpenInTerminalAPI, OpenInImageWallAPI } from "@/webviews/fileSystem/data/message";
 import type { FilterAllAPI, FilterFoldersAPI, FilterFilesAPI } from "@/webviews/fileSystem/data/message";
 import type { CopyNameAPI, CopyPathAPI } from "@/webviews/fileSystem/data/message";
@@ -105,5 +105,11 @@ export function registerFileSystemCommands(context: vscode.ExtensionContext) {
     const panel = fileSystemProvider.getCurrentPanel();
     if (!panel) return;
     forwardCommandToWebview<CopyPathAPI>(panel, "copyPathsToSystemClipboard");
+  });
+
+  commandManager.register("1ureka.fileSystem.rename", () => {
+    const panel = fileSystemProvider.getCurrentPanel();
+    if (!panel) return;
+    forwardCommandToWebview<RenameAPI>(panel, "rename");
   });
 }

@@ -39,6 +39,7 @@ type CommandId =
   | "1ureka.fileSystem.filterFiles"
   | "1ureka.fileSystem.copyPaths"
   | "1ureka.fileSystem.copyNames"
+  | "1ureka.fileSystem.rename"
   // Inject Styles Commands
   | "1ureka.injectStyles"
   | "1ureka.restoreStyles"
@@ -277,6 +278,12 @@ const webviewContextMenuEntries: WebviewContextMenuEntries = [
     title: "複製名稱",
     webviewId: "1ureka.fileSystem",
     group: "6_cutcopypaste@1",
+  },
+  {
+    id: "1ureka.fileSystem.rename",
+    title: "重新命名",
+    webviewId: "1ureka.fileSystem",
+    group: "7_modification@1",
   },
 ];
 

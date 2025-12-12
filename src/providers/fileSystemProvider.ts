@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 
 import { onDidReceiveInvoke } from "@/utils/message_host";
 import { createWebviewPanelManager } from "@/utils/webview";
-import { handleInitialData, handlePaste } from "@/handlers/fileSystemHandlers";
+import { handleInitialData, handlePaste, handleRename } from "@/handlers/fileSystemHandlers";
 import { handleCreateFile, handleCreateDir, handleReadDirectory, handleGoto } from "@/handlers/fileSystemHandlers";
 import type { WithProgress } from "@/utils";
 
@@ -52,10 +52,14 @@ type PasteAPI = {
   id: "paste";
   handler: (params: { srcList: string[]; destDir: string }) => ReturnType<typeof handlePaste>;
 };
+type RenameAPI = {
+  id: "rename";
+  handler: (params: { src: string; dest: string }) => ReturnType<typeof handleRename>;
+};
 
 export type { FileSystemInitialData };
 export type { ShowInfoAPI, SetSystemClipboardAPI, ReadDirAPI, CreateFileAPI, CreateDirAPI, PasteAPI };
-export type { OpenFileAPI, OpenInTargetAPI, GotoPathAPI };
+export type { OpenFileAPI, OpenInTargetAPI, GotoPathAPI, RenameAPI };
 
 // ---------------------------------------------------------------------------------
 
@@ -212,6 +216,9 @@ function FileSystemPanelProvider(context: vscode.ExtensionContext) {
       const withProgress = pasteItemsWithProgress;
 
       return handlePaste({ srcList, destDir, type, overwrite, withProgress, showErrorReport });
+    });
+    onDidReceiveInvoke<RenameAPI>(panel, "rename", async ({ src, dest }) => {
+      return handleRename({ src, dest, showError });
     });
   };
 

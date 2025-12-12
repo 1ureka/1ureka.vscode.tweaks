@@ -210,5 +210,19 @@ const handlePaste = async (params: {
   return handleReadDirectory({ dirPath: destDir });
 };
 
-export { handleInitialData, handleCreateFile, handleCreateDir, handlePaste };
+/**
+ * 處理重新命名檔案/資料夾
+ */
+const handleRename = async (params: { src: string; dest: string; showError: (error: string) => void }) => {
+  const { src, dest, showError } = params;
+
+  const { error } = await tryCatch(() => fs.promises.rename(src, dest));
+  if (error) {
+    showError(`無法重新命名: ${error instanceof Error ? error.message : "未知錯誤"}`);
+  }
+
+  return handleReadDirectory({ dirPath: path.dirname(dest) });
+};
+
+export { handleInitialData, handleCreateFile, handleCreateDir, handlePaste, handleRename };
 export { handleReadDirectory, handleGoto };
