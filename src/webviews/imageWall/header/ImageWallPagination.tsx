@@ -1,10 +1,10 @@
 import React from "react";
 import { Box, Pagination } from "@mui/material";
-import { imageWallDataStore, setPage } from "../data/data";
+import { imageWallViewState, setPage } from "../data/view";
 
 const ImageWallPagination = () => {
-  const page = imageWallDataStore((state) => state.page);
-  const pages = imageWallDataStore((state) => state.pages);
+  const page = imageWallViewState((state) => state.page);
+  const pages = imageWallViewState((state) => state.totalPages);
 
   return (
     <Box sx={{ px: 2, pb: 1.5 }}>

@@ -5,7 +5,7 @@ import { ImageWallItemDisplay } from "./ImageWallItemDisplay";
 import { ImageWallItemButton } from "./ImageWallItemButton";
 
 type ImageWallItemProps = {
-  id: string;
+  filePath: string;
   fileName: string;
   width: number;
   height: number;
@@ -26,11 +26,11 @@ const imageWallItemSx: SxProps = {
   [`& > .${imageWallItemBarClassName}`]: { transition: "opacity 0.2s" },
 };
 
-const ImageWallItem = ({ id, fileName, width, height }: ImageWallItemProps) => (
-  <ImageListItem sx={imageWallItemSx}>
-    <ImageWallItemDisplay id={id} fileName={fileName} width={width} height={height} />
-    <ImageWallItemBar fileName={fileName} width={width} height={height} />
-    <ImageWallItemButton id={id} />
+const ImageWallItem = (props: ImageWallItemProps) => (
+  <ImageListItem id={props.filePath} sx={imageWallItemSx}>
+    <ImageWallItemDisplay {...props} />
+    <ImageWallItemBar {...props} />
+    <ImageWallItemButton {...props} />
   </ImageListItem>
 );
 

@@ -6,6 +6,8 @@ import { ImageWallItem } from "./item/ImageWallItem";
 
 import { imageWallPreferenceStore } from "./data/preference";
 import { imageWallDataStore } from "./data/data";
+import { imageWallViewData } from "./data/view";
+import type { ExtendedMetadata } from "@/utils/image";
 
 const columnCountsMap = {
   s: { xl: 7, lg: 6, md: 5, sm: 4, xs: 3 },
@@ -13,6 +15,7 @@ const columnCountsMap = {
   l: { xl: 4, lg: 3, md: 2, sm: 1, xs: 1 },
 };
 
+/** 根據螢幕尺寸和偏好設定的欄位大小，計算出當前應該顯示的欄位數 */
 const useColumnCounts = () => {
   const columnSize = imageWallPreferenceStore((state) => state.columnSize);
 
@@ -30,36 +33,48 @@ const useColumnCounts = () => {
   return currentSizeMap.xs;
 };
 
-const Images = () => {
-  const images = imageWallDataStore((state) => state.images);
+/** 顯示圖片列表 */
+const ImageWallList = ({ images }: { images: ExtendedMetadata[] }) => {
   const variant = imageWallPreferenceStore((state) => state.mode);
   const columnCounts = useColumnCounts();
 
-  if (images.length === 0)
-    return (
-      <Box sx={{ textAlign: "center", py: 8 }}>
-        <Typography variant="body2" color="text.secondary">
-          此資料夾中沒有圖片
-        </Typography>
-      </Box>
-    );
-
   return (
     <ImageList variant={variant} cols={columnCounts} gap={8} sx={{ p: 2, pt: 0, m: 0 }}>
-      {images.map(({ id, metadata: { fileName, width, height } }) => (
-        <ImageWallItem key={id} id={id} fileName={fileName} width={width} height={height} />
+      {images.map(({ filePath, fileName, width, height }) => (
+        <ImageWallItem key={filePath} filePath={filePath} fileName={fileName} width={width} height={height} />
       ))}
     </ImageList>
   );
 };
 
+/** 根據是否在初始載入或是否有圖片，顯示不同的內容 */
+const ImageWallBody = () => {
+  const images = imageWallViewData((state) => state.images);
+  const initialLoading = imageWallDataStore((state) => state.initialLoading);
+
+  if (images.length === 0) {
+    return (
+      <Box sx={{ textAlign: "center", py: 8 }}>
+        <Typography variant="body2" color="text.secondary">
+          {initialLoading ? "載入中..." : "此資料夾中沒有圖片"}
+        </Typography>
+      </Box>
+    );
+  } else {
+    return (
+      <Box sx={{ display: "flex", flexDirection: "column" }}>
+        <ImageWallPagination />
+        <ImageWallList images={images} />
+      </Box>
+    );
+  }
+};
+
+/** 圖片牆 */
 export const ImageWall = () => (
   <Container disableGutters maxWidth="xl" sx={{ height: "100vh", overflow: "auto" }}>
-    <Box sx={{ display: "flex", flexDirection: "column" }}>
-      <ImageWallHeader />
-      <ImageWallPagination />
-      <Images />
-    </Box>
+    <ImageWallHeader />
+    <ImageWallBody />
     <Box sx={{ p: 2 }} />
   </Container>
 );

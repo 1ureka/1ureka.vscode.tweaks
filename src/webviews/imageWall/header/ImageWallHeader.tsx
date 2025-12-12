@@ -5,7 +5,7 @@ import { formatPathArray } from "@/utils/formatter";
 
 const ImageWallHeader = () => {
   const folderPathParts = imageWallDataStore((state) => state.folderPathParts);
-  const totalImages = imageWallDataStore((state) => state.totalImages);
+  const totalImages = imageWallDataStore((state) => state.images.length);
 
   return (
     <Box sx={{ display: "flex", gap: 1, alignItems: "center", flexWrap: "wrap", p: 2 }}>
