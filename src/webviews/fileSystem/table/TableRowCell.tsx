@@ -36,20 +36,34 @@ const TableCell = (props: { text: string; variant: "primary" | "secondary"; colu
 /**
  * 用於表格某 row 中的正在編輯單元格
  */
-const TableEditingCell = (props: { text: string; onBlur: (newText: string) => void; column: TableColumn }) => {
-  const { text, onBlur } = props;
+const TableEditingCell = (props: { defaultValue: string; onSend: (newText: string) => void; column: TableColumn }) => {
+  const { defaultValue, onSend } = props;
   const { align, weight: flex } = props.column;
 
   const justifyContent = align === "left" ? "flex-start" : align === "right" ? "flex-end" : "center";
+
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    onSend(e.target.value);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      onSend(e.currentTarget.value);
+    }
+    if (e.key === "Escape") {
+      onSend(defaultValue);
+    }
+  };
 
   return (
     <Box sx={{ flex, minWidth: 0, display: "flex", alignItems: "center", justifyContent }}>
       <TextField
         size="small"
         variant="standard"
-        defaultValue={text}
+        defaultValue={defaultValue}
         autoFocus
-        onBlur={(e) => onBlur(e.target.value)}
+        onBlur={handleBlur}
+        slotProps={{ input: { onKeyDown: handleKeyDown } }}
         sx={{ width: 1 }}
       />
     </Box>

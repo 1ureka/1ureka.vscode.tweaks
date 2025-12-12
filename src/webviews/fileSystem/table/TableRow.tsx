@@ -60,9 +60,9 @@ const TableRow = ({ sx, row, isDraggable, isRenaming, ...props }: TableRowProps)
           return (
             <TableEditingCell
               key={field}
-              text={row[field]}
+              defaultValue={row[field]}
               column={column}
-              onBlur={(newName) => endRenaming({ name: row.fileName, newName })}
+              onSend={(newName) => endRenaming({ name: row.fileName, newName })}
             />
           );
         }
