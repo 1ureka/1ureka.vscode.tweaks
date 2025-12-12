@@ -64,7 +64,7 @@ const TableEditingCell = (props: { defaultValue: string; onSend: (newText: strin
         autoFocus
         onBlur={handleBlur}
         slotProps={{ input: { onKeyDown: handleKeyDown } }}
-        sx={{ width: 1 }}
+        sx={{ width: 1, pointerEvents: "auto" }}
       />
     </Box>
   );

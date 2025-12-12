@@ -52,7 +52,6 @@ const TableBody = () => {
   const isCurrentRoot = fileSystemDataStore((state) => state.isCurrentRoot);
   const viewEntries = fileSystemViewDataStore((state) => state.entries);
   const selected = fileSystemViewDataStore((state) => state.selected);
-  const renamingIndex = fileSystemViewDataStore((state) => state.renamingIndex);
 
   const rowVirtualizer = useVirtualizer({
     getScrollElement: () => document.getElementById("file-system-body-wrapper"),
@@ -71,9 +70,7 @@ const TableBody = () => {
       {rowVirtualizer.getVirtualItems().map(({ key, size, start, index }) => (
         <Box key={key} sx={{ ...virtualItemWrapperSx, height: `${size}px`, transform: `translateY(${start}px)` }}>
           <TableRow
-            isDraggable={viewEntries[index].fileType === "file" && renamingIndex !== index}
-            isRenaming={renamingIndex === index}
-            row={viewEntries[index]}
+            index={index}
             onClick={createHandleRowClick(viewEntries[index].fileType, viewEntries[index].filePath, index)}
             sx={createRowBackgroundSx({ index: isCurrentRoot ? index : index + 1, selected: Boolean(selected[index]) })}
           />

@@ -4,7 +4,7 @@ import { ButtonBase } from "@mui/material";
 import { formatFileSize, formatFileType } from "@/utils/formatter";
 import { endRenaming } from "../data/action";
 
-import type { FileProperties } from "@/webviews/fileSystem/data/view";
+import { fileSystemViewDataStore } from "@/webviews/fileSystem/data/view";
 import { tableColumns, tableRowBaseSx } from "./common";
 import { TableIconCell, TableCell, TableEditingCell } from "./TableRowCell";
 import { TableRowClipboardDecorator } from "./TableRowDecorators";
@@ -32,14 +32,26 @@ const createHandleDragStart = (params: { filePath: string; fileName: string }) =
 };
 
 /**
- * 普通資料列組件的 props 型別
+ * 根據項目名稱創建編輯結束事件處理器
  */
-type TableRowProps = ButtonBaseProps & { row: FileProperties; isDraggable: boolean; isRenaming: boolean };
+const createHandleSendEdit = (name: string) => {
+  return (newName: string) => {
+    endRenaming({ name, newName });
+  };
+};
 
 /**
  * 用於呈現一個普通的資料列
  */
-const TableRow = ({ sx, row, isDraggable, isRenaming, ...props }: TableRowProps) => {
+const TableRow = ({ sx, index, ...props }: ButtonBaseProps & { index: number }) => {
+  const viewEntries = fileSystemViewDataStore((state) => state.entries);
+  const row = viewEntries[index];
+
+  const renamingIndex = fileSystemViewDataStore((state) => state.renamingIndex);
+  const isRenaming = renamingIndex === index;
+
+  const isDraggable = row.fileType === "file" && !isRenaming;
+
   const draggableProps: Partial<ButtonBaseProps> = isDraggable
     ? { draggable: true, onDragStart: createHandleDragStart(row) }
     : {};
@@ -47,7 +59,7 @@ const TableRow = ({ sx, row, isDraggable, isRenaming, ...props }: TableRowProps)
   const mergedSx: SxProps = { ...tableRowBaseSx, ...sx } as SxProps;
 
   return (
-    <ButtonBase focusRipple={!isRenaming} sx={mergedSx} {...draggableProps} {...props}>
+    <ButtonBase focusRipple disabled={isRenaming} sx={mergedSx} {...draggableProps} {...props}>
       {tableColumns.map((column) => {
         const { field } = column;
         const textVariant = field === "fileName" ? "primary" : "secondary";
@@ -57,14 +69,8 @@ const TableRow = ({ sx, row, isDraggable, isRenaming, ...props }: TableRowProps)
         }
 
         if (field === "fileName" && isRenaming) {
-          return (
-            <TableEditingCell
-              key={field}
-              defaultValue={row[field]}
-              column={column}
-              onSend={(newName) => endRenaming({ name: row.fileName, newName })}
-            />
-          );
+          const handleSend = createHandleSendEdit(row.fileName);
+          return <TableEditingCell key={field} defaultValue={row[field]} column={column} onSend={handleSend} />;
         }
 
         let formatted: string;
