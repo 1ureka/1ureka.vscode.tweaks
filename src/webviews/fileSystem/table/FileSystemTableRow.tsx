@@ -5,8 +5,10 @@ import type { ButtonBaseProps, SxProps } from "@mui/material";
 import type { TableFields, TableIconColumn, TableTextColumn } from "./fileSystemTableColumns";
 import { tableColumns } from "./fileSystemTableColumns";
 import { TableHeadCell, TableIconCell, TableTextCell } from "./FileSystemTableCell";
-import { fileSystemViewStore, setSorting } from "../data/view";
+
+import { fileSystemViewStore } from "../data/view";
 import { useIsInClipboard } from "../data/clipboard";
+import { setSorting } from "../data/action";
 
 /**
  * 表格列的固定高度

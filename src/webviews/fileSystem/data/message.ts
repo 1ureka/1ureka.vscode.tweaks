@@ -1,8 +1,7 @@
 import { onReceiveCommand } from "@/utils/message_client";
 import { refresh } from "./navigate";
-import { setFilter } from "./view";
 import { handleCopyToSystem } from "./clipboard";
-import { createNewFile, createNewFolder, openInWorkspace, openInTerminal, openInImageWall } from "./action";
+import { setFilter, createNewFile, createNewFolder, openInWorkspace, openInTerminal, openInImageWall } from "./action";
 import type { ReadDirAPI, CreateDirAPI, CreateFileAPI } from "@/providers/fileSystemProvider";
 
 type FilterAllAPI = { id: "filterAll"; handler: () => void };

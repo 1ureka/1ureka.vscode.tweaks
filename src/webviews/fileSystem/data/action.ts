@@ -1,7 +1,20 @@
 import { fileSystemDataStore } from "./data";
+import { fileSystemViewStore, type ViewStateStore } from "./view";
 import { requestQueue } from "./queue";
 import { invoke } from "@/utils/message_client";
 import type { OpenFileAPI, CreateDirAPI, CreateFileAPI, OpenInTargetAPI } from "@/providers/fileSystemProvider";
+
+/** 設定排序欄位與順序，如果點擊的是同一欄位，切換順序；否則使用預設升序 */
+const setSorting = (field: ViewStateStore["sortField"]) => {
+  const { sortField, sortOrder } = fileSystemViewStore.getState();
+  const newOrder = sortField === field && sortOrder === "asc" ? "desc" : "asc";
+  fileSystemViewStore.setState({ sortField: field, sortOrder: newOrder });
+};
+
+/** 設定篩選條件 */
+const setFilter = (filter: ViewStateStore["filter"]) => {
+  fileSystemViewStore.setState({ filter });
+};
 
 /** 開啟檔案 */
 const openFile = (filePath: string) => {
@@ -42,4 +55,5 @@ const openInImageWall = () => {
   invoke<OpenInTargetAPI>("openInTarget", { target: "imageWall", dirPath: currentPath });
 };
 
+export { setSorting, setFilter };
 export { openFile, createNewFolder, createNewFile, openInWorkspace, openInTerminal, openInImageWall };

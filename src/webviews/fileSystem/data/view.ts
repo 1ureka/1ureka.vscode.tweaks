@@ -45,7 +45,7 @@ const initialViewData: ViewDataStore = {
 const fileSystemViewDataStore = create<ViewDataStore>(() => initialViewData);
 
 export { fileSystemViewStore, fileSystemViewDataStore };
-export type { FileProperties };
+export type { FileProperties, ViewStateStore };
 
 // ----------------------------------------------------------------------------
 // 定義用於根據檔案系統資料與檢視條件計算 viewData 的輔助函式
@@ -144,21 +144,3 @@ const handleDataUpdate = () => {
  */
 fileSystemViewStore.subscribe(handleDataUpdate);
 fileSystemDataStore.subscribe(handleDataUpdate);
-
-// ----------------------------------------------------------------------------
-// 定義用於更改系統瀏覽器檢視狀態的行為
-// ----------------------------------------------------------------------------
-
-/** 設定排序欄位與順序，如果點擊的是同一欄位，切換順序；否則使用預設升序 */
-const setSorting = (field: ViewStateStore["sortField"]) => {
-  const { sortField, sortOrder } = fileSystemViewStore.getState();
-  const newOrder = sortField === field && sortOrder === "asc" ? "desc" : "asc";
-  fileSystemViewStore.setState({ sortField: field, sortOrder: newOrder });
-};
-
-/** 設定篩選條件 */
-const setFilter = (filter: ViewStateStore["filter"]) => {
-  fileSystemViewStore.setState({ filter });
-};
-
-export { setSorting, setFilter };
