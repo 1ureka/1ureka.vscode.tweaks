@@ -1,13 +1,13 @@
 import React from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { Box, type SxProps } from "@mui/material";
+import { formatFileType } from "@/utils/formatter";
 
 import { fileSystemDataStore } from "../data/data";
 import { navigateToFolder, navigateUp } from "../data/navigate";
 import { fileSystemViewDataStore } from "../data/view";
 import { openFile } from "../data/action";
 import { selectRow } from "../data/selection";
-import { extensionTypeMap } from "../data_static/fileExtMap";
 
 import { tableRowHeight } from "./common";
 import { NoItemDisplay } from "./NoItemDisplay";
@@ -47,34 +47,6 @@ const createHandleRowClick =
   };
 
 /**
- * 檔案類型標籤對應表
- */
-const fileTypeLabels: Record<string, string> = {
-  file: "檔案",
-  folder: "資料夾",
-  "file-symlink-file": "符號連結檔案",
-  "file-symlink-directory": "符號連結資料夾",
-};
-
-/**
- * 獲取用於顯示的檔案類型名稱
- */
-const getFileTypeLabel = (params: { fileName: string; fileType: string }): string => {
-  let label = fileTypeLabels[params.fileType] || "未知類型";
-
-  if (params.fileType !== "file") return label;
-
-  const fileName = params.fileName.toLowerCase();
-  const extension = fileName.includes(".") ? fileName.split(".").pop() || "" : "";
-
-  if (extension in extensionTypeMap) {
-    label = extensionTypeMap[extension];
-  }
-
-  return label;
-};
-
-/**
  * 用於呈現表格主體的組件
  */
 const TableBody = () => {
@@ -87,7 +59,7 @@ const TableBody = () => {
     ...rest,
     rawFileType: fileType,
     fileName,
-    fileType: getFileTypeLabel({ fileName, fileType }),
+    fileType: formatFileType({ fileName, fileType }),
     mtime: new Date(mtime).toLocaleString(),
     ctime: new Date(ctime).toLocaleDateString(),
     size: size > 0 ? fileSize : "",

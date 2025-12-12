@@ -1,3 +1,5 @@
+import { extensionTypeMap } from "@/assets/fileExtMap";
+
 /** 格式化路徑陣列 (用於在 windows 系統將磁碟機大寫顯示) */
 function formatPathArray(array: string[]): string[] {
   const newArray = [...array];
@@ -87,4 +89,28 @@ function generateErrorMessage({ action, itemCount, itemFailures, sideEffects }: 
   return [title, summary, failureDetails, sideEffectSection].join("\n\n---\n\n");
 }
 
-export { formatPathArray, formatDateCompact, formatDateFull, formatFileSize, generateErrorMessage };
+/** 粗略檔案類型標籤對應表 (fallback) */
+const fileTypeLabels: Record<string, string> = {
+  file: "檔案",
+  folder: "資料夾",
+  "file-symlink-file": "符號連結檔案",
+  "file-symlink-directory": "符號連結資料夾",
+};
+
+/** 格式化為可讀的檔案類型名稱 */
+const formatFileType = (params: { fileName: string; fileType: string }): string => {
+  let label = fileTypeLabels[params.fileType] || "未知類型";
+
+  if (params.fileType !== "file") return label;
+
+  const fileName = params.fileName.toLowerCase();
+  const extension = fileName.includes(".") ? fileName.split(".").pop() || "" : "";
+
+  if (extension in extensionTypeMap) {
+    label = extensionTypeMap[extension];
+  }
+
+  return label;
+};
+
+export { formatPathArray, formatDateCompact, formatDateFull, formatFileSize, formatFileType, generateErrorMessage };
