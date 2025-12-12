@@ -23,8 +23,14 @@ jobs:
           node-version: 22
           cache: "npm"
 
-      - name: Install deps
+      - name: Install deps (npm ci)
+        id: npm_ci
         run: npm ci
+        continue-on-error: true
+
+      - name: Install deps (npm install)
+        if: ${{ steps.npm_ci.outcome == 'failure' }}
+        run: npm install
 
       - name: Build and package extension
         run: npm run build
