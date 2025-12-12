@@ -2,9 +2,7 @@ import React from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { Box, type SxProps } from "@mui/material";
 
-import { fileSystemDataStore } from "../data/data";
 import { fileSystemViewDataStore } from "../data/view";
-
 import { tableRowHeight } from "./common";
 import { NoItemDisplay } from "./NoItemDisplay";
 import { TableHeadRow } from "./TableHeadRow";
@@ -12,27 +10,10 @@ import { TableNavigateUpRow } from "./TableNavigateUpRow";
 import { TableRow } from "./TableRow";
 
 /**
- * 用於呈現每一列的背景樣式
- */
-function createRowBackgroundSx({ index, selected }: { index: number; selected: boolean }): SxProps {
-  let bgcolor = index % 2 === 0 ? "table.alternateRowBackground" : "transparent";
-  let hoverBgcolor = "table.hoverBackground";
-
-  if (selected) {
-    bgcolor = "table.selectedBackground";
-    hoverBgcolor = "table.selectedHoverBackground";
-  }
-
-  return { borderRadius: 1, pointerEvents: "auto", bgcolor, "&:hover": { bgcolor: hoverBgcolor } };
-}
-
-/**
  * 用於呈現表格主體的組件
  */
 const TableBody = () => {
-  const isCurrentRoot = fileSystemDataStore((state) => state.isCurrentRoot);
   const viewEntries = fileSystemViewDataStore((state) => state.entries);
-  const selected = fileSystemViewDataStore((state) => state.selected);
 
   const rowVirtualizer = useVirtualizer({
     getScrollElement: () => document.getElementById("file-system-body-wrapper"),
@@ -50,10 +31,7 @@ const TableBody = () => {
     >
       {rowVirtualizer.getVirtualItems().map(({ key, size, start, index }) => (
         <Box key={key} sx={{ ...virtualItemWrapperSx, height: `${size}px`, transform: `translateY(${start}px)` }}>
-          <TableRow
-            index={index}
-            sx={createRowBackgroundSx({ index: isCurrentRoot ? index : index + 1, selected: Boolean(selected[index]) })}
-          />
+          <TableRow index={index} />
         </Box>
       ))}
     </Box>

@@ -3,14 +3,30 @@ import type { ButtonBaseProps, SxProps } from "@mui/material";
 import { ButtonBase } from "@mui/material";
 import { formatFileSize, formatFileType } from "@/utils/formatter";
 
-import { endRenaming, openFile } from "../data/action";
+import { fileSystemDataStore } from "../data/data";
 import { fileSystemViewDataStore } from "../data/view";
-import { selectRow } from "../data/selection";
+import { endRenaming, openFile } from "../data/action";
 import { navigateToFolder } from "../data/navigate";
+import { selectRow } from "../data/selection";
 
 import { tableColumns, tableRowBaseSx } from "./common";
 import { TableIconCell, TableCell, TableEditingCell } from "./TableRowCell";
 import { TableRowClipboardDecorator } from "./TableRowDecorators";
+
+/**
+ * 用於呈現每一列的背景樣式
+ */
+function createRowBackgroundSx({ alternate, selected }: { alternate: boolean; selected: boolean }): SxProps {
+  let bgcolor = alternate ? "table.alternateRowBackground" : "transparent";
+  let hoverBgcolor = "table.hoverBackground";
+
+  if (selected) {
+    bgcolor = "table.selectedBackground";
+    hoverBgcolor = "table.selectedHoverBackground";
+  }
+
+  return { borderRadius: 1, bgcolor, "&:hover": { bgcolor: hoverBgcolor } };
+}
 
 /**
  * 根據項目路徑和名稱創建拖放開始事件處理器
@@ -65,25 +81,32 @@ const createHandleClick = (params: { fileType: string; filePath: string; index: 
 /**
  * 用於呈現一個普通的資料列
  */
-const TableRow = ({ sx, index, ...props }: ButtonBaseProps & { index: number }) => {
-  const viewEntries = fileSystemViewDataStore((state) => state.entries);
-  const row = viewEntries[index];
-
+const TableRow = ({ index }: { index: number }) => {
   const renamingIndex = fileSystemViewDataStore((state) => state.renamingIndex);
-  const isRenaming = renamingIndex === index;
+  const isCurrentRoot = fileSystemDataStore((state) => state.isCurrentRoot);
+  const viewEntries = fileSystemViewDataStore((state) => state.entries);
+  const selected = fileSystemViewDataStore((state) => state.selected);
 
+  const row = viewEntries[index];
+  const isRenaming = renamingIndex === index;
   const isDraggable = row.fileType === "file" && !isRenaming;
 
   const draggableProps: Partial<ButtonBaseProps> = isDraggable
     ? { draggable: true, onDragStart: createHandleDragStart(row) }
     : {};
 
-  const mergedSx: SxProps = { ...tableRowBaseSx, ...sx } as SxProps;
+  const mergedSx = {
+    ...tableRowBaseSx,
+    ...createRowBackgroundSx({
+      alternate: isCurrentRoot ? index % 2 === 0 : (index + 1) % 2 === 0,
+      selected: Boolean(selected[index]),
+    }),
+  };
 
   const handleClick = createHandleClick({ ...row, index });
 
   return (
-    <ButtonBase focusRipple disabled={isRenaming} sx={mergedSx} onClick={handleClick} {...draggableProps} {...props}>
+    <ButtonBase focusRipple disabled={isRenaming} sx={mergedSx} onClick={handleClick} {...draggableProps}>
       {tableColumns.map((column) => {
         const { field } = column;
         const textVariant = field === "fileName" ? "primary" : "secondary";
