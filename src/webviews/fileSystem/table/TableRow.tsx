@@ -1,13 +1,35 @@
 import React from "react";
-import { ButtonBase } from "@mui/material";
 import type { ButtonBaseProps, SxProps } from "@mui/material";
+import { ButtonBase } from "@mui/material";
+import { formatFileType } from "@/utils/formatter";
+import { endRenaming } from "../data/action";
 
 import type { TableFields } from "./common";
 import { tableColumns, tableRowBaseSx } from "./common";
 import { TableIconCell, TableCell, TableEditingCell } from "./TableRowCell";
-
-import { endRenaming } from "../data/action";
 import { TableRowClipboardDecorator } from "./TableRowDecorators";
+
+/**
+ * 根據項目路徑和名稱創建拖放開始事件處理器
+ */
+const createHandleDragStart = (params: { filePath: string; fileName: string }) => {
+  const { filePath, fileName } = params;
+
+  const handler: React.DragEventHandler<HTMLButtonElement> = (e) => {
+    const fileUrl = `file:///${filePath.replace(/\\/g, "/")}`;
+    const mimeType = "application/octet-stream";
+    const downloadURL = `${mimeType}:${fileName}:${fileUrl}`;
+
+    e.dataTransfer.setData("DownloadURL", downloadURL);
+    e.dataTransfer.setData("text/uri-list", fileUrl);
+    e.dataTransfer.setData("application/vnd.code.uri-list", JSON.stringify([fileUrl]));
+    e.dataTransfer.setData("codefiles", JSON.stringify([filePath]));
+    e.dataTransfer.setData("resourceurls", JSON.stringify([fileUrl]));
+    e.dataTransfer.effectAllowed = "copy";
+  };
+
+  return handler;
+};
 
 /**
  * 普通資料列組件的 props 型別
@@ -22,22 +44,9 @@ type TableRowProps = ButtonBaseProps & {
  * 用於呈現一個普通的資料列
  */
 const TableRow = ({ sx, row, isDraggable, isRenaming, ...props }: TableRowProps) => {
-  const handleDragStart: React.DragEventHandler<HTMLButtonElement> = (e) => {
-    const fileUrl = `file:///${row.filePath.replace(/\\/g, "/")}`;
-    const filePath = row.filePath;
-    const fileName = row.fileName;
-    const mimeType = "application/octet-stream";
-    const downloadURL = `${mimeType}:${fileName}:${fileUrl}`;
-
-    e.dataTransfer.setData("DownloadURL", downloadURL);
-    e.dataTransfer.setData("text/uri-list", fileUrl);
-    e.dataTransfer.setData("application/vnd.code.uri-list", JSON.stringify([fileUrl]));
-    e.dataTransfer.setData("codefiles", JSON.stringify([filePath]));
-    e.dataTransfer.setData("resourceurls", JSON.stringify([fileUrl]));
-    e.dataTransfer.effectAllowed = "copy";
-  };
-
-  const draggableProps: Partial<ButtonBaseProps> = isDraggable ? { draggable: true, onDragStart: handleDragStart } : {};
+  const draggableProps: Partial<ButtonBaseProps> = isDraggable
+    ? { draggable: true, onDragStart: createHandleDragStart(row) }
+    : {};
 
   const mergedSx: SxProps = { ...tableRowBaseSx, ...sx } as SxProps;
 
@@ -49,6 +58,12 @@ const TableRow = ({ sx, row, isDraggable, isRenaming, ...props }: TableRowProps)
 
         if (field === "icon") {
           return <TableIconCell key={field} icon={row.icon} />;
+        }
+
+        if (field === "fileType") {
+          const { fileName, fileType } = row;
+          const formatted = formatFileType({ fileName, fileType });
+          return <TableCell key={field} variant={textVariant} text={formatted} column={column} />;
         }
 
         if (field !== "fileName" || !isRenaming) {

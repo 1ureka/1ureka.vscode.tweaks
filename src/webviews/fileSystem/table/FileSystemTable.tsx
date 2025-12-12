@@ -1,7 +1,6 @@
 import React from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { Box, type SxProps } from "@mui/material";
-import { formatFileType } from "@/utils/formatter";
 
 import { fileSystemDataStore } from "../data/data";
 import { navigateToFolder, navigateUp } from "../data/navigate";
@@ -55,11 +54,8 @@ const TableBody = () => {
   const selected = fileSystemViewDataStore((state) => state.selected);
   const renamingIndex = fileSystemViewDataStore((state) => state.renamingIndex);
 
-  const rows = viewEntries.map(({ fileName, fileType, mtime, ctime, fileSize, size, ...rest }) => ({
+  const rows = viewEntries.map(({ mtime, ctime, fileSize, size, ...rest }) => ({
     ...rest,
-    rawFileType: fileType,
-    fileName,
-    fileType: formatFileType({ fileName, fileType }),
     mtime: new Date(mtime).toLocaleString(),
     ctime: new Date(ctime).toLocaleDateString(),
     size: size > 0 ? fileSize : "",
@@ -82,10 +78,10 @@ const TableBody = () => {
       {rowVirtualizer.getVirtualItems().map(({ key, size, start, index }) => (
         <Box key={key} sx={{ ...virtualItemWrapperSx, height: `${size}px`, transform: `translateY(${start}px)` }}>
           <TableRow
-            isDraggable={rows[index].rawFileType === "file" && renamingIndex !== index}
+            isDraggable={rows[index].fileType === "file" && renamingIndex !== index}
             isRenaming={renamingIndex === index}
             row={rows[index]}
-            onClick={createHandleRowClick(rows[index].rawFileType, rows[index].filePath, index)}
+            onClick={createHandleRowClick(rows[index].fileType, rows[index].filePath, index)}
             sx={createRowBackgroundSx({ index: isCurrentRoot ? index : index + 1, selected: Boolean(selected[index]) })}
           />
         </Box>
