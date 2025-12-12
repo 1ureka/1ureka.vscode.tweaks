@@ -54,7 +54,7 @@ type PasteAPI = {
 };
 type RenameAPI = {
   id: "rename";
-  handler: (params: { src: string; dest: string }) => ReturnType<typeof handleRename>;
+  handler: (params: { name: string; newName: string; dirPath: string }) => ReturnType<typeof handleRename>;
 };
 
 export type { FileSystemInitialData };
@@ -217,8 +217,8 @@ function FileSystemPanelProvider(context: vscode.ExtensionContext) {
 
       return handlePaste({ srcList, destDir, type, overwrite, withProgress, showErrorReport });
     });
-    onDidReceiveInvoke<RenameAPI>(panel, "rename", async ({ src, dest }) => {
-      return handleRename({ src, dest, showError });
+    onDidReceiveInvoke<RenameAPI>(panel, "rename", async (params) => {
+      return handleRename({ ...params, showError });
     });
   };
 

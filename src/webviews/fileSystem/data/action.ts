@@ -28,10 +28,11 @@ const startRenaming = () => {
 };
 
 /** 結束重命名，比如在失去焦點時呼叫 */
-const endRenaming = ({ fileName, newFileName }: { fileName: string; newFileName: string }) => {
+const endRenaming = ({ name, newName }: { name: string; newName: string }) => {
   fileSystemViewDataStore.setState({ renamingIndex: null });
-  if (fileName === newFileName) return;
-  //   return requestQueue.add(() => invoke<RenameAPI>("rename", { src, dest }));
+  if (name === newName) return;
+  const { currentPath } = fileSystemDataStore.getState();
+  return requestQueue.add(() => invoke<RenameAPI>("rename", { name, newName, dirPath: currentPath }));
 };
 
 /** 開啟檔案 */

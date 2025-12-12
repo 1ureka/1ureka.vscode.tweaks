@@ -213,8 +213,16 @@ const handlePaste = async (params: {
 /**
  * 處理重新命名檔案/資料夾
  */
-const handleRename = async (params: { src: string; dest: string; showError: (error: string) => void }) => {
-  const { src, dest, showError } = params;
+const handleRename = async (params: {
+  name: string;
+  newName: string;
+  dirPath: string;
+  showError: (error: string) => void;
+}) => {
+  const { name, newName, dirPath, showError } = params;
+
+  const src = path.join(dirPath, name);
+  const dest = path.join(dirPath, newName);
 
   const { error } = await tryCatch(() => fs.promises.rename(src, dest));
   if (error) {

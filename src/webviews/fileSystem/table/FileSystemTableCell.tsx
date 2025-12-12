@@ -38,6 +38,7 @@ type TableCellTextEditProps = { text: string; onBlur: (newText: string) => void 
 const TableCellTextEdit = ({ text, onBlur }: TableCellTextEditProps) => {
   return (
     <TextField
+      size="small"
       variant="standard"
       defaultValue={text}
       autoFocus
