@@ -5,6 +5,9 @@ import { forwardCommandToWebview } from "@/utils/message_host";
 import type { SetModeStandardAPI, SetModeMasonryAPI, SetModeWovenAPI } from "@/webviews/imageWall/data/preference";
 import type { SetSizeLargeAPI, SetSizeMediumAPI, SetSizeSmallAPI } from "@/webviews/imageWall/data/preference";
 
+/**
+ * 註冊圖片牆相關命令
+ */
 export function registerImageWallCommands(context: vscode.ExtensionContext) {
   const commandManager = createCommandManager(context);
   const imageWallPanelProvider = ImageWallPanelProvider(context);

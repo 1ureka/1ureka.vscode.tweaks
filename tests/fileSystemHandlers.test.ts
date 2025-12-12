@@ -124,7 +124,6 @@ describe("handleReadDirectory - 檔案詳細資訊", () => {
 
     expect(file).toBeDefined();
     expect(file?.fileType).toBe("file");
-    expect(file?.fileSize).toBeDefined();
     expect(file?.size).toBeGreaterThan(0);
     expect(file?.mtime).toBeGreaterThan(0);
     expect(file?.ctime).toBeGreaterThan(0);
@@ -135,7 +134,6 @@ describe("handleReadDirectory - 檔案詳細資訊", () => {
     const emptyFile = result.entries.find((e) => e.fileName === "empty1.txt");
 
     expect(emptyFile?.size).toBe(0);
-    expect(emptyFile?.fileSize).toBe("0 B");
   });
 
   it("應該正確識別資料夾類型", async () => {

@@ -1,7 +1,7 @@
 import React from "react";
 import { Box } from "@mui/material";
 import { getIsBoxSelecting, toggleBoxSelectionMode, useIsBoxSelecting } from "@/webviews/fileSystem/data/selection";
-import { tableRowHeight } from "@/webviews/fileSystem/table/FileSystemTableRow";
+import { tableRowHeight } from "@/webviews/fileSystem/table/common";
 import { fileSystemViewDataStore } from "../data/view";
 
 const ROW_HEIGHT = tableRowHeight;
