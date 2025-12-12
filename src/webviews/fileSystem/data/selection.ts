@@ -87,6 +87,9 @@ const registerSelectionEvents = () => {
   window.addEventListener(
     "keydown",
     (e) => {
+      // 如果正在重新命名，則不處理選取快捷鍵，避免干擾
+      if (fileSystemViewDataStore.getState().renamingIndex !== null) return;
+
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "a") {
         e.preventDefault();
         e.stopPropagation();
