@@ -86,8 +86,9 @@ type ForwardCommandMessage = {
  * onReceiveCommand<ResetViewAPI>("resetView", handleResetView);
  * onReceiveCommand<OpenFileAPI>("openFile", () => invoke<OpenFileAPI>("openFile", { filePath: store.getState() }));
  */
-function forwardCommandToWebview<T extends API = never>(panel: vscode.WebviewPanel, action: T["id"]) {
+function forwardCommandToWebview<T extends API = never>(panel: vscode.WebviewPanel | null, action: T["id"]) {
   const message: ForwardCommandMessage = { type: "1ureka.command", action };
+  if (!panel) return;
   panel.webview.postMessage(message);
 }
 

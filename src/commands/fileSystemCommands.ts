@@ -42,74 +42,50 @@ export function registerFileSystemCommands(context: vscode.ExtensionContext) {
   });
 
   commandManager.register("1ureka.fileSystem.refresh", () => {
-    const panel = fileSystemProvider.getCurrentPanel();
-    if (!panel) return;
-    forwardCommandToWebview<ReadDirAPI>(panel, "readDirectory");
+    forwardCommandToWebview<ReadDirAPI>(fileSystemProvider.getCurrentPanel(), "readDirectory");
   });
 
   commandManager.register("1ureka.fileSystem.createFolder", () => {
-    const panel = fileSystemProvider.getCurrentPanel();
-    if (!panel) return;
-    forwardCommandToWebview<CreateDirAPI>(panel, "createDir");
+    forwardCommandToWebview<CreateDirAPI>(fileSystemProvider.getCurrentPanel(), "createDir");
   });
 
   commandManager.register("1ureka.fileSystem.createFile", () => {
-    const panel = fileSystemProvider.getCurrentPanel();
-    if (!panel) return;
-    forwardCommandToWebview<CreateFileAPI>(panel, "createFile");
+    forwardCommandToWebview<CreateFileAPI>(fileSystemProvider.getCurrentPanel(), "createFile");
   });
 
   commandManager.register("1ureka.fileSystem.openInWorkspace", () => {
-    const panel = fileSystemProvider.getCurrentPanel();
-    if (!panel) return;
-    forwardCommandToWebview<OpenInWorkspaceAPI>(panel, "openInWorkspace");
+    forwardCommandToWebview<OpenInWorkspaceAPI>(fileSystemProvider.getCurrentPanel(), "openInWorkspace");
   });
 
   commandManager.register("1ureka.fileSystem.openInTerminal", () => {
-    const panel = fileSystemProvider.getCurrentPanel();
-    if (!panel) return;
-    forwardCommandToWebview<OpenInTerminalAPI>(panel, "openInTerminal");
+    forwardCommandToWebview<OpenInTerminalAPI>(fileSystemProvider.getCurrentPanel(), "openInTerminal");
   });
 
   commandManager.register("1ureka.fileSystem.openInImageWall", () => {
-    const panel = fileSystemProvider.getCurrentPanel();
-    if (!panel) return;
-    forwardCommandToWebview<OpenInImageWallAPI>(panel, "openInImageWall");
+    forwardCommandToWebview<OpenInImageWallAPI>(fileSystemProvider.getCurrentPanel(), "openInImageWall");
   });
 
   commandManager.register("1ureka.fileSystem.filterAll", () => {
-    const panel = fileSystemProvider.getCurrentPanel();
-    if (!panel) return;
-    forwardCommandToWebview<FilterAllAPI>(panel, "filterAll");
+    forwardCommandToWebview<FilterAllAPI>(fileSystemProvider.getCurrentPanel(), "filterAll");
   });
 
   commandManager.register("1ureka.fileSystem.filterFolders", () => {
-    const panel = fileSystemProvider.getCurrentPanel();
-    if (!panel) return;
-    forwardCommandToWebview<FilterFoldersAPI>(panel, "filterFolders");
+    forwardCommandToWebview<FilterFoldersAPI>(fileSystemProvider.getCurrentPanel(), "filterFolders");
   });
 
   commandManager.register("1ureka.fileSystem.filterFiles", () => {
-    const panel = fileSystemProvider.getCurrentPanel();
-    if (!panel) return;
-    forwardCommandToWebview<FilterFilesAPI>(panel, "filterFiles");
+    forwardCommandToWebview<FilterFilesAPI>(fileSystemProvider.getCurrentPanel(), "filterFiles");
   });
 
   commandManager.register("1ureka.fileSystem.copyNames", () => {
-    const panel = fileSystemProvider.getCurrentPanel();
-    if (!panel) return;
-    forwardCommandToWebview<CopyNameAPI>(panel, "copyNamesToSystemClipboard");
+    forwardCommandToWebview<CopyNameAPI>(fileSystemProvider.getCurrentPanel(), "copyNamesToSystemClipboard");
   });
 
   commandManager.register("1ureka.fileSystem.copyPaths", () => {
-    const panel = fileSystemProvider.getCurrentPanel();
-    if (!panel) return;
-    forwardCommandToWebview<CopyPathAPI>(panel, "copyPathsToSystemClipboard");
+    forwardCommandToWebview<CopyPathAPI>(fileSystemProvider.getCurrentPanel(), "copyPathsToSystemClipboard");
   });
 
   commandManager.register("1ureka.fileSystem.rename", () => {
-    const panel = fileSystemProvider.getCurrentPanel();
-    if (!panel) return;
-    forwardCommandToWebview<RenameAPI>(panel, "rename");
+    forwardCommandToWebview<RenameAPI>(fileSystemProvider.getCurrentPanel(), "rename");
   });
 }
