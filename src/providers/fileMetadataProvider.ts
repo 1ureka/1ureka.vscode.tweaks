@@ -124,9 +124,9 @@ const FileMetadataProvider = (context: vscode.ExtensionContext) => {
         await updateStatusBarFromUri(input.uri);
         return;
       }
-    } else {
-      statusBarItem.hide();
     }
+
+    statusBarItem.hide();
   }
 
   return { updateFromActiveTab };
