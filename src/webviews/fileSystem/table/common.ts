@@ -1,7 +1,25 @@
+import type { SxProps } from "@mui/material";
 import type { OneOf } from "@/utils";
 import type { FileProperties } from "@/webviews/fileSystem/data/view";
 
+/**
+ * 圖示欄位的固定寬度
+ */
+const tableIconWidth = 48;
+
+/**
+ * 表格列的固定高度
+ */
+const tableRowHeight = 36;
+
+/**
+ * 表格單元格的對齊方式
+ */
 type TableCellAlign = "left" | "right" | "center";
+
+/**
+ * 可用的表格欄位
+ */
 type TableFields = Exclude<keyof FileProperties, "filePath" | "fileSize">;
 
 /**
@@ -9,10 +27,6 @@ type TableFields = Exclude<keyof FileProperties, "filePath" | "fileSize">;
  */
 type TableIconColumn = {
   field: "icon";
-  align: TableCellAlign;
-  label: string;
-  width: number;
-  sortable: false;
 };
 
 /**
@@ -37,10 +51,6 @@ type TableColumn = OneOf<[TableIconColumn, TableTextColumn]>;
 const tableColumns: TableColumn[] = [
   {
     field: "icon",
-    align: "center",
-    label: "",
-    width: 48,
-    sortable: false,
   },
   {
     field: "fileName",
@@ -79,5 +89,21 @@ const tableColumns: TableColumn[] = [
   },
 ];
 
-export { tableColumns };
+/**
+ * 用於表格中每一列的基礎樣式
+ */
+const tableRowBaseSx: SxProps = {
+  position: "relative",
+  display: "flex",
+  gap: 1,
+  pr: 1,
+  width: 1,
+  alignItems: "stretch",
+  justifyContent: "stretch",
+  height: tableRowHeight,
+  borderRadius: 1,
+  overflow: "visible",
+};
+
+export { tableColumns, tableIconWidth, tableRowHeight, tableRowBaseSx };
 export type { TableColumn, TableIconColumn, TableTextColumn, TableFields };

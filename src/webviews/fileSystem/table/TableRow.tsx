@@ -2,37 +2,12 @@ import React from "react";
 import { Box, ButtonBase } from "@mui/material";
 import type { ButtonBaseProps, SxProps } from "@mui/material";
 
-import type { TableFields, TableIconColumn, TableTextColumn } from "./fileSystemTableColumns";
-import { tableColumns } from "./fileSystemTableColumns";
-import { TableHeadCell, TableIconCell, TableTextCell, TableTextEditCell } from "./FileSystemTableCell";
+import type { TableFields } from "./common";
+import { tableColumns, tableRowBaseSx } from "./common";
+import { TableIconCell, TableCell, TableEditingCell } from "./TableRowCell";
 
-import { fileSystemViewStore } from "../data/view";
 import { useIsInClipboard } from "../data/clipboard";
-import { endRenaming, setSorting } from "../data/action";
-
-/**
- * 表格列的固定高度
- */
-const tableRowHeight = 36;
-export { tableRowHeight };
-
-/**
- * 用於表格中每一列的基礎樣式
- */
-const tableRowBaseSx: SxProps = {
-  position: "relative",
-  display: "flex",
-  gap: 1,
-  pr: 1,
-  width: 1,
-  alignItems: "stretch",
-  justifyContent: "stretch",
-  height: tableRowHeight,
-  borderRadius: 1,
-  overflow: "visible",
-};
-
-// ----------------------------------------------------------------------------
+import { endRenaming } from "../data/action";
 
 /**
  * 用於定位徽章元素的樣式
@@ -97,6 +72,8 @@ const TableRowClipboardBorder = () => (
   </Box>
 );
 
+// ----------------------------------------------------------------------------
+
 /**
  * 普通資料列組件的 props 型別
  */
@@ -129,26 +106,28 @@ const TableRow = ({ sx, row, isDraggable, isRenaming, ...props }: TableRowProps)
 
   const draggableProps: Partial<ButtonBaseProps> = isDraggable ? { draggable: true, onDragStart: handleDragStart } : {};
 
+  const mergedSx: SxProps = { ...tableRowBaseSx, ...sx } as SxProps;
+
   return (
-    <ButtonBase focusRipple={!isRenaming} sx={{ ...tableRowBaseSx, ...sx }} {...draggableProps} {...props}>
+    <ButtonBase focusRipple={!isRenaming} sx={mergedSx} {...draggableProps} {...props}>
       {tableColumns.map((column) => {
         const { field } = column;
         const textVariant = field === "fileName" ? "primary" : "secondary";
 
         if (field === "icon") {
-          return <TableIconCell key={field} icon={row.icon} iconColumn={column} />;
+          return <TableIconCell key={field} icon={row.icon} />;
         }
 
         if (field !== "fileName" || !isRenaming) {
-          return <TableTextCell key={field} variant={textVariant} text={row[field]} textColumn={column} />;
+          return <TableCell key={field} variant={textVariant} text={row[field]} column={column} />;
         }
 
         return (
-          <TableTextEditCell
+          <TableEditingCell
             key={field}
             text={row[field]}
-            textColumn={column}
-            onBlur={(newFileName) => endRenaming({ fileName: row.fileName, newFileName })}
+            column={column}
+            onBlur={(newName) => endRenaming({ name: row.fileName, newName })}
           />
         );
       })}
@@ -163,46 +142,4 @@ const TableRow = ({ sx, row, isDraggable, isRenaming, ...props }: TableRowProps)
   );
 };
 
-// ----------------------------------------------------------------------------
-
-/**
- * 用於當前目錄有上層目錄可供導航時，呈現的「返回上層目錄」列
- */
-const TableNavigateUpRow = ({ sx, ...props }: ButtonBaseProps) => (
-  <ButtonBase focusRipple sx={{ ...tableRowBaseSx, ...sx }} {...props}>
-    <TableIconCell icon="codicon codicon-folder-opened" iconColumn={tableColumns[0] as TableIconColumn} />
-    <TableTextCell text=".." variant="primary" textColumn={tableColumns[1] as TableTextColumn} />
-  </ButtonBase>
-);
-
-/**
- * 用於呈現表格標題列，會自動從 store 取得目前的排序欄位與排序順序
- */
-const TableHeadRow = () => {
-  const sortField = fileSystemViewStore((state) => state.sortField);
-  const sortOrder = fileSystemViewStore((state) => state.sortOrder);
-
-  return (
-    <Box sx={{ ...tableRowBaseSx, bgcolor: "background.paper" }}>
-      {tableColumns.map((column) => {
-        const { field } = column;
-
-        if (field === "icon") {
-          return <Box key={field} sx={{ width: column.width }} />;
-        }
-
-        return (
-          <TableHeadCell
-            key={field}
-            column={column}
-            active={field === sortField}
-            sortOrder={sortOrder}
-            onClick={() => field !== "fileType" && setSorting(field)}
-          />
-        );
-      })}
-    </Box>
-  );
-};
-
-export { TableHeadRow, TableRow, TableNavigateUpRow };
+export { TableRow };

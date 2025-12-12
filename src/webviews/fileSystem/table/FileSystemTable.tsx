@@ -1,8 +1,6 @@
 import React from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { Box, type SxProps } from "@mui/material";
-import { TableHeadRow, TableNavigateUpRow, TableRow, tableRowHeight } from "./FileSystemTableRow";
-import { NoItemDisplay } from "./NoItemDisplay";
 
 import { fileSystemDataStore } from "../data/data";
 import { navigateToFolder, navigateUp } from "../data/navigate";
@@ -10,6 +8,12 @@ import { fileSystemViewDataStore } from "../data/view";
 import { openFile } from "../data/action";
 import { selectRow } from "../data/selection";
 import { extensionTypeMap } from "../data_static/fileExtMap";
+
+import { tableRowHeight } from "./common";
+import { NoItemDisplay } from "./NoItemDisplay";
+import { TableHeadRow } from "./TableHeadRow";
+import { TableNavigateUpRow } from "./TableNavigateUpRow";
+import { TableRow } from "./TableRow";
 
 /**
  * 用於呈現每一列的背景樣式
