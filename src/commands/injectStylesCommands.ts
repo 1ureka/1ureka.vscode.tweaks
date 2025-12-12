@@ -13,7 +13,7 @@ async function promptRestart(action: string) {
 }
 
 /**
- * 註冊注入與還原樣式的指令
+ * 註冊注入與還原樣式的命令
  */
 export function registerInjectStylesCommands(context: vscode.ExtensionContext) {
   const commandManager = createCommandManager(context);
