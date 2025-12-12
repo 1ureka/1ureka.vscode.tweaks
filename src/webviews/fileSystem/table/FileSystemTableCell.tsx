@@ -1,5 +1,5 @@
 import React from "react";
-import { Typography, Box } from "@mui/material";
+import { Typography, Box, TextField } from "@mui/material";
 import type { SxProps, BoxProps } from "@mui/material";
 
 import { ellipsisSx } from "@/utils/ui";
@@ -30,6 +30,23 @@ const TableCellIcon = ({ icon }: TableCellIconProps) => {
   return <i className={icon} style={{ display: "flex", alignItems: "center" }} />;
 };
 
+type TableCellTextEditProps = { text: string; onBlur: (newText: string) => void };
+
+/**
+ * 用於表格單元格中的可編輯文字顯示
+ */
+const TableCellTextEdit = ({ text, onBlur }: TableCellTextEditProps) => {
+  return (
+    <TextField
+      variant="standard"
+      defaultValue={text}
+      autoFocus
+      onBlur={(e) => onBlur(e.target.value)}
+      sx={{ width: 1 }}
+    />
+  );
+};
+
 // ----------------------------------------------------------------------------
 
 type TableIconCellProps = TableCellIconProps & { iconColumn: TableIconColumn };
@@ -58,6 +75,21 @@ const TableTextCell = ({ text, variant, textColumn }: TableTextCellProps) => {
   return (
     <Box sx={{ flex, minWidth: 0, display: "flex", alignItems: "center", justifyContent }}>
       <TableCellText text={text} variant={variant} />
+    </Box>
+  );
+};
+
+type TableTextEditCellProps = TableCellTextEditProps & { textColumn: TableTextColumn };
+
+/**
+ * 用於表格某 row 中的可編輯文字單元格
+ */
+const TableTextEditCell = ({ text, onBlur, textColumn }: TableTextEditCellProps) => {
+  const { align, weight: flex } = textColumn;
+  const justifyContent = align === "left" ? "flex-start" : align === "right" ? "flex-end" : "center";
+  return (
+    <Box sx={{ flex, minWidth: 0, display: "flex", alignItems: "center", justifyContent }}>
+      <TableCellTextEdit text={text} onBlur={onBlur} />
     </Box>
   );
 };
@@ -114,4 +146,4 @@ const TableHeadCell = ({ column, sx, ...rest }: TableHeadCellProps) => {
   );
 };
 
-export { TableIconCell, TableTextCell, TableHeadCell };
+export { TableIconCell, TableTextCell, TableTextEditCell, TableHeadCell };

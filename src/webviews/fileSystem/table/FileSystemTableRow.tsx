@@ -4,11 +4,11 @@ import type { ButtonBaseProps, SxProps } from "@mui/material";
 
 import type { TableFields, TableIconColumn, TableTextColumn } from "./fileSystemTableColumns";
 import { tableColumns } from "./fileSystemTableColumns";
-import { TableHeadCell, TableIconCell, TableTextCell } from "./FileSystemTableCell";
+import { TableHeadCell, TableIconCell, TableTextCell, TableTextEditCell } from "./FileSystemTableCell";
 
 import { fileSystemViewStore } from "../data/view";
 import { useIsInClipboard } from "../data/clipboard";
-import { setSorting } from "../data/action";
+import { endRenaming, setSorting } from "../data/action";
 
 /**
  * 表格列的固定高度
@@ -103,12 +103,13 @@ const TableRowClipboardBorder = () => (
 type TableRowProps = ButtonBaseProps & {
   row: Record<TableFields, string> & { icon: `codicon codicon-${string}`; filePath: string };
   isDraggable: boolean;
+  isRenaming: boolean;
 };
 
 /**
  * 用於呈現一個普通的資料列
  */
-const TableRow = ({ sx, row, isDraggable, ...props }: TableRowProps) => {
+const TableRow = ({ sx, row, isDraggable, isRenaming, ...props }: TableRowProps) => {
   const isInClipboard = useIsInClipboard(row.filePath);
 
   const handleDragStart: React.DragEventHandler<HTMLButtonElement> = (e) => {
@@ -129,13 +130,27 @@ const TableRow = ({ sx, row, isDraggable, ...props }: TableRowProps) => {
   const draggableProps: Partial<ButtonBaseProps> = isDraggable ? { draggable: true, onDragStart: handleDragStart } : {};
 
   return (
-    <ButtonBase focusRipple sx={{ ...tableRowBaseSx, ...sx }} {...draggableProps} {...props}>
+    <ButtonBase focusRipple={!isRenaming} sx={{ ...tableRowBaseSx, ...sx }} {...draggableProps} {...props}>
       {tableColumns.map((column) => {
         const { field } = column;
         const textVariant = field === "fileName" ? "primary" : "secondary";
 
-        if (field === "icon") return <TableIconCell key={field} icon={row.icon} iconColumn={column} />;
-        else return <TableTextCell key={field} variant={textVariant} text={row[field]} textColumn={column} />;
+        if (field === "icon") {
+          return <TableIconCell key={field} icon={row.icon} iconColumn={column} />;
+        }
+
+        if (field !== "fileName" || !isRenaming) {
+          return <TableTextCell key={field} variant={textVariant} text={row[field]} textColumn={column} />;
+        }
+
+        return (
+          <TableTextEditCell
+            key={field}
+            text={row[field]}
+            textColumn={column}
+            onBlur={(newFileName) => endRenaming({ fileName: row.fileName, newFileName })}
+          />
+        );
       })}
 
       {isInClipboard && (

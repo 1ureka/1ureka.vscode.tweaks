@@ -1,8 +1,9 @@
 import { fileSystemDataStore } from "./data";
-import { fileSystemViewStore, type ViewStateStore } from "./view";
+import { fileSystemViewDataStore, fileSystemViewStore, type ViewStateStore } from "./view";
 import { requestQueue } from "./queue";
 import { invoke } from "@/utils/message_client";
 import type { OpenFileAPI, CreateDirAPI, CreateFileAPI, OpenInTargetAPI } from "@/providers/fileSystemProvider";
+import type { RenameAPI, ShowInfoAPI } from "@/providers/fileSystemProvider";
 
 /** 設定排序欄位與順序，如果點擊的是同一欄位，切換順序；否則使用預設升序 */
 const setSorting = (field: ViewStateStore["sortField"]) => {
@@ -14,6 +15,23 @@ const setSorting = (field: ViewStateStore["sortField"]) => {
 /** 設定篩選條件 */
 const setFilter = (filter: ViewStateStore["filter"]) => {
   fileSystemViewStore.setState({ filter });
+};
+
+/** 開始重命名最後選定的 row */
+const startRenaming = () => {
+  const { lastSelectedIndex } = fileSystemViewDataStore.getState();
+  if (lastSelectedIndex !== null) {
+    fileSystemViewDataStore.setState({ renamingIndex: lastSelectedIndex });
+  } else {
+    invoke<ShowInfoAPI>("showInformationMessage", { message: "請先選擇一個檔案或資料夾進行重新命名。" });
+  }
+};
+
+/** 結束重命名，比如在失去焦點時呼叫 */
+const endRenaming = ({ fileName, newFileName }: { fileName: string; newFileName: string }) => {
+  fileSystemViewDataStore.setState({ renamingIndex: null });
+  if (fileName === newFileName) return;
+  //   return requestQueue.add(() => invoke<RenameAPI>("rename", { src, dest }));
 };
 
 /** 開啟檔案 */
@@ -55,5 +73,5 @@ const openInImageWall = () => {
   invoke<OpenInTargetAPI>("openInTarget", { target: "imageWall", dirPath: currentPath });
 };
 
-export { setSorting, setFilter };
+export { setSorting, setFilter, startRenaming, endRenaming };
 export { openFile, createNewFolder, createNewFile, openInWorkspace, openInTerminal, openInImageWall };
