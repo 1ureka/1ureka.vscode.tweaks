@@ -3,7 +3,7 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 import { Box, type SxProps } from "@mui/material";
 
 import { fileSystemDataStore } from "../data/data";
-import { navigateToFolder, navigateUp } from "../data/navigate";
+import { navigateToFolder } from "../data/navigate";
 import { fileSystemViewDataStore } from "../data/view";
 import { openFile } from "../data/action";
 import { selectRow } from "../data/selection";
@@ -83,22 +83,13 @@ const TableBody = () => {
 /**
  * 用於顯示系統瀏覽器的表格組件
  */
-const FileSystemTable = () => {
-  const isCurrentRoot = fileSystemDataStore((state) => state.isCurrentRoot);
-
-  return (
-    <Box sx={{ position: "relative", display: "flex", flexDirection: "column", gap: 0.5, px: 2 }}>
-      <TableHeadRow />
-
-      {!isCurrentRoot ? (
-        <TableNavigateUpRow sx={createRowBackgroundSx({ index: 0, selected: false })} onClick={navigateUp} />
-      ) : null}
-
-      <TableBody />
-
-      <NoItemDisplay />
-    </Box>
-  );
-};
+const FileSystemTable = () => (
+  <Box sx={{ position: "relative", display: "flex", flexDirection: "column", gap: 0.5, px: 2 }}>
+    <TableHeadRow />
+    <TableNavigateUpRow />
+    <TableBody />
+    <NoItemDisplay />
+  </Box>
+);
 
 export { FileSystemTable };
