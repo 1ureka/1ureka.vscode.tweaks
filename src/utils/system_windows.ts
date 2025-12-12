@@ -2,7 +2,6 @@ import iconv from "iconv-lite";
 import * as path from "path";
 import * as fs from "fs";
 import { exec, spawn } from "child_process";
-import { generateBase64 } from "@/utils/image";
 
 /** 允許開啟的副檔名白名單 */
 const ALLOWED_EXTENSIONS = [".blend", ".spp", ".html"];
@@ -87,18 +86,8 @@ $ms.Dispose()
 `;
 
 /** 將圖片複製到剪貼簿，可以直接貼在比如瀏覽器的 google keep, chatGPT 或是 Word 等 */
-async function copyImage(filePath: string, onProgress?: (message: string, percent: number) => void) {
-  onProgress?.("正在轉碼中...", 10);
-  const base64 = await generateBase64(filePath, "png");
-  if (!base64) throw new Error("file is not an image");
-  onProgress?.("正在傳送至剪貼簿...", 70);
+async function copyImageBinaryToSystem(base64: string) {
   return runPowerShell(copyImagePowerShellScript, base64);
-}
-
-/** 將檔案路徑複製到剪貼簿，可以直接貼到 Explore檔案總管 或是 VsCode檔案總管等 */
-function copyFile(filePath: string) {
-  const powerShellScript = `Set-Clipboard -Path "${path.resolve(filePath)}"`;
-  return runPowerShell(powerShellScript);
 }
 
 const listSpecialFoldersScript = `
@@ -180,5 +169,5 @@ async function getFileStatus(filePath: string): Promise<FileStatus | null> {
   }
 }
 
-export { openWithDefaultApp, openApplication, copyImage, copyFile, getFileStatus, listSpecialFolders };
+export { openWithDefaultApp, openApplication, copyImageBinaryToSystem, getFileStatus, listSpecialFolders };
 export type { FileStatus as WindowsFileStatus };

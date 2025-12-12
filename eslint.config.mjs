@@ -49,7 +49,7 @@ export default [
     rules: { "no-restricted-syntax": "off" },
   },
   {
-    files: ["src/providers/**", "src/commands/**", "src/utils/**", "extension.ts"],
+    files: ["src/providers/**", "src/commands/**", "src/utils/**", "src/extension.ts"],
     rules: { "no-restricted-imports": "off" },
   },
 ];
