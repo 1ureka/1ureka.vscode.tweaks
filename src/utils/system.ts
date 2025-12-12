@@ -1,6 +1,5 @@
 import * as fs from "fs";
 import * as path from "path";
-import { formatFileSize } from "./formatter";
 import { tryCatch, type Prettify } from "@/utils";
 
 type ReadDirectoryEntry = {
@@ -12,7 +11,6 @@ type ReadDirectoryEntry = {
 type InspectDirectoryEntry = Prettify<
   Omit<ReadDirectoryEntry, "fileType"> & {
     fileType: "file" | "folder" | "file-symlink-file" | "file-symlink-directory";
-    fileSize: string;
     size: number; // 若為資料夾則為 0
     mtime: number;
     ctime: number;
@@ -56,9 +54,8 @@ async function inspectDirectory(entries: ReadDirectoryEntry[]): Promise<InspectD
     if (!data) return null;
 
     const size = fileType === "folder" ? 0 : data.size;
-    const fileSize = formatFileSize(size);
     const date = { mtime: data.mtime.getTime(), ctime: data.ctime.getTime() };
-    return { fileName, filePath, fileType, fileSize, size, ...date };
+    return { fileName, filePath, fileType, size, ...date };
   };
 
   /** 針對符號連結的檔案或資料夾進行處理 */
@@ -75,9 +72,8 @@ async function inspectDirectory(entries: ReadDirectoryEntry[]): Promise<InspectD
     else return null;
 
     const size = fileType === "file-symlink-directory" ? 0 : target.size;
-    const fileSize = formatFileSize(size);
     const date = { mtime: self.mtime.getTime(), ctime: self.ctime.getTime() };
-    return { fileName, filePath, fileType, fileSize, size, ...date };
+    return { fileName, filePath, fileType, size, ...date };
   };
 
   const promises = entries.map(async (entry) => {

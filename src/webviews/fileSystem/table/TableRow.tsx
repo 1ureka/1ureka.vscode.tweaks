@@ -1,10 +1,10 @@
 import React from "react";
 import type { ButtonBaseProps, SxProps } from "@mui/material";
 import { ButtonBase } from "@mui/material";
-import { formatFileType } from "@/utils/formatter";
+import { formatFileSize, formatFileType } from "@/utils/formatter";
 import { endRenaming } from "../data/action";
 
-import type { TableFields } from "./common";
+import type { FileProperties } from "@/webviews/fileSystem/data/view";
 import { tableColumns, tableRowBaseSx } from "./common";
 import { TableIconCell, TableCell, TableEditingCell } from "./TableRowCell";
 import { TableRowClipboardDecorator } from "./TableRowDecorators";
@@ -34,11 +34,7 @@ const createHandleDragStart = (params: { filePath: string; fileName: string }) =
 /**
  * 普通資料列組件的 props 型別
  */
-type TableRowProps = ButtonBaseProps & {
-  row: Record<TableFields, string> & { icon: `codicon codicon-${string}`; filePath: string };
-  isDraggable: boolean;
-  isRenaming: boolean;
-};
+type TableRowProps = ButtonBaseProps & { row: FileProperties; isDraggable: boolean; isRenaming: boolean };
 
 /**
  * 用於呈現一個普通的資料列
@@ -60,24 +56,38 @@ const TableRow = ({ sx, row, isDraggable, isRenaming, ...props }: TableRowProps)
           return <TableIconCell key={field} icon={row.icon} />;
         }
 
+        if (field === "fileName" && isRenaming) {
+          return (
+            <TableEditingCell
+              key={field}
+              text={row[field]}
+              column={column}
+              onBlur={(newName) => endRenaming({ name: row.fileName, newName })}
+            />
+          );
+        }
+
         if (field === "fileType") {
-          const { fileName, fileType } = row;
-          const formatted = formatFileType({ fileName, fileType });
+          const formatted = formatFileType(row);
           return <TableCell key={field} variant={textVariant} text={formatted} column={column} />;
         }
 
-        if (field !== "fileName" || !isRenaming) {
-          return <TableCell key={field} variant={textVariant} text={row[field]} column={column} />;
+        if (field === "ctime") {
+          const formatted = new Date(row.ctime).toLocaleDateString();
+          return <TableCell key={field} variant={textVariant} text={formatted} column={column} />;
         }
 
-        return (
-          <TableEditingCell
-            key={field}
-            text={row[field]}
-            column={column}
-            onBlur={(newName) => endRenaming({ name: row.fileName, newName })}
-          />
-        );
+        if (field === "mtime") {
+          const formatted = new Date(row.mtime).toLocaleString();
+          return <TableCell key={field} variant={textVariant} text={formatted} column={column} />;
+        }
+
+        if (field === "size") {
+          const formatted = row.fileType === "file" ? formatFileSize(row.size) : "";
+          return <TableCell key={field} variant={textVariant} text={formatted} column={column} />;
+        }
+
+        return <TableCell key={field} variant={textVariant} text={row[field]} column={column} />;
       })}
 
       <TableRowClipboardDecorator filePath={row.filePath} />

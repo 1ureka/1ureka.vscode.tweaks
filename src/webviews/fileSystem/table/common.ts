@@ -1,5 +1,4 @@
 import type { SxProps } from "@mui/material";
-import type { OneOf } from "@/utils";
 import type { FileProperties } from "@/webviews/fileSystem/data/view";
 
 /**
@@ -20,7 +19,7 @@ type TableCellAlign = "left" | "right" | "center";
 /**
  * 可用的表格欄位
  */
-type TableFields = Exclude<keyof FileProperties, "filePath" | "fileSize">;
+type TableFields = Exclude<keyof FileProperties, "icon" | "filePath">;
 
 /**
  * 表格某一個 column 且該 column 為圖示類型的資訊定義，比如欄位名稱、對齊方式等
@@ -30,10 +29,10 @@ type TableIconColumn = {
 };
 
 /**
- * 表格某一個 column 且該 column 為文字類型的資訊定義，比如欄位名稱、對齊方式等
+ * 表格某一個 column 的資訊定義，比如欄位名稱、對齊方式等
  */
-type TableTextColumn = {
-  field: Exclude<TableFields, "icon">;
+type TableColumn = {
+  field: TableFields;
   align: TableCellAlign;
   label: string;
   weight: number;
@@ -41,14 +40,9 @@ type TableTextColumn = {
 };
 
 /**
- * 表格某一個 column 的資訊定義，比如欄位名稱、對齊方式等
- */
-type TableColumn = OneOf<[TableIconColumn, TableTextColumn]>;
-
-/**
  * 定義系統瀏覽器表格的所有 column 及其屬性
  */
-const tableColumns: TableColumn[] = [
+const tableColumns: [TableIconColumn, ...TableColumn[]] = [
   {
     field: "icon",
   },
@@ -106,4 +100,4 @@ const tableRowBaseSx: SxProps = {
 };
 
 export { tableColumns, tableIconWidth, tableRowHeight, tableRowBaseSx };
-export type { TableColumn, TableIconColumn, TableTextColumn, TableFields };
+export type { TableColumn };

@@ -2,16 +2,15 @@ import React from "react";
 import { Box, Typography } from "@mui/material";
 import { ellipsisSx } from "@/utils/ui";
 import type { SxProps, BoxProps } from "@mui/material";
-import type { TableTextColumn } from "./common";
+import type { TableColumn } from "./common";
 
 /**
  * 表格標題列單元格的 props 型別
  */
-type TableHeadCellProps = {
-  column: TableTextColumn;
-  sortOrder: "asc" | "desc";
-  active: boolean;
-} & Omit<BoxProps, "children">;
+type TableHeadCellProps = { column: TableColumn; sortOrder: "asc" | "desc"; active: boolean } & Omit<
+  BoxProps,
+  "children"
+>;
 
 /**
  * 用於表格標題列的單元格樣式變體
