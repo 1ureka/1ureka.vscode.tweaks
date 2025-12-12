@@ -39,7 +39,7 @@ const ImageWallList = ({ images }: { images: ExtendedMetadata[] }) => {
   const columnCounts = useColumnCounts();
 
   return (
-    <ImageList variant={variant} cols={columnCounts} gap={8} sx={{ p: 2, pt: 0, m: 0 }}>
+    <ImageList variant={variant} cols={columnCounts} gap={8} sx={{ p: 2, pt: 0, m: 0, overflow: "visible" }}>
       {images.map(({ filePath, fileName, width, height }) => (
         <ImageWallItem key={filePath} filePath={filePath} fileName={fileName} width={width} height={height} />
       ))}
