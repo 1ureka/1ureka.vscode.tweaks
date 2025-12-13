@@ -106,6 +106,55 @@ describe("handleReadDirectory - 基本讀取功能", () => {
     expect(result.fileCount).toBe(0);
     expect(result.folderCount).toBe(0);
   });
+
+  it("應該正確處理 depthOffset=0 (無偏移)", async () => {
+    const dirPath = getFixturesPath("multiple-files");
+    const result = await handleReadDirectory({ dirPath, depthOffset: 0 });
+
+    expect(result.currentPath).toBe(path.resolve(dirPath));
+    expect(result.entries).toHaveLength(3);
+  });
+
+  it("應該正確處理 depthOffset=1 (向上一層)", async () => {
+    const dirPath = getFixturesPath("multiple-files");
+    const result = await handleReadDirectory({ dirPath, depthOffset: 1 });
+
+    // 應該移到 fixtures 資料夾
+    const expectedPath = path.resolve(path.dirname(dirPath));
+    expect(result.currentPath).toBe(expectedPath);
+
+    // 應該包含 fixtures 資料夾下的所有子資料夾
+    const entries = result.entries.map((e) => e.fileName);
+    expect(entries).toContain("multiple-files");
+    expect(entries).toContain("empty-folder");
+  });
+
+  it("應該正確處理 depthOffset=2 (向上兩層)", async () => {
+    const dirPath = getFixturesPath("nested-structure", "level1");
+    const result = await handleReadDirectory({ dirPath, depthOffset: 2 });
+
+    // 應該移到 fixtures 資料夾
+    const expectedPath = path.resolve(path.dirname(path.dirname(dirPath)));
+    expect(result.currentPath).toBe(expectedPath);
+  });
+
+  it("應該正確處理負數 depthOffset (同樣視為向上移動)", async () => {
+    const dirPath = getFixturesPath("multiple-files");
+    const result = await handleReadDirectory({ dirPath, depthOffset: -1 });
+
+    // 負數也應該向上移動一層
+    const expectedPath = path.resolve(path.dirname(dirPath));
+    expect(result.currentPath).toBe(expectedPath);
+  });
+
+  it("depthOffset 超過根目錄時應該停在根目錄", async () => {
+    const dirPath = getFixturesPath("multiple-files");
+    const result = await handleReadDirectory({ dirPath, depthOffset: 100 });
+
+    // 應該到達根目錄
+    expect(result.isCurrentRoot).toBe(true);
+    expect(path.dirname(result.currentPath)).toBe(result.currentPath);
+  });
 });
 
 // --------------------------------------------------------------------

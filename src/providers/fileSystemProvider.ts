@@ -190,8 +190,8 @@ function FileSystemPanelProvider(context: vscode.ExtensionContext) {
     onDidReceiveInvoke<SetSystemClipboardAPI>(panel, "setSystemClipboard", async ({ text }) => {
       await vscode.env.clipboard.writeText(text);
     });
-    onDidReceiveInvoke<ReadDirAPI>(panel, "readDirectory", ({ dirPath }) => {
-      return handleReadDirectory({ dirPath });
+    onDidReceiveInvoke<ReadDirAPI>(panel, "readDirectory", (params) => {
+      return handleReadDirectory({ ...params });
     });
     onDidReceiveInvoke<CreateFileAPI>(panel, "createFile", async ({ dirPath }) => {
       const fileName = await showCreateInputBox("輸入新檔案名稱", "檔案名稱");
