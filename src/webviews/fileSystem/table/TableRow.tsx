@@ -79,6 +79,15 @@ const createHandleClick = (params: { fileType: string; filePath: string; index: 
 };
 
 /**
+ * 根據項目創建右鍵點擊事件處理器，方便在右鍵選單重新命名、刪除時能夠選取該列
+ */
+const createHandleContextMenu = ({ index }: { index: number }) => {
+  return () => {
+    selectRow({ index, isAdditive: true, isRange: false, forceSelect: true });
+  };
+};
+
+/**
  * 用於呈現一個普通的資料列
  */
 const TableRow = ({ index }: { index: number }) => {
@@ -104,9 +113,12 @@ const TableRow = ({ index }: { index: number }) => {
   };
 
   const handleClick = createHandleClick({ ...row, index });
+  const handleContextMenu = createHandleContextMenu({ index });
+
+  const pointerProps = { onClick: handleClick, onContextMenu: handleContextMenu };
 
   return (
-    <ButtonBase focusRipple disabled={isRenaming} sx={mergedSx} onClick={handleClick} {...draggableProps}>
+    <ButtonBase focusRipple disabled={isRenaming} sx={mergedSx} {...pointerProps} {...draggableProps}>
       {tableColumns.map((column) => {
         const { field } = column;
         const textVariant = field === "fileName" ? "primary" : "secondary";
