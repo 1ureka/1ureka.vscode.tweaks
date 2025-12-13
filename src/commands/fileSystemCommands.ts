@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import type { CreateFileAPI, CreateDirAPI, ReadDirAPI, RenameAPI } from "@/providers/fileSystemProvider";
+import type { CreateFileAPI, CreateDirAPI, ReadDirAPI, RenameAPI, DeleteAPI } from "@/providers/fileSystemProvider";
 import type { OpenInWorkspaceAPI, OpenInTerminalAPI, OpenInImageWallAPI } from "@/webviews/fileSystem/data/message";
 import type { FilterAllAPI, FilterFoldersAPI, FilterFilesAPI } from "@/webviews/fileSystem/data/message";
 import type { CopyNameAPI, CopyPathAPI } from "@/webviews/fileSystem/data/message";
@@ -87,5 +87,9 @@ export function registerFileSystemCommands(context: vscode.ExtensionContext) {
 
   commandManager.register("1ureka.fileSystem.rename", () => {
     forwardCommandToWebview<RenameAPI>(fileSystemProvider.getCurrentPanel(), "rename");
+  });
+
+  commandManager.register("1ureka.fileSystem.delete", () => {
+    forwardCommandToWebview<DeleteAPI>(fileSystemProvider.getCurrentPanel(), "delete");
   });
 }

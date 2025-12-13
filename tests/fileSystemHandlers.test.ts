@@ -7,6 +7,7 @@ import { cleanupFixtures, getFixturesPath, setupFixtures } from "./fixtures.help
 
 import { handleInitialData, handleReadDirectory, handleGoto } from "@/handlers/fileSystemHandlers";
 import { handleCreateDir, handleCreateFile, handlePaste } from "@/handlers/fileSystemHandlers";
+import { handleRename, handleDelete } from "@/handlers/fileSystemHandlers";
 
 // --------------------------------------------------------------------
 
@@ -697,3 +698,367 @@ describe("handlePaste - 移動操作", () => {
     expect(srcExists).toBe(false);
   });
 });
+
+// --------------------------------------------------------------------
+
+describe("handlePaste - 錯誤處理與副作用", () => {
+  beforeEach(async () => {
+    await setupFixtures();
+  });
+
+  afterEach(async () => {
+    await cleanupFixtures();
+  });
+
+  it("部分失敗時應該顯示詳細錯誤報告 (複製不覆蓋)", async () => {
+    const srcList = [
+      getFixturesPath("multiple-files", "file1.txt"),
+      getFixturesPath("multiple-files", "non-existent.txt"), // 不存在
+      getFixturesPath("multiple-files", "file2.txt"),
+    ];
+    const destDir = getFixturesPath("empty-folder");
+
+    let errorReportContent = "";
+    const result = await handlePaste({
+      srcList,
+      destDir,
+      type: "copy",
+      overwrite: false,
+      withProgress: async (_title, fn) => await fn((_progress) => {}),
+      showErrorReport: (content) => {
+        errorReportContent = content;
+      },
+    });
+
+    expect(result).not.toBeNull(); // 部分成功仍返回結果
+    expect(errorReportContent).toContain("複製");
+    expect(errorReportContent).toContain("non-existent.txt");
+    expect(result?.entries).toHaveLength(2); // 只有成功的 2 個
+  });
+
+  it("應該正確呼叫 withProgress 回調", async () => {
+    const srcList = [getFixturesPath("multiple-files", "file1.txt"), getFixturesPath("multiple-files", "file2.txt")];
+    const destDir = getFixturesPath("empty-folder");
+
+    let progressCalls = 0;
+    let progressTotal = 0;
+
+    await handlePaste({
+      srcList,
+      destDir,
+      type: "copy",
+      overwrite: false,
+      withProgress: async (title, fn) => {
+        expect(title).toContain("複製");
+        await fn((progress) => {
+          progressCalls++;
+          progressTotal += progress;
+        });
+      },
+      showErrorReport: (content) => console.error(content),
+    });
+
+    expect(progressCalls).toBe(2); // 2 個檔案，2 次進度更新
+    expect(progressTotal).toBeCloseTo(100, 0); // 總進度應該接近 100
+  });
+});
+
+// --------------------------------------------------------------------
+
+describe("handleRename", () => {
+  beforeEach(async () => {
+    await setupFixtures();
+  });
+
+  afterEach(async () => {
+    await cleanupFixtures();
+  });
+
+  it("應該成功重新命名檔案", async () => {
+    const dirPath = getFixturesPath("multiple-files");
+    const name = "file1.txt";
+    const newName = "renamed-file1.txt";
+
+    const result = await handleRename({
+      name,
+      newName,
+      dirPath,
+      showError: (error) => console.error(error),
+    });
+
+    expect(result).not.toBeNull();
+    expect(result.entries).toHaveLength(3);
+
+    const renamedFile = result.entries.find((e) => e.fileName === newName);
+    const oldFile = result.entries.find((e) => e.fileName === name);
+
+    expect(renamedFile).toBeDefined();
+    expect(oldFile).toBeUndefined();
+  });
+
+  it("應該成功重新命名資料夾", async () => {
+    const dirPath = getFixturesPath("nested-structure");
+    const name = "level1";
+    const newName = "renamed-level1";
+
+    const result = await handleRename({
+      name,
+      newName,
+      dirPath,
+      showError: (error) => console.error(error),
+    });
+
+    expect(result).not.toBeNull();
+
+    const renamedFolder = result.entries.find((e) => e.fileName === newName);
+    const oldFolder = result.entries.find((e) => e.fileName === name);
+
+    expect(renamedFolder).toBeDefined();
+    expect(renamedFolder?.fileType).toBe("folder");
+    expect(oldFolder).toBeUndefined();
+  });
+
+  it("應該處理特殊字元的新名稱", async () => {
+    const dirPath = getFixturesPath("multiple-files");
+    const name = "file1.txt";
+    const newName = "重新命名的檔案 #123.txt";
+
+    const result = await handleRename({
+      name,
+      newName,
+      dirPath,
+      showError: (error) => console.error(error),
+    });
+
+    expect(result).not.toBeNull();
+    const renamedFile = result.entries.find((e) => e.fileName === newName);
+    expect(renamedFile).toBeDefined();
+  });
+
+  it("當目標名稱已存在時應該產生錯誤", async () => {
+    const dirPath = getFixturesPath("multiple-files");
+    const name = "file1.txt";
+    const newName = "file2.txt"; // 已存在的檔案名稱
+
+    let errorMessage = "";
+    const result = await handleRename({
+      name,
+      newName,
+      dirPath,
+      showError: (error) => {
+        errorMessage = error;
+      },
+    });
+
+    expect(errorMessage).toContain("無法重新命名");
+    expect(errorMessage).toContain("目標名稱已存在");
+    expect(result).not.toBeNull(); // 仍然返回目錄資料
+  });
+
+  it("當來源檔案不存在時應該產生錯誤", async () => {
+    const dirPath = getFixturesPath("multiple-files");
+    const name = "non-existent.txt";
+    const newName = "new-name.txt";
+
+    let errorMessage = "";
+    const result = await handleRename({
+      name,
+      newName,
+      dirPath,
+      showError: (error) => {
+        errorMessage = error;
+      },
+    });
+
+    expect(errorMessage).toContain("無法重新命名");
+    expect(result).not.toBeNull();
+  });
+
+  it("應該保留檔案內容", async () => {
+    const dirPath = getFixturesPath("multiple-files");
+    const name = "file1.txt";
+    const newName = "renamed-file1.txt";
+
+    // 讀取原始內容
+    const originalContent = await fs.promises.readFile(path.join(dirPath, name), "utf-8");
+
+    await handleRename({
+      name,
+      newName,
+      dirPath,
+      showError: (error) => console.error(error),
+    });
+
+    // 驗證重新命名後內容不變
+    const newContent = await fs.promises.readFile(path.join(dirPath, newName), "utf-8");
+    expect(newContent).toBe(originalContent);
+  });
+
+  it("應該保留資料夾內的所有內容", async () => {
+    const dirPath = getFixturesPath("nested-structure");
+    const name = "level1";
+    const newName = "renamed-level1";
+
+    // 檢查原始資料夾內容
+    const originalPath = path.join(dirPath, name);
+    const originalEntries = await fs.promises.readdir(originalPath);
+
+    await handleRename({
+      name,
+      newName,
+      dirPath,
+      showError: (error) => console.error(error),
+    });
+
+    // 驗證重新命名後資料夾內容不變
+    const newPath = path.join(dirPath, newName);
+    const newEntries = await fs.promises.readdir(newPath);
+    expect(newEntries).toEqual(originalEntries);
+  });
+});
+
+// --------------------------------------------------------------------
+
+describe("handleDelete", () => {
+  beforeEach(async () => {
+    await setupFixtures();
+  });
+
+  afterEach(async () => {
+    await cleanupFixtures();
+  });
+
+  it("應該成功刪除單一檔案", async () => {
+    const dirPath = getFixturesPath("multiple-files");
+    const itemList = ["file1.txt"];
+
+    const result = await handleDelete({
+      itemList,
+      dirPath,
+      withProgress: async (_title, fn) => await fn((_progress) => {}),
+      showErrorReport: (content) => console.error(content),
+    });
+
+    expect(result).not.toBeNull();
+    expect(result.entries).toHaveLength(2); // 原本 3 個，刪除 1 個
+    expect(result.fileCount).toBe(2);
+
+    const deletedFile = result.entries.find((e) => e.fileName === "file1.txt");
+    expect(deletedFile).toBeUndefined();
+  });
+
+  it("應該成功刪除資料夾及其內容", async () => {
+    const dirPath = getFixturesPath("nested-structure");
+    const itemList = ["level1"];
+
+    const result = await handleDelete({
+      itemList,
+      dirPath,
+      withProgress: async (_title, fn) => await fn((_progress) => {}),
+      showErrorReport: (content) => console.error(content),
+    });
+
+    expect(result).not.toBeNull();
+    expect(result.folderCount).toBe(0);
+
+    // 驗證資料夾確實被刪除
+    const folderExists = await fs.promises
+      .access(path.join(dirPath, "level1"))
+      .then(() => true)
+      .catch(() => false);
+    expect(folderExists).toBe(false);
+  });
+
+  it("應該成功刪除混合的檔案和資料夾", async () => {
+    const dirPath = getFixturesPath("mixed-content");
+    const originLength = (await handleReadDirectory({ dirPath })).entries.length;
+
+    const itemList = ["text-file.txt", "folder1"];
+    const result = await handleDelete({
+      itemList,
+      dirPath,
+      withProgress: async (_title, fn) => await fn((_progress) => {}),
+      showErrorReport: (content) => console.error(content),
+    });
+
+    expect(result).not.toBeNull();
+    expect(result.entries).toHaveLength(originLength - itemList.length);
+
+    const textFile = result.entries.find((e) => e.fileName === "text-file.txt");
+    const folder = result.entries.find((e) => e.fileName === "folder1");
+
+    expect(textFile).toBeUndefined();
+    expect(folder).toBeUndefined();
+  });
+
+  it("刪除不存在的檔案時應該靜默處理", async () => {
+    const dirPath = getFixturesPath("multiple-files");
+    const itemList = ["file1.txt", "non-existent.txt", "file2.txt"];
+
+    const result = await handleDelete({
+      itemList,
+      dirPath,
+      withProgress: async (_title, fn) => await fn((_progress) => {}),
+      showErrorReport: () => {},
+    });
+
+    expect(result).not.toBeNull();
+
+    // 驗證成功的項目已被刪除
+    const file1Exists = await fs.promises
+      .access(path.join(dirPath, "file1.txt"))
+      .then(() => true)
+      .catch(() => false);
+    const file2Exists = await fs.promises
+      .access(path.join(dirPath, "file2.txt"))
+      .then(() => true)
+      .catch(() => false);
+
+    expect(file1Exists).toBe(false);
+    expect(file2Exists).toBe(false);
+  });
+
+  it("應該正確呼叫 withProgress 回調", async () => {
+    const dirPath = getFixturesPath("multiple-files");
+    const itemList = ["file1.txt", "file2.txt"];
+
+    let progressCalls = 0;
+    let progressTotal = 0;
+
+    await handleDelete({
+      itemList,
+      dirPath,
+      withProgress: async (title, fn) => {
+        expect(title).toContain("刪除");
+        await fn((progress) => {
+          progressCalls++;
+          progressTotal += progress;
+        });
+      },
+      showErrorReport: (content) => console.error(content),
+    });
+
+    expect(progressCalls).toBe(2); // 2 個項目，2 次進度更新
+    expect(progressTotal).toBeCloseTo(100, 0); // 總進度應該接近 100
+  });
+
+  it("刪除包含特殊字元名稱的檔案應該成功", async () => {
+    const dirPath = getFixturesPath("special-names");
+    const itemList = ["中文檔案.txt", "#special!@$%.txt"];
+
+    const result = await handleDelete({
+      itemList,
+      dirPath,
+      withProgress: async (_title, fn) => await fn((_progress) => {}),
+      showErrorReport: (content) => console.error(content),
+    });
+
+    expect(result).not.toBeNull();
+    expect(result.entries).toHaveLength(1); // 只剩 "空格 檔案.txt"
+
+    const remainingFile = result.entries.find((e) => e.fileName === "空格 檔案.txt");
+    expect(remainingFile).toBeDefined();
+  });
+});
+
+// --------------------------------------------------------------------

@@ -224,7 +224,14 @@ const handleRename = async (params: {
   const src = path.join(dirPath, name);
   const dest = path.join(dirPath, newName);
 
+  const exist = await fsExtra.pathExists(dest);
+  if (exist) {
+    showError("無法重新命名: 目標名稱已存在");
+    return handleReadDirectory({ dirPath });
+  }
+
   const { error } = await tryCatch(() => fs.promises.rename(src, dest));
+
   if (error) {
     showError(`無法重新命名: ${error instanceof Error ? error.message : "未知錯誤"}`);
   }
@@ -232,5 +239,49 @@ const handleRename = async (params: {
   return handleReadDirectory({ dirPath: path.dirname(dest) });
 };
 
-export { handleInitialData, handleCreateFile, handleCreateDir, handlePaste, handleRename };
+/**
+ * 處理刪除檔案/資料夾
+ */
+const handleDelete = async (params: {
+  itemList: string[];
+  dirPath: string;
+  withProgress: WithProgress;
+  showErrorReport: (content: string) => void;
+}) => {
+  const { itemList, dirPath, withProgress, showErrorReport } = params;
+
+  const targetPaths = itemList.map((name) => path.join(dirPath, name));
+
+  const itemCount = targetPaths.length;
+  const itemFailures: Record<string, string> = {};
+  const progressPerItem = 100 / itemCount;
+
+  await withProgress("正在刪除...", async (report) => {
+    for (let i = 0; i < targetPaths.length; i++) {
+      const targetPath = targetPaths[i];
+
+      try {
+        await fsExtra.remove(targetPath);
+      } catch (error) {
+        itemFailures[targetPath] = error instanceof Error ? error.message : "未知錯誤";
+      } finally {
+        report(progressPerItem);
+      }
+    }
+  });
+
+  if (Object.keys(itemFailures).length <= 0) return handleReadDirectory({ dirPath });
+
+  const sideEffects = {
+    已刪除項目: { message: "已成功刪除的項目無法復原", severity: "high" },
+    未刪除項目: { message: "刪除失敗的項目保持原狀", severity: "safe" },
+  } as const;
+
+  const errorContent = generateErrorMessage({ action: "刪除", itemCount, itemFailures, sideEffects });
+  showErrorReport(errorContent);
+
+  return handleReadDirectory({ dirPath });
+};
+
+export { handleInitialData, handleCreateFile, handleCreateDir, handlePaste, handleRename, handleDelete };
 export { handleReadDirectory, handleGoto };
