@@ -19,8 +19,8 @@ const getIsBoxSelecting = () => {
 };
 
 /** 選取某個項目 */
-const selectRow = (params: { index: number; isAdditive: boolean; isRange: boolean }) => {
-  const { index: currentIndex, isAdditive, isRange } = params;
+const selectRow = (params: { index: number; isAdditive: boolean; isRange: boolean; forceSelect?: boolean }) => {
+  const { index: currentIndex, isAdditive, isRange, forceSelect } = params;
 
   fileSystemViewDataStore.setState((state) => {
     if (currentIndex < 0 || currentIndex >= state.selected.length) {
@@ -50,7 +50,14 @@ const selectRow = (params: { index: number; isAdditive: boolean; isRange: boolea
       newSelected.fill(0);
       for (const index of targetIndices) newSelected[index] = 1;
     } else {
-      const targetState = newSelected[currentIndex] === 0 ? 1 : 0;
+      let targetState: 0 | 1;
+
+      if (forceSelect) {
+        targetState = 1;
+      } else {
+        targetState = newSelected[currentIndex] === 0 ? 1 : 0;
+      }
+
       for (const index of targetIndices) newSelected[index] = targetState;
     }
 
