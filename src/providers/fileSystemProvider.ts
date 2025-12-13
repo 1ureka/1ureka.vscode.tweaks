@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 
 import { onDidReceiveInvoke } from "@/utils/message_host";
 import { createWebviewPanelManager } from "@/utils/webview";
-import { handleInitialData, handlePaste, handleRename } from "@/handlers/fileSystemHandlers";
+import { handleDelete, handleInitialData, handlePaste, handleRename } from "@/handlers/fileSystemHandlers";
 import { handleCreateFile, handleCreateDir, handleReadDirectory, handleGoto } from "@/handlers/fileSystemHandlers";
 import type { WithProgress } from "@/utils";
 
@@ -56,10 +56,14 @@ type RenameAPI = {
   id: "rename";
   handler: (params: { name: string; newName: string; dirPath: string }) => ReturnType<typeof handleRename>;
 };
+type DeleteAPI = {
+  id: "delete";
+  handler: (params: { itemList: string[]; dirPath: string }) => ReturnType<typeof handleDelete>;
+};
 
 export type { FileSystemInitialData };
 export type { ShowInfoAPI, SetSystemClipboardAPI, ReadDirAPI, CreateFileAPI, CreateDirAPI, PasteAPI };
-export type { OpenFileAPI, OpenInTargetAPI, GotoPathAPI, RenameAPI };
+export type { OpenFileAPI, OpenInTargetAPI, GotoPathAPI, RenameAPI, DeleteAPI };
 
 // ---------------------------------------------------------------------------------
 
@@ -104,7 +108,7 @@ function FileSystemPanelProvider(context: vscode.ExtensionContext) {
     vscode.commands.executeCommand("vscode.open", vscode.Uri.file(filePath), vscode.ViewColumn.Active);
   };
 
-  const pasteItemsWithProgress: WithProgress = async (taskName, taskFn) => {
+  const withProgress: WithProgress = async (taskName, taskFn) => {
     const progressOptions: vscode.ProgressOptions = {
       title: taskName,
       location: vscode.ProgressLocation.Notification,
@@ -213,12 +217,23 @@ function FileSystemPanelProvider(context: vscode.ExtensionContext) {
       if (!pick || !pick.type || pick.overwrite === undefined) return null;
 
       const { type, overwrite } = pick;
-      const withProgress = pasteItemsWithProgress;
 
       return handlePaste({ srcList, destDir, type, overwrite, withProgress, showErrorReport });
     });
     onDidReceiveInvoke<RenameAPI>(panel, "rename", async (params) => {
       return handleRename({ ...params, showError });
+    });
+    onDidReceiveInvoke<DeleteAPI>(panel, "delete", async (params) => {
+      const confirm = await vscode.window.showWarningMessage(
+        `確定要刪除所選的 ${params.itemList.length} 個項目嗎？此操作無法復原！`,
+        { modal: true },
+        "是",
+        "否"
+      );
+
+      if (confirm !== "是") return handleReadDirectory({ dirPath: params.dirPath });
+
+      return handleDelete({ ...params, showErrorReport, withProgress });
     });
   };
 
