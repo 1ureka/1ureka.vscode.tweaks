@@ -224,7 +224,15 @@ const handleRename = async (params: {
   const src = path.join(dirPath, name);
   const dest = path.join(dirPath, newName);
 
-  const { error } = await tryCatch(() => fs.promises.rename(src, dest));
+  const { error } = await tryCatch(async () => {
+    try {
+      await fs.promises.access(dest);
+      throw new Error("目標名稱已存在");
+    } catch {
+      await fs.promises.rename(src, dest);
+    }
+  });
+
   if (error) {
     showError(`無法重新命名: ${error instanceof Error ? error.message : "未知錯誤"}`);
   }
