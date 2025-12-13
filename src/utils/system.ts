@@ -109,11 +109,22 @@ function pathToArray(inputPath: string): string[] {
 }
 
 /**
+ * 根據負數的深度偏移量 (depthOffset) 計算新的路徑。
+ * 其中，depthOffset 可以是正數、零或負數，但都視作向上移動目錄層級來處理。
+ */
+function toParentPath(currentPath: string, depthOffset: number): string {
+  const numLevelsUp: number = Math.abs(depthOffset);
+  const upParts = new Array(numLevelsUp).fill("..");
+  const newPath = path.join(currentPath, ...upParts);
+  return path.normalize(newPath);
+}
+
+/**
  * 檢查錯誤物件是否為 Node.js 環境中常見的系統級錯誤 (帶有 string code 屬性)
  */
 function isSystemError(error: unknown): error is Error & { code: string } {
   return typeof error === "object" && error !== null && "code" in error && typeof error.code === "string";
 }
 
-export { readDirectory, inspectDirectory, isRootDirectory, pathToArray, isSystemError };
+export { readDirectory, inspectDirectory, isRootDirectory, pathToArray, toParentPath, isSystemError };
 export type { ReadDirectoryEntry, InspectDirectoryEntry };

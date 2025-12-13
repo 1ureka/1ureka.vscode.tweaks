@@ -4,7 +4,7 @@ import fsExtra from "fs-extra";
 
 import { tryCatch } from "@/utils";
 import { generateErrorMessage } from "@/utils/formatter";
-import { readDirectory, inspectDirectory, isRootDirectory, pathToArray } from "@/utils/system";
+import { readDirectory, inspectDirectory, isRootDirectory, pathToArray, toParentPath } from "@/utils/system";
 import type { InspectDirectoryEntry } from "@/utils/system";
 import type { PromiseOpt, WithProgress } from "@/utils";
 
@@ -36,9 +36,12 @@ const handleInitialData = (params: { dirPath: string }): ReadDirectoryResult => 
 
 /**
  * 掃描資料夾內容，讀取檔案系統資訊並回傳
+ * 其中，depthOffset 可以是正數、零或負數，但都視作向上移動目錄層級來處理。
  */
-const handleReadDirectory = async (params: { dirPath: string }): Promise<ReadDirectoryResult> => {
-  const currentPath = path.resolve(params.dirPath);
+const handleReadDirectory = async (params: { dirPath: string; depthOffset?: number }): Promise<ReadDirectoryResult> => {
+  const { dirPath, depthOffset = 0 } = params;
+
+  const currentPath = path.resolve(toParentPath(dirPath, depthOffset));
   const currentPathParts = pathToArray(currentPath);
   const isCurrentRoot = isRootDirectory(currentPath);
 

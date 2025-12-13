@@ -4,14 +4,6 @@ import { invoke } from "@/utils/message_client";
 import type { ReadDirAPI, GotoPathAPI } from "@/providers/fileSystemProvider";
 
 /**
- * 重新整理
- */
-const refresh = () => {
-  const { currentPath } = fileSystemDataStore.getState();
-  return navigateToFolder({ dirPath: currentPath });
-};
-
-/**
  * 請求切換資料夾
  */
 const navigateToFolder = async ({ dirPath }: { dirPath: string }) => {
@@ -20,24 +12,36 @@ const navigateToFolder = async ({ dirPath }: { dirPath: string }) => {
 };
 
 /**
- * 透過麵包屑導航
+ * 重新整理
  */
-const navigateToBreadcrumb = (index: number) => {
-  const { currentPathParts } = fileSystemDataStore.getState();
-  const parts = currentPathParts.slice(0, index + 1);
+const refresh = async () => {
+  const { currentPath } = fileSystemDataStore.getState();
+  const result = await requestQueue.add(() => invoke<ReadDirAPI>("readDirectory", { dirPath: currentPath }));
+  fileSystemDataStore.setState({ ...result });
+};
 
-  // 特殊處理：如果只有磁碟機代號（如 'C:'），需要加上斜線變成 'C:/'
-  const targetPath = parts.length === 1 && /^[A-Za-z]:$/.test(parts[0]) ? parts[0] + "/" : parts.join("/");
-  navigateToFolder({ dirPath: targetPath });
+/**
+ * 透過麵包屑導航，其中 index 是點擊的麵包屑項目的從 0 開始的索引
+ */
+const navigateToBreadcrumb = async (index: number) => {
+  const { currentPathParts, currentPath } = fileSystemDataStore.getState();
+  const depthOffset = currentPathParts.length - 1 - index;
+  const result = await requestQueue.add(() =>
+    invoke<ReadDirAPI>("readDirectory", { dirPath: currentPath, depthOffset })
+  );
+  fileSystemDataStore.setState({ ...result });
 };
 
 /**
  * 往上一層資料夾
  */
-const navigateUp = () => {
-  const { isCurrentRoot, currentPathParts } = fileSystemDataStore.getState();
+const navigateUp = async () => {
+  const { isCurrentRoot, currentPath } = fileSystemDataStore.getState();
   if (isCurrentRoot) return; // 已經在根目錄
-  navigateToBreadcrumb(currentPathParts.length - 2);
+  const result = await requestQueue.add(() =>
+    invoke<ReadDirAPI>("readDirectory", { dirPath: currentPath, depthOffset: 1 })
+  );
+  fileSystemDataStore.setState({ ...result });
 };
 
 /**
