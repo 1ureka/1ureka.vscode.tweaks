@@ -697,3 +697,71 @@ describe("handlePaste - 移動操作", () => {
     expect(srcExists).toBe(false);
   });
 });
+
+// --------------------------------------------------------------------
+
+describe("handlePaste - 錯誤處理與副作用", () => {
+  beforeEach(async () => {
+    await setupFixtures();
+  });
+
+  afterEach(async () => {
+    await cleanupFixtures();
+  });
+
+  it("部分失敗時應該顯示詳細錯誤報告 (複製不覆蓋)", async () => {
+    const srcList = [
+      getFixturesPath("multiple-files", "file1.txt"),
+      getFixturesPath("multiple-files", "non-existent.txt"), // 不存在
+      getFixturesPath("multiple-files", "file2.txt"),
+    ];
+    const destDir = getFixturesPath("empty-folder");
+
+    let errorReportContent = "";
+    const result = await handlePaste({
+      srcList,
+      destDir,
+      type: "copy",
+      overwrite: false,
+      withProgress: async (_title, fn) => await fn((_progress) => {}),
+      showErrorReport: (content) => {
+        errorReportContent = content;
+      },
+    });
+
+    expect(result).not.toBeNull(); // 部分成功仍返回結果
+    expect(errorReportContent).toContain("複製");
+    expect(errorReportContent).toContain("non-existent.txt");
+    expect(result?.entries).toHaveLength(2); // 只有成功的 2 個
+  });
+
+  it("應該正確呼叫 withProgress 回調", async () => {
+    const srcList = [getFixturesPath("multiple-files", "file1.txt"), getFixturesPath("multiple-files", "file2.txt")];
+    const destDir = getFixturesPath("empty-folder");
+
+    let progressCalls = 0;
+    let progressTotal = 0;
+
+    await handlePaste({
+      srcList,
+      destDir,
+      type: "copy",
+      overwrite: false,
+      withProgress: async (title, fn) => {
+        expect(title).toContain("複製");
+        await fn((progress) => {
+          progressCalls++;
+          progressTotal += progress;
+        });
+      },
+      showErrorReport: (content) => console.error(content),
+    });
+
+    expect(progressCalls).toBe(2); // 2 個檔案，2 次進度更新
+    expect(progressTotal).toBeCloseTo(100, 0); // 總進度應該接近 100
+  });
+});
+
+// --------------------------------------------------------------------
+
+// TODO: 為 handleRename 和 handleDelete 撰寫測試案例
