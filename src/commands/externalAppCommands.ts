@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import * as fs from "fs";
+import fs from "fs-extra";
 
 import { handleOpenApp } from "@/handlers/externalAppHandlers";
 import { openWithDefaultApp } from "@/utils/system_windows";

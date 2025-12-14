@@ -1,6 +1,5 @@
-import * as fs from "fs";
+import fs from "fs-extra";
 import * as path from "path";
-import fsExtra from "fs-extra";
 import sharp from "sharp";
 
 const FIXTURES_DIR = path.join(process.cwd(), "tests", "fixtures");
@@ -16,13 +15,13 @@ async function generateTestImage(filePath: string, width = 100, height = 100): P
 
 /** 建立單個檔案 */
 async function createFile(filePath: string, content: string = ""): Promise<void> {
-  await fs.promises.mkdir(path.dirname(filePath), { recursive: true });
-  await fs.promises.writeFile(filePath, content, "utf-8");
+  await fs.mkdir(path.dirname(filePath), { recursive: true });
+  await fs.writeFile(filePath, content, "utf-8");
 }
 
 /** 建立空資料夾 */
 async function createFolder(folderPath: string): Promise<void> {
-  await fs.promises.mkdir(folderPath, { recursive: true });
+  await fs.mkdir(folderPath, { recursive: true });
 }
 
 /**
@@ -30,8 +29,8 @@ async function createFolder(folderPath: string): Promise<void> {
  */
 export async function setupFixtures(): Promise<void> {
   // 重新建立 fixtures 資料夾
-  await fsExtra.remove(FIXTURES_DIR);
-  await fs.promises.mkdir(FIXTURES_DIR, { recursive: true });
+  await fs.remove(FIXTURES_DIR);
+  await fs.mkdir(FIXTURES_DIR, { recursive: true });
 
   // ========== 基本檔案與資料夾 ==========
 
@@ -92,7 +91,7 @@ export async function setupFixtures(): Promise<void> {
  * 清理 fixtures 資料夾
  */
 export async function cleanupFixtures(): Promise<void> {
-  await fsExtra.remove(FIXTURES_DIR);
+  await fs.remove(FIXTURES_DIR);
 }
 
 /**

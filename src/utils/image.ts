@@ -1,5 +1,5 @@
 import sharp from "sharp";
-import * as fs from "fs";
+import fs from "fs-extra";
 import * as path from "path";
 
 const supportedExtensions = [".jpg", ".jpeg", ".png", ".bmp", ".gif", ".webp", ".tiff", ".tif"];

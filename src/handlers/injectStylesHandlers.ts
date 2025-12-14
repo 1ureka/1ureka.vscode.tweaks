@@ -1,4 +1,4 @@
-import * as fs from "fs";
+import fs from "fs-extra";
 import * as path from "path";
 import customStyle from "@/assets/customStyle.css";
 import { parse as parseHtml } from "node-html-parser";

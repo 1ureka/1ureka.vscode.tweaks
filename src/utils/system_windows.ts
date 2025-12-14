@@ -1,6 +1,6 @@
 import iconv from "iconv-lite";
 import * as path from "path";
-import * as fs from "fs";
+import fs from "fs-extra";
 import { exec, spawn } from "child_process";
 
 /** 允許開啟的副檔名白名單 */

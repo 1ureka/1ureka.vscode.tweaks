@@ -1,4 +1,4 @@
-import * as fs from "fs";
+import fs from "fs-extra";
 import * as path from "path";
 import { openImage } from "@/utils/image";
 import type { FileInfo, ImageInfo } from "@/providers/fileMetadataProvider";
