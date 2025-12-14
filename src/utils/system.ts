@@ -1,4 +1,4 @@
-import * as fs from "fs";
+import fs from "fs-extra";
 import * as path from "path";
 import { tryCatch, type Prettify } from "@/utils";
 
@@ -21,7 +21,7 @@ type InspectDirectoryEntry = Prettify<
  * 讀取指定目錄的內容，並回傳包含檔案名稱、路徑與型別的陣列。如果讀取失敗則回傳 null。
  */
 async function readDirectory(dirPath: string): Promise<ReadDirectoryEntry[] | null> {
-  const { data, error } = await tryCatch(() => fs.promises.readdir(dirPath, { withFileTypes: true }));
+  const { data, error } = await tryCatch(() => fs.readdir(dirPath, { withFileTypes: true }));
   if (error) return null;
 
   const formatted = data.map((dirent) => {
@@ -50,7 +50,7 @@ async function inspectDirectory(entries: ReadDirectoryEntry[]): Promise<InspectD
   const lstat = async ({ fileName, filePath, fileType }: ReadDirectoryEntry) => {
     if (fileType === "symlink") return null;
 
-    const { data } = await tryCatch(() => fs.promises.lstat(filePath));
+    const { data } = await tryCatch(() => fs.lstat(filePath));
     if (!data) return null;
 
     const size = fileType === "folder" ? 0 : data.size;
@@ -60,10 +60,10 @@ async function inspectDirectory(entries: ReadDirectoryEntry[]): Promise<InspectD
 
   /** 針對符號連結的檔案或資料夾進行處理 */
   const stat = async ({ fileName, filePath }: ReadDirectoryEntry) => {
-    const { data: self } = await tryCatch(() => fs.promises.lstat(filePath));
+    const { data: self } = await tryCatch(() => fs.lstat(filePath));
     if (!self) return null;
 
-    const { data: target } = await tryCatch(() => fs.promises.stat(filePath));
+    const { data: target } = await tryCatch(() => fs.stat(filePath));
     if (!target) return null;
 
     let fileType: InspectDirectoryEntry["fileType"];
@@ -109,11 +109,22 @@ function pathToArray(inputPath: string): string[] {
 }
 
 /**
+ * 根據負數的深度偏移量 (depthOffset) 計算新的路徑。
+ * 其中，depthOffset 可以是正數、零或負數，但都視作向上移動目錄層級來處理。
+ */
+function toParentPath(currentPath: string, depthOffset: number): string {
+  const numLevelsUp: number = Math.abs(depthOffset);
+  const upParts = new Array(numLevelsUp).fill("..");
+  const newPath = path.join(currentPath, ...upParts);
+  return path.normalize(newPath);
+}
+
+/**
  * 檢查錯誤物件是否為 Node.js 環境中常見的系統級錯誤 (帶有 string code 屬性)
  */
 function isSystemError(error: unknown): error is Error & { code: string } {
   return typeof error === "object" && error !== null && "code" in error && typeof error.code === "string";
 }
 
-export { readDirectory, inspectDirectory, isRootDirectory, pathToArray, isSystemError };
+export { readDirectory, inspectDirectory, isRootDirectory, pathToArray, toParentPath, isSystemError };
 export type { ReadDirectoryEntry, InspectDirectoryEntry };

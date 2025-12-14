@@ -1,10 +1,9 @@
-import * as fs from "fs";
+import fs from "fs-extra";
 import * as path from "path";
-import fsExtra from "fs-extra";
 
 import { tryCatch } from "@/utils";
 import { generateErrorMessage } from "@/utils/formatter";
-import { readDirectory, inspectDirectory, isRootDirectory, pathToArray } from "@/utils/system";
+import { readDirectory, inspectDirectory, isRootDirectory, pathToArray, toParentPath } from "@/utils/system";
 import type { InspectDirectoryEntry } from "@/utils/system";
 import type { PromiseOpt, WithProgress } from "@/utils";
 
@@ -36,9 +35,12 @@ const handleInitialData = (params: { dirPath: string }): ReadDirectoryResult => 
 
 /**
  * 掃描資料夾內容，讀取檔案系統資訊並回傳
+ * 其中，depthOffset 可以是正數、零或負數，但都視作向上移動目錄層級來處理。
  */
-const handleReadDirectory = async (params: { dirPath: string }): Promise<ReadDirectoryResult> => {
-  const currentPath = path.resolve(params.dirPath);
+const handleReadDirectory = async (params: { dirPath: string; depthOffset?: number }): Promise<ReadDirectoryResult> => {
+  const { dirPath, depthOffset = 0 } = params;
+
+  const currentPath = path.resolve(toParentPath(dirPath, depthOffset));
   const currentPathParts = pathToArray(currentPath);
   const isCurrentRoot = isRootDirectory(currentPath);
 
@@ -72,7 +74,7 @@ async function handleCreateFile(params: {
 
   const filePath = path.join(dirPath, fileName);
 
-  const { error } = await tryCatch(() => fs.promises.writeFile(filePath, ""));
+  const { error } = await tryCatch(() => fs.writeFile(filePath, ""));
   if (error) {
     showError(`無法建立新檔案: ${error instanceof Error ? error.message : "未知錯誤"}`);
     return null;
@@ -89,7 +91,7 @@ async function handleCreateFile(params: {
 const handleCreateDir = async (params: { dirPath: string; folderName: string; showError: (error: string) => void }) => {
   const { dirPath, folderName, showError } = params;
 
-  const { error } = await tryCatch(() => fs.promises.mkdir(path.join(dirPath, folderName)));
+  const { error } = await tryCatch(() => fs.mkdir(path.join(dirPath, folderName)));
   if (error) {
     showError(`無法建立新資料夾: ${error instanceof Error ? error.message : "未知錯誤"}`);
     return null;
@@ -109,7 +111,7 @@ async function handleGoto(params: { getInputPath: () => PromiseOpt<string>; onEr
 
   const resolvedPath = path.resolve(inputPath);
 
-  const stats = await fs.promises.stat(resolvedPath).catch(() => null);
+  const stats = await fs.stat(resolvedPath).catch(() => null);
   if (!stats) {
     onError("路徑不存在");
     return null;
@@ -183,9 +185,9 @@ const handlePaste = async (params: {
 
       try {
         if (type === "copy") {
-          await fsExtra.copy(src, dest, { overwrite, preserveTimestamps: true });
+          await fs.copy(src, dest, { overwrite, preserveTimestamps: true });
         } else if (type === "move") {
-          await fsExtra.move(src, dest, { overwrite });
+          await fs.move(src, dest, { overwrite });
         }
       } catch (error) {
         itemFailures[src] = error instanceof Error ? error.message : "未知錯誤";
@@ -224,13 +226,13 @@ const handleRename = async (params: {
   const src = path.join(dirPath, name);
   const dest = path.join(dirPath, newName);
 
-  const exist = await fsExtra.pathExists(dest);
+  const exist = await fs.pathExists(dest);
   if (exist) {
     showError("無法重新命名: 目標名稱已存在");
     return handleReadDirectory({ dirPath });
   }
 
-  const { error } = await tryCatch(() => fs.promises.rename(src, dest));
+  const { error } = await tryCatch(() => fs.rename(src, dest));
 
   if (error) {
     showError(`無法重新命名: ${error instanceof Error ? error.message : "未知錯誤"}`);
@@ -261,7 +263,7 @@ const handleDelete = async (params: {
       const targetPath = targetPaths[i];
 
       try {
-        await fsExtra.remove(targetPath);
+        await fs.remove(targetPath);
       } catch (error) {
         itemFailures[targetPath] = error instanceof Error ? error.message : "未知錯誤";
       } finally {

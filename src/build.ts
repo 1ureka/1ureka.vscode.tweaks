@@ -1,7 +1,7 @@
 import { generateContribute } from "@/contribute";
 import { build } from "esbuild";
 import { spawn } from "child_process";
-import * as fs from "fs";
+import fs from "fs-extra";
 import * as path from "path";
 
 async function backupAndInjectContribute() {

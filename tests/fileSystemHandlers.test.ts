@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
 import * as path from "path";
-import * as fs from "fs";
+import fs from "fs-extra";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { cleanupFixtures, getFixturesPath, setupFixtures } from "./fixtures.helpers";
 
@@ -105,6 +105,55 @@ describe("handleReadDirectory - 基本讀取功能", () => {
     expect(result.entries).toEqual([]);
     expect(result.fileCount).toBe(0);
     expect(result.folderCount).toBe(0);
+  });
+
+  it("應該正確處理 depthOffset=0 (無偏移)", async () => {
+    const dirPath = getFixturesPath("multiple-files");
+    const result = await handleReadDirectory({ dirPath, depthOffset: 0 });
+
+    expect(result.currentPath).toBe(path.resolve(dirPath));
+    expect(result.entries).toHaveLength(3);
+  });
+
+  it("應該正確處理 depthOffset=1 (向上一層)", async () => {
+    const dirPath = getFixturesPath("multiple-files");
+    const result = await handleReadDirectory({ dirPath, depthOffset: 1 });
+
+    // 應該移到 fixtures 資料夾
+    const expectedPath = path.resolve(path.dirname(dirPath));
+    expect(result.currentPath).toBe(expectedPath);
+
+    // 應該包含 fixtures 資料夾下的所有子資料夾
+    const entries = result.entries.map((e) => e.fileName);
+    expect(entries).toContain("multiple-files");
+    expect(entries).toContain("empty-folder");
+  });
+
+  it("應該正確處理 depthOffset=2 (向上兩層)", async () => {
+    const dirPath = getFixturesPath("nested-structure", "level1");
+    const result = await handleReadDirectory({ dirPath, depthOffset: 2 });
+
+    // 應該移到 fixtures 資料夾
+    const expectedPath = path.resolve(path.dirname(path.dirname(dirPath)));
+    expect(result.currentPath).toBe(expectedPath);
+  });
+
+  it("應該正確處理負數 depthOffset (同樣視為向上移動)", async () => {
+    const dirPath = getFixturesPath("multiple-files");
+    const result = await handleReadDirectory({ dirPath, depthOffset: -1 });
+
+    // 負數也應該向上移動一層
+    const expectedPath = path.resolve(path.dirname(dirPath));
+    expect(result.currentPath).toBe(expectedPath);
+  });
+
+  it("depthOffset 超過根目錄時應該停在根目錄", async () => {
+    const dirPath = getFixturesPath("multiple-files");
+    const result = await handleReadDirectory({ dirPath, depthOffset: 100 });
+
+    // 應該到達根目錄
+    expect(result.isCurrentRoot).toBe(true);
+    expect(path.dirname(result.currentPath)).toBe(result.currentPath);
   });
 });
 
@@ -462,7 +511,7 @@ describe("handlePaste - 複製操作", () => {
 
     // 驗證內部檔案也被複製
     const copiedFolder = getFixturesPath("empty-folder", "copy-folder");
-    const nestedFileExists = await fs.promises
+    const nestedFileExists = await fs
       .access(path.join(copiedFolder, "nested-file.txt"))
       .then(() => true)
       .catch(() => false);
@@ -478,7 +527,7 @@ describe("handlePaste - 複製操作", () => {
     const destDir = getFixturesPath("copy-move-target");
 
     // 記錄目標中已存在檔案的原始內容
-    const originalContent = await fs.promises.readFile(getFixturesPath("copy-move-target", "copy-file1.txt"), "utf-8");
+    const originalContent = await fs.readFile(getFixturesPath("copy-move-target", "copy-file1.txt"), "utf-8");
 
     const result = await handlePaste({
       srcList,
@@ -493,12 +542,12 @@ describe("handlePaste - 複製操作", () => {
     expect(result?.entries).toHaveLength(2); // copy-file1.txt (原本) + copy-file2.txt (新增)
 
     // 驗證:被跳過的檔案內容應該保持原樣
-    const contentAfterCopy = await fs.promises.readFile(getFixturesPath("copy-move-target", "copy-file1.txt"), "utf-8");
+    const contentAfterCopy = await fs.readFile(getFixturesPath("copy-move-target", "copy-file1.txt"), "utf-8");
     expect(contentAfterCopy).toBe(originalContent);
     expect(contentAfterCopy).toBe("Target existing file content (will be overwritten)");
 
     // 驗證:不同名的檔案應該被正確複製
-    const newFileContent = await fs.promises.readFile(getFixturesPath("copy-move-target", "copy-file2.txt"), "utf-8");
+    const newFileContent = await fs.readFile(getFixturesPath("copy-move-target", "copy-file2.txt"), "utf-8");
     expect(newFileContent).toBe("Source file 2 content");
   });
 
@@ -518,7 +567,7 @@ describe("handlePaste - 複製操作", () => {
     expect(result).not.toBeNull();
 
     // 驗證內容被覆蓋
-    const content = await fs.promises.readFile(getFixturesPath("copy-move-target", "copy-file1.txt"), "utf-8");
+    const content = await fs.readFile(getFixturesPath("copy-move-target", "copy-file1.txt"), "utf-8");
     expect(content).toBe("Source file 1 content");
   });
 
@@ -537,7 +586,7 @@ describe("handlePaste - 複製操作", () => {
     });
 
     // 來源檔案應該仍然存在
-    const srcExists = await fs.promises
+    const srcExists = await fs
       .access(srcFile)
       .then(() => true)
       .catch(() => false);
@@ -573,7 +622,7 @@ describe("handlePaste - 移動操作", () => {
     expect(result?.entries).toHaveLength(2);
 
     // 來源檔案應該不存在
-    const srcExists = await fs.promises
+    const srcExists = await fs
       .access(srcList[0])
       .then(() => true)
       .catch(() => false);
@@ -618,7 +667,7 @@ describe("handlePaste - 移動操作", () => {
     expect(result?.entries).toHaveLength(1);
 
     // 來源資料夾應該不存在
-    const srcExists = await fs.promises
+    const srcExists = await fs
       .access(srcList[0])
       .then(() => true)
       .catch(() => false);
@@ -634,7 +683,7 @@ describe("handlePaste - 移動操作", () => {
     const destDir = getFixturesPath("copy-move-target");
 
     // 記錄目標中已存在檔案的原始內容
-    const originalContent = await fs.promises.readFile(getFixturesPath("copy-move-target", "copy-file1.txt"), "utf-8");
+    const originalContent = await fs.readFile(getFixturesPath("copy-move-target", "copy-file1.txt"), "utf-8");
 
     const result = await handlePaste({
       srcList,
@@ -649,23 +698,23 @@ describe("handlePaste - 移動操作", () => {
     expect(result?.entries).toHaveLength(2); // copy-file1.txt (原本) + copy-file2.txt (新移動)
 
     // 驗證:被跳過的檔案內容應該保持原樣
-    const contentAfterMove = await fs.promises.readFile(getFixturesPath("copy-move-target", "copy-file1.txt"), "utf-8");
+    const contentAfterMove = await fs.readFile(getFixturesPath("copy-move-target", "copy-file1.txt"), "utf-8");
     expect(contentAfterMove).toBe(originalContent);
     expect(contentAfterMove).toBe("Target existing file content (will be overwritten)");
 
     // 驗證:不同名的檔案應該被正確移動
-    const newFileContent = await fs.promises.readFile(getFixturesPath("copy-move-target", "copy-file2.txt"), "utf-8");
+    const newFileContent = await fs.readFile(getFixturesPath("copy-move-target", "copy-file2.txt"), "utf-8");
     expect(newFileContent).toBe("Source file 2 content");
 
     // 驗證:被跳過的來源檔案應該仍然存在
-    const skippedSrcExists = await fs.promises
+    const skippedSrcExists = await fs
       .access(srcList[0])
       .then(() => true)
       .catch(() => false);
     expect(skippedSrcExists).toBe(true);
 
     // 驗證:成功移動的來源檔案應該不存在
-    const movedSrcExists = await fs.promises
+    const movedSrcExists = await fs
       .access(srcList[1])
       .then(() => true)
       .catch(() => false);
@@ -688,10 +737,10 @@ describe("handlePaste - 移動操作", () => {
     expect(result).not.toBeNull();
 
     // 驗證內容被覆蓋且來源不存在
-    const content = await fs.promises.readFile(getFixturesPath("copy-move-target", "copy-file1.txt"), "utf-8");
+    const content = await fs.readFile(getFixturesPath("copy-move-target", "copy-file1.txt"), "utf-8");
     expect(content).toBe("Source file 1 content");
 
-    const srcExists = await fs.promises
+    const srcExists = await fs
       .access(srcList[0])
       .then(() => true)
       .catch(() => false);
@@ -880,7 +929,7 @@ describe("handleRename", () => {
     const newName = "renamed-file1.txt";
 
     // 讀取原始內容
-    const originalContent = await fs.promises.readFile(path.join(dirPath, name), "utf-8");
+    const originalContent = await fs.readFile(path.join(dirPath, name), "utf-8");
 
     await handleRename({
       name,
@@ -890,7 +939,7 @@ describe("handleRename", () => {
     });
 
     // 驗證重新命名後內容不變
-    const newContent = await fs.promises.readFile(path.join(dirPath, newName), "utf-8");
+    const newContent = await fs.readFile(path.join(dirPath, newName), "utf-8");
     expect(newContent).toBe(originalContent);
   });
 
@@ -901,7 +950,7 @@ describe("handleRename", () => {
 
     // 檢查原始資料夾內容
     const originalPath = path.join(dirPath, name);
-    const originalEntries = await fs.promises.readdir(originalPath);
+    const originalEntries = await fs.readdir(originalPath);
 
     await handleRename({
       name,
@@ -912,7 +961,7 @@ describe("handleRename", () => {
 
     // 驗證重新命名後資料夾內容不變
     const newPath = path.join(dirPath, newName);
-    const newEntries = await fs.promises.readdir(newPath);
+    const newEntries = await fs.readdir(newPath);
     expect(newEntries).toEqual(originalEntries);
   });
 });
@@ -962,7 +1011,7 @@ describe("handleDelete", () => {
     expect(result.folderCount).toBe(0);
 
     // 驗證資料夾確實被刪除
-    const folderExists = await fs.promises
+    const folderExists = await fs
       .access(path.join(dirPath, "level1"))
       .then(() => true)
       .catch(() => false);
@@ -1005,11 +1054,11 @@ describe("handleDelete", () => {
     expect(result).not.toBeNull();
 
     // 驗證成功的項目已被刪除
-    const file1Exists = await fs.promises
+    const file1Exists = await fs
       .access(path.join(dirPath, "file1.txt"))
       .then(() => true)
       .catch(() => false);
-    const file2Exists = await fs.promises
+    const file2Exists = await fs
       .access(path.join(dirPath, "file2.txt"))
       .then(() => true)
       .catch(() => false);
