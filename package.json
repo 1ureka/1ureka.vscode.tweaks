@@ -37,6 +37,7 @@
     "@typescript-eslint/eslint-plugin": "^8.48.0",
     "@typescript-eslint/parser": "^8.48.0",
     "@vscode/vsce": "^3.7.0",
+    "colord": "^2.9.3",
     "esbuild": "^0.27.0",
     "eslint": "^9.39.1",
     "node-html-parser": "^7.0.1",
