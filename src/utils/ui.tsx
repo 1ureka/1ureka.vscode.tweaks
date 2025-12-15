@@ -38,6 +38,7 @@ declare module "@mui/material/styles" {
     button: string;
     dropdown: string;
     active: string;
+    border: string;
   }
 
   interface Palette {
@@ -70,6 +71,7 @@ const theme = createTheme({
           button: colord(getColorVar("editor-background")).lighten(0.15).toHex(),
           dropdown: colord(getColorVar("sideBar-background")).darken(0.025).toHex(),
           active: getColorVar("editor-selectionBackground"),
+          border: getColorVar("menu-background"),
         },
         text: {
           primary: getColorVar("foreground"),

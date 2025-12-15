@@ -277,7 +277,7 @@ type ListProps = {
  * 列表元件，遵循 DSL 原則設計，因此只要帶入正確結構的資料即可包括所有通用的列表邏輯與 UI
  */
 const List = (props: ListProps) => {
-  const { items, maxRows = 20, defaultRows = 10, defaultActionExpanded, activeItemId, onClickItem } = props;
+  const { items, maxRows = 20, defaultRows = items.length, defaultActionExpanded, activeItemId, onClickItem } = props;
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const resizeOverlayRef = useRef<HTMLDivElement>(null);
