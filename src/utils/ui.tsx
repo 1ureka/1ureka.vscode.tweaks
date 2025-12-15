@@ -1,6 +1,10 @@
 import React from "react";
+import { colord } from "colord";
 import { CssBaseline, ThemeProvider, createTheme } from "@mui/material";
 
+/**
+ * 從 CSS 變數中取得 VSCode 主題顏色值
+ */
 const getColorVar = (varName: string) => {
   const rootElement = document.documentElement;
   const computedStyle = window.getComputedStyle(rootElement);
@@ -15,29 +19,34 @@ const getColorVar = (varName: string) => {
  * 混合兩種顏色，weight 為 color1 的比例 (0-100)
  */
 const colorMix = (color1: string, color2: string, weight: number) => {
-  return `color-mix(in srgb, var(--mui-palette-${color1}) ${weight}%, var(--mui-palette-${color2}) ${100 - weight}%)`;
+  if (weight < 1) weight = weight * 100;
+  const color1CSSVar = `var(--mui-palette-${color1.replace(/\./g, "-")})`;
+  const color2CSSVar = `var(--mui-palette-${color2.replace(/\./g, "-")})`;
+  return `color-mix(in srgb, ${color1CSSVar} ${weight}%, ${color2CSSVar} ${100 - weight}%)`;
 };
 
+// ----------------------------------------------------------------------------
+
 declare module "@mui/material/styles" {
+  interface TypeBackground {
+    default: string;
+    paper: string;
+    content: string;
+    input: string;
+  }
+  interface TypeAction {
+    button: string;
+    dropdown: string;
+    active: string;
+  }
+
   interface Palette {
-    table: {
-      alternateRowBackground: string;
-      hoverBackground: string;
-      selectedBackground: string;
-      selectedHoverBackground: string;
-    };
     tooltip: {
       background: string;
       border: string;
     };
   }
   interface PaletteOptions {
-    table: {
-      alternateRowBackground: string;
-      hoverBackground: string;
-      selectedBackground: string;
-      selectedHoverBackground: string;
-    };
     tooltip: {
       background: string;
       border: string;
@@ -51,27 +60,21 @@ const theme = createTheme({
   colorSchemes: {
     dark: {
       palette: {
-        primary: {
-          main: getColorVar("button-background"),
-          contrastText: getColorVar("button-foreground"),
-        },
         background: {
           default: getColorVar("editor-background"),
-          paper: getColorVar("sideBar-background"),
+          paper: getColorVar("menu-background"),
+          content: getColorVar("sideBar-background"),
+          input: colord(getColorVar("sideBar-background")).darken(0.05).toHex(),
+        },
+        action: {
+          button: colord(getColorVar("editor-background")).lighten(0.15).toHex(),
+          dropdown: colord(getColorVar("sideBar-background")).darken(0.025).toHex(),
+          active: getColorVar("editor-selectionBackground"),
         },
         text: {
           primary: getColorVar("foreground"),
           secondary: getColorVar("descriptionForeground"),
           disabled: getColorVar("disabledForeground"),
-        },
-        info: {
-          main: getColorVar("editorInfo-foreground"),
-        },
-        table: {
-          alternateRowBackground: getColorVar("list-hoverBackground"),
-          hoverBackground: getColorVar("toolbar-hoverBackground"),
-          selectedBackground: getColorVar("editor-selectionBackground"),
-          selectedHoverBackground: colorMix("table-selectedBackground", "table-hoverBackground", 50),
         },
         tooltip: {
           background: getColorVar("editorHoverWidget-background"),
@@ -86,18 +89,12 @@ const theme = createTheme({
   },
 });
 
-interface ProvidersProps {
-  children: React.ReactNode;
-}
-
-const Providers: React.FC<ProvidersProps> = ({ children }) => {
-  return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      {children}
-    </ThemeProvider>
-  );
-};
+const Providers = ({ children }: { children: React.ReactNode }) => (
+  <ThemeProvider theme={theme}>
+    <CssBaseline />
+    {children}
+  </ThemeProvider>
+);
 
 const ellipsisSx = {
   display: "-webkit-box",
@@ -108,4 +105,8 @@ const ellipsisSx = {
   wordBreak: "break-all",
 } as const;
 
-export { Providers, ellipsisSx, colorMix };
+const centerTextSx = {
+  textBox: "trim-both cap alphabetic",
+};
+
+export { Providers, ellipsisSx, centerTextSx, colorMix };
