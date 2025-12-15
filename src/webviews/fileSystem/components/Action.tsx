@@ -22,6 +22,9 @@ const ActionGroup = ({ children, orientation = "horizontal", size = "medium" }: 
   const height = orientation === "horizontal" ? actionSize[size] : undefined;
   const width = orientation === "vertical" ? actionSize[size] : undefined;
 
+  const borderLeft = orientation === "horizontal" ? "2px solid" : undefined;
+  const borderTop = orientation === "vertical" ? "2px solid" : undefined;
+
   return (
     <Box
       className="action-group"
@@ -35,13 +38,9 @@ const ActionGroup = ({ children, orientation = "horizontal", size = "medium" }: 
         overflow: "hidden",
         borderRadius: 1,
         border: "2px solid",
-        borderColor: colorMix("action.button", "action.dropdown", 50),
-        "&.action-group > *": {
-          border: "none",
-          borderLeft: "2px solid",
-          borderColor: colorMix("action.button", "action.dropdown", 50),
-        },
-        "&.action-group > *:first-child": { borderLeft: "none" },
+        borderColor: "action.border",
+        "&.action-group > *": { border: "none", borderLeft, borderTop, borderColor: "action.border" },
+        "&.action-group > *:first-child": { borderLeft: "none", borderTop: "none" },
 
         "&.action-group button": {
           height: orientation === "horizontal" ? 1 : "auto",
@@ -74,13 +73,35 @@ const actionButtonActiveSx: SxProps = {
   bgcolor: "action.active",
 };
 
+const actionButtonDisabledSx: SxProps = {
+  display: "grid",
+  placeItems: "center",
+  bgcolor: colorMix("action.button", "background.default", 50),
+  color: "text.disabled",
+};
+
+type ActionButtonProps = {
+  icon: `codicon codicon-${string}`;
+  onClick?: () => void;
+  active?: boolean;
+  disabled?: boolean;
+};
+
 /**
  * 按鈕元件，單獨使用仍需要包在 ActionGroup 中
  */
-const ActionButton = (props: { icon: `codicon codicon-${string}`; onClick?: () => void; active?: boolean }) => {
-  const { icon, onClick, active } = props;
+const ActionButton = (props: ActionButtonProps) => {
+  const { icon, onClick, active, disabled } = props;
+
+  let sx: SxProps = actionButtonSx;
+  if (disabled) {
+    sx = actionButtonDisabledSx;
+  } else if (active) {
+    sx = actionButtonActiveSx;
+  }
+
   return (
-    <ButtonBase disableRipple onClick={onClick} sx={active ? actionButtonActiveSx : actionButtonSx}>
+    <ButtonBase disableRipple onClick={onClick} sx={sx} disabled={disabled}>
       <i className={icon} style={{ display: "block" }} />
     </ButtonBase>
   );
