@@ -40,6 +40,7 @@
     "colord": "^2.9.3",
     "esbuild": "^0.27.0",
     "eslint": "^9.39.1",
+    "fuse.js": "^7.1.0",
     "node-html-parser": "^7.0.1",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
