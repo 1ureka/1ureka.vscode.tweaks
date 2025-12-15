@@ -1,4 +1,5 @@
-import React, { useCallback, useEffect, useRef } from "react";
+import Fuse from "fuse.js";
+import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Box, SxProps, Typography } from "@mui/material";
 import { ActionButton, ActionGroup, ActionInput, actionSize } from "./Action";
 import { centerTextSx, colorMix } from "@/utils/ui";
@@ -13,18 +14,18 @@ type ListRowProps = {
   icon?: `codicon codicon-${string}`;
   text: string;
   active?: boolean;
-  onClick: () => void;
+  sx?: SxProps;
 };
 
 /**
  * 列表中的列元件
  */
 const ListRow = (props: ListRowProps) => {
-  const { icon = "codicon codicon-blank", text, active, onClick } = props;
+  const { icon = "codicon codicon-blank", text, active, sx } = props;
 
   return (
     <Box
-      onClick={onClick}
+      className="list-row"
       sx={{
         borderRadius: 1,
         px: 0.25,
@@ -33,6 +34,7 @@ const ListRow = (props: ListRowProps) => {
         "&:hover": { bgcolor: active ? "action.active" : colorMix("background.content", "text.primary", 0.9) },
         // 因為有些瀏覽器明明在 overflow 對齊時，仍會渲染上面或下面那個應該完全看不見的 item 的一小塊，因此加個內框遮住
         boxShadow: "inset 0 0 0 1px var(--mui-palette-background-content)",
+        ...sx,
       }}
     >
       <Box sx={{ display: "flex", alignItems: "center", height: listRowHeight, gap: 0.75 }}>
@@ -149,21 +151,118 @@ const useExpandActions = (params: {
 };
 
 /**
- *
+ * 用於對列表項目進行過濾，返回過濾後的項目與目前的過濾狀態及切換函數
  */
-const useSortItems = (params: { items: ListItem[]; orderBy: "custom" | "text"; order: "asc" | "desc" }) => {};
+const useFilterItems = (items: ListItem[]) => {
+  const [filterText, setFilterText] = useState("");
+  const [invertMatch, setInvertMatch] = useState(false);
+
+  const filteredItems = useMemo(() => {
+    if (filterText.trim() === "") return items;
+
+    const fuse = new Fuse(items, {
+      keys: ["text"],
+      threshold: 0.4,
+      shouldSort: false,
+      includeMatches: false,
+      includeScore: false,
+    });
+
+    const results = fuse.search(filterText);
+    const matchedItems = results.map((result) => result.item);
+
+    if (invertMatch) {
+      const matchedIds = new Set(matchedItems.map((item) => item.id));
+      return items.filter((item) => !matchedIds.has(item.id));
+    } else {
+      return matchedItems;
+    }
+  }, [items, filterText, invertMatch]);
+
+  const toggleInvertMatch = () => {
+    setInvertMatch((prev) => !prev);
+  };
+
+  const handleFilterTextChange = (text: string) => {
+    setFilterText(text);
+  };
+
+  return { filteredItems, filterText, invertMatch, handleFilterTextChange, toggleInvertMatch };
+};
 
 /**
- *
+ * 用於對列表項目進行排序，返回排序後的項目與目前的排序狀態及切換函數
  */
-const useFilterItems = (params: { items: ListItem[]; filterText: string; inverse: boolean }) => {};
+const useSortItems = (items: ListItem[]) => {
+  const [orderBy, setOrderBy] = useState<"custom" | "text">("custom");
+  const [order, setOrder] = useState<"asc" | "desc">("asc");
+
+  const sortedItems = useMemo(() => {
+    let sorted = [...items];
+
+    if (orderBy === "custom" && order === "asc") {
+      return sorted;
+    }
+    if (orderBy === "custom" && order === "desc") {
+      return sorted.reverse();
+    }
+    if (orderBy === "text" && order === "asc") {
+      sorted.sort((a, b) => a.text.localeCompare(b.text));
+    }
+    if (orderBy === "text" && order === "desc") {
+      sorted.sort((a, b) => b.text.localeCompare(a.text));
+    }
+
+    return sorted;
+  }, [items, orderBy, order]);
+
+  const toggleOrderBy = () => {
+    setOrderBy((prev) => (prev === "custom" ? "text" : "custom"));
+  };
+
+  const toggleOrder = () => {
+    setOrder((prev) => (prev === "asc" ? "desc" : "asc"));
+  };
+
+  return { sortedItems, orderBy, order, toggleOrderBy, toggleOrder };
+};
+
+/**
+ * 用於避免為每個列表項目都註冊點擊事件，透過事件代理的方式來處理點擊事件，注意 items 必須與實際要渲染的項目一致 (排序與過濾後的項目)
+ */
+const useHandleClick = (params: { onClickItem: (item: ListItem) => void; items: ListItem[] }) => {
+  const { onClickItem, items } = params;
+
+  const handleClick = useCallback(
+    (e: React.MouseEvent) => {
+      const target = e.target;
+      if (!(target instanceof HTMLElement)) return;
+
+      const listElement = e.currentTarget;
+      const listItemElement = target.closest(".list-row");
+
+      if (listItemElement && listElement.contains(listItemElement)) {
+        const siblings = Array.from(listElement.children);
+        const index = siblings.indexOf(listItemElement);
+
+        if (index >= 0 && index < items.length) {
+          const item = items[index];
+          onClickItem(item);
+        }
+      }
+    },
+    [onClickItem, items]
+  );
+
+  return handleClick;
+};
 
 // ------------------------------------------------------------------------------
 
 /**
  * 渲染列表時，應該要傳入的每個項目型別
  */
-type ListItem = Prettify<Omit<ListRowProps, "onClick"> & { id: string }>;
+type ListItem = Prettify<ListRowProps & { id: string }>;
 
 type ListProps = {
   items: ListItem[];
@@ -175,7 +274,7 @@ type ListProps = {
 };
 
 /**
- * ?
+ * 列表元件，遵循 DSL 原則設計，因此只要帶入正確結構的資料即可包括所有通用的列表邏輯與 UI
  */
 const List = (props: ListProps) => {
   const { items, maxRows = 20, defaultRows = 10, defaultActionExpanded, activeItemId, onClickItem } = props;
@@ -214,7 +313,14 @@ const List = (props: ListProps) => {
     actionContainerRef,
   });
 
+  // 先過濾再排序，因為無論時間複雜度，只有過濾有可能減少 n 的數量
+  const { filteredItems, filterText, invertMatch, handleFilterTextChange, toggleInvertMatch } = useFilterItems(items);
+  const { sortedItems, orderBy, order, toggleOrderBy, toggleOrder } = useSortItems(filteredItems);
+
+  const handleClick = useHandleClick({ onClickItem: onClickItem ?? (() => {}), items: sortedItems });
+
   const scrollContainerSx: SxProps = {
+    position: "relative",
     display: "flex",
     flexDirection: "column",
     height: rowsRef.current * listRowHeight,
@@ -238,11 +344,10 @@ const List = (props: ListProps) => {
   // TODO: 自動虛擬化
   return (
     <Box sx={{ p: 0.75, bgcolor: "background.content", borderRadius: 1 }}>
-      <Box ref={scrollContainerRef} sx={scrollContainerSx}>
-        {items.map((item) => {
+      <Box ref={scrollContainerRef} sx={scrollContainerSx} onClick={handleClick}>
+        {sortedItems.map((item) => {
           const { id, icon, text } = item;
-          const handleClick = () => onClickItem?.(item);
-          return <ListRow key={id} icon={icon} text={text} active={id === activeItemId} onClick={handleClick} />;
+          return <ListRow key={id} icon={icon} text={text} active={id === activeItemId} />;
         })}
       </Box>
 
@@ -270,13 +375,17 @@ const List = (props: ListProps) => {
 
       <Box ref={actionContainerRef} sx={actionContainerSx}>
         <ActionGroup orientation="horizontal" size="small">
-          <ActionInput />
-          <ActionButton icon="codicon codicon-arrow-both" />
+          <ActionInput value={filterText} onChange={handleFilterTextChange} />
+          <ActionButton icon="codicon codicon-arrow-both" onClick={toggleInvertMatch} active={invertMatch} />
         </ActionGroup>
 
         <ActionGroup orientation="horizontal" size="small">
-          <ActionButton icon="codicon codicon-preserve-case" />
-          <ActionButton icon="codicon codicon-arrow-down" />
+          <ActionButton icon="codicon codicon-preserve-case" active={orderBy === "text"} onClick={toggleOrderBy} />
+          <ActionButton
+            icon={order === "asc" ? "codicon codicon-arrow-down" : "codicon codicon-arrow-up"}
+            active={order === "desc"}
+            onClick={toggleOrder}
+          />
         </ActionGroup>
       </Box>
 
@@ -288,4 +397,9 @@ const List = (props: ListProps) => {
   );
 };
 
-export { listRowHeight, List };
+/**
+ * 列表元件，遵循 DSL 原則設計，因此只要帶入正確結構的資料即可包括所有通用的列表邏輯與 UI
+ */
+const MemoedList = memo(List);
+
+export { listRowHeight, MemoedList as List };
