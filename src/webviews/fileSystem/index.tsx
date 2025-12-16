@@ -1,6 +1,5 @@
 import React from "react";
-import { createRoot } from "react-dom/client";
-import { getTextContentWidth, Providers } from "@/utils/ui";
+import { startReactApp } from "@/utils/ui";
 
 import { Box } from "@mui/material";
 import { registerInitData } from "@@/fileSystem/data/data";
@@ -13,67 +12,59 @@ import { ActionButton, ActionDropdown, ActionGroup, ActionInput } from "@@/fileS
 
 const App = () => {
   return (
-    <Providers>
-      <Box sx={{ height: "100dvh", width: "100dvw", overflow: "hidden", overflowX: "auto" }}>
-        <Box sx={{ minWidth: 850, display: "grid", gridTemplateColumns: "270px 1fr", height: 1 }}>
-          <NavigationPanels />
+    <Box sx={{ height: "100dvh", width: "100dvw", overflow: "hidden", overflowX: "auto" }}>
+      <Box sx={{ minWidth: 850, display: "grid", gridTemplateColumns: "270px 1fr", height: 1 }}>
+        <NavigationPanels />
 
-          <Box>
-            <Box sx={{ display: "grid", gridTemplateColumns: "auto auto 2fr 1fr auto auto", gap: 1, p: 1 }}>
-              <ActionGroup>
-                <ActionButton icon="codicon codicon-arrow-left" />
-                <ActionButton icon="codicon codicon-arrow-right" />
-                <ActionButton icon="codicon codicon-merge-into" />
-                <ActionButton icon="codicon codicon-sync" />
-              </ActionGroup>
+        <Box>
+          <Box sx={{ display: "grid", gridTemplateColumns: "auto auto 2fr 1fr auto auto", gap: 1, p: 1 }}>
+            <ActionGroup>
+              <ActionButton icon="codicon codicon-arrow-left" />
+              <ActionButton icon="codicon codicon-arrow-right" />
+              <ActionButton icon="codicon codicon-merge-into" />
+              <ActionButton icon="codicon codicon-sync" />
+            </ActionGroup>
 
-              <ActionGroup>
-                <ActionButton icon="codicon codicon-new-folder" />
-              </ActionGroup>
+            <ActionGroup>
+              <ActionButton icon="codicon codicon-new-folder" />
+            </ActionGroup>
 
-              <ActionGroup>
-                <ActionInput />
-              </ActionGroup>
+            <ActionGroup>
+              <ActionInput />
+            </ActionGroup>
 
-              <ActionGroup>
-                <ActionInput icon="codicon codicon-search" placeholder="搜尋" />
-              </ActionGroup>
+            <ActionGroup>
+              <ActionInput icon="codicon codicon-search" placeholder="搜尋" />
+            </ActionGroup>
 
-              <ActionGroup>
-                <ActionButton icon="codicon codicon-list-ordered" active />
-                <ActionButton icon="codicon codicon-table" disabled />
-                <ActionDropdown>
-                  <Box sx={{ p: 2, px: 5 }} />
-                </ActionDropdown>
-              </ActionGroup>
+            <ActionGroup>
+              <ActionButton icon="codicon codicon-list-ordered" active />
+              <ActionButton icon="codicon codicon-table" disabled />
+              <ActionDropdown>
+                <Box sx={{ p: 2, px: 5 }} />
+              </ActionDropdown>
+            </ActionGroup>
 
-              <ActionGroup>
-                <ActionButton icon="codicon codicon-filter" active />
-                <ActionDropdown>
-                  <Box sx={{ p: 2, px: 5 }} />
-                </ActionDropdown>
-              </ActionGroup>
-            </Box>
+            <ActionGroup>
+              <ActionButton icon="codicon codicon-filter" active />
+              <ActionDropdown>
+                <Box sx={{ p: 2, px: 5 }} />
+              </ActionDropdown>
+            </ActionGroup>
           </Box>
         </Box>
       </Box>
-    </Providers>
+    </Box>
   );
 };
 
-const container = document.getElementById("root");
-if (container) {
-  console.log(Math.ceil(getTextContentWidth("12 Nov 2025 01:46", 12)));
-  console.log(Math.ceil(getTextContentWidth("DD MMM YYYY HH:SS", 12)));
-
-  container.style.setProperty("scrollbar-color", "initial", "important");
-  registerInitData();
-  registerSelectionEvents();
-  registerNavigateShortcuts();
-  registerMessageEvents();
-  registerClipboardEvents();
-  createRoot(container).render(<App />);
-}
-
-document.body.style.padding = "0";
-document.body.style.overflow = "hidden";
+startReactApp({
+  App,
+  beforeRender: () => {
+    registerInitData();
+    registerSelectionEvents();
+    registerNavigateShortcuts();
+    registerMessageEvents();
+    registerClipboardEvents();
+  },
+});
