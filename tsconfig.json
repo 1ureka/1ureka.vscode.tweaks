@@ -13,6 +13,7 @@
     "noUnusedParameters": true,
     "baseUrl": ".",
     "paths": {
+      "@@/*": ["src/webviews/*"],
       "@/*": ["src/*"]
     }
   },
