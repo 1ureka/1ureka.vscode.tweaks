@@ -326,6 +326,7 @@ const List = (props: ListProps) => {
     height: rowsRef.current * listRowHeight,
     transition: "height 0.1s",
     overflowY: "auto",
+    overflowX: "hidden",
     scrollSnapType: "y mandatory",
     "& > div": { scrollSnapAlign: "start" },
     pr: 1,
