@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import customStyle from "@/assets/customStyle.css";
+import webviewCSS from "@/assets/webview.css";
 import { randomUUID } from "crypto";
 import type { OneOf } from "@/utils";
 import type { WebviewId } from "@/contribute";
@@ -50,7 +50,7 @@ function generateReactHtml({ webviewType, webview, extensionUri, initialData }: 
 
   const htmlMeta = `<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">`;
   const htmlCSP = `<meta http-equiv="Content-Security-Policy" content="${csp.join(" ")}">`;
-  const htmlCSS = `<style>${customStyle}</style>`;
+  const htmlCSS = `<style>${webviewCSS}</style>`;
   const htmlTitle = `<title>${webviewType}</title>`;
   const htmlCodicons = `<link href="${codiconsUri}" rel="stylesheet" />`;
 
