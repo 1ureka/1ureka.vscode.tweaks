@@ -108,6 +108,13 @@ const theme = createTheme({
   },
 });
 
+// ----------------------------------------------------------------------------
+
+/**
+ * 儲存與整個應用程式相關的狀態，例如字型是否載入完成等
+ */
+const appStore = create<{ fontReady: boolean }>(() => ({ fontReady: false }));
+
 /**
  * 啟動 React 應用程式
  */
@@ -133,6 +140,11 @@ const startReactApp = async (params: { App: React.FC; beforeRender?: () => Promi
       <App />
     </ThemeProvider>
   );
+
+  const forceLoadStrings = `123 abc !@# $%^ &*()_+~\`-={}[]|;:'",.<>/? 中文`;
+  document.fonts.load(`12px ${getVarValue("editor-font-family")}`, forceLoadStrings).then(() => {
+    appStore.setState({ fontReady: true });
+  });
 };
 
-export { startReactApp, ellipsisSx, centerTextSx, colorMix, measureTextWidth };
+export { startReactApp, appStore, ellipsisSx, centerTextSx, colorMix, measureTextWidth };
