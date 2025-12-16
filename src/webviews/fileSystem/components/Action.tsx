@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, ButtonBase, InputBase } from "@mui/material";
+import { Box, ButtonBase, InputBase, Popover } from "@mui/material";
 import type { SxProps } from "@mui/system";
 import { colorMix } from "@/utils/ui";
 
@@ -59,6 +59,8 @@ const ActionGroup = ({ children, orientation = "horizontal", size = "medium" }: 
   );
 };
 
+// -------------------------------------------------------------------------------------
+
 const actionButtonSx: SxProps = {
   display: "grid",
   placeItems: "center",
@@ -107,6 +109,8 @@ const ActionButton = (props: ActionButtonProps) => {
   );
 };
 
+// -------------------------------------------------------------------------------------
+
 const actionInputSx: SxProps = {
   minWidth: 0,
   width: 1,
@@ -124,4 +128,60 @@ const ActionInput = ({ value, onChange }: { value?: string; onChange?: (value: s
   return <InputBase value={value} onChange={(e) => onChange?.(e.target.value)} sx={actionInputSx} />;
 };
 
-export { actionSize, ActionGroup, ActionButton, ActionInput };
+// -------------------------------------------------------------------------------------
+
+const actionDropdownButtonSx: SxProps = {
+  display: "grid",
+  placeItems: "center",
+  bgcolor: "action.dropdown",
+  "&:hover": { bgcolor: colorMix("action.dropdown", "text.primary", 0.95) },
+  "&:active": { bgcolor: "action.active" },
+};
+
+const actionDropdownButtonActiveSx: SxProps = {
+  display: "grid",
+  placeItems: "center",
+  bgcolor: "action.active",
+};
+
+const actionDropdownSx: SxProps = {
+  mt: 0.5,
+  p: 1,
+  bgcolor: "tooltip.background",
+  border: 1,
+  borderColor: "tooltip.border",
+  borderRadius: 1,
+  boxShadow: "0 2px 8px var(--vscode-widget-shadow)",
+};
+
+/**
+ * 下拉選單元件，單獨使用仍需要包在 ActionGroup 中
+ */
+const ActionDropdown = ({ children }: { children: React.ReactNode }) => {
+  const [anchorRef, setAnchorRef] = React.useState<null | HTMLElement>(null);
+  const open = Boolean(anchorRef);
+  const buttonSx = open ? actionDropdownButtonActiveSx : actionDropdownButtonSx;
+
+  return (
+    <>
+      <ButtonBase disableRipple onClick={(e) => setAnchorRef(e.currentTarget)} sx={buttonSx}>
+        <i className="codicon codicon-chevron-down" style={{ display: "block" }} />
+      </ButtonBase>
+
+      <Popover
+        anchorEl={anchorRef}
+        open={open}
+        onClose={() => setAnchorRef(null)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        transformOrigin={{ vertical: "top", horizontal: "center" }}
+        slotProps={{ paper: { elevation: 0, sx: actionDropdownSx } }}
+      >
+        {children}
+      </Popover>
+    </>
+  );
+};
+
+// -------------------------------------------------------------------------------------
+
+export { actionSize, ActionGroup, ActionButton, ActionInput, ActionDropdown };
