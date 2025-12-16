@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { Box, Container, Skeleton, Typography } from "@mui/material";
 import { TransformWrapper, TransformComponent, useControls } from "react-zoom-pan-pinch";
-import { imageViewerInitialData } from "./data/data";
-import { useDecodeImage } from "./data/hooks";
-import { resetTransformRef } from "./data/events";
+
+import { resetTransformRef } from "@@/imageViewer/data/events";
+import { useDecodeImage } from "@@/imageViewer/data/hooks";
+import { imageViewerInitialData } from "@@/imageViewer/data/data";
 
 const Controls = () => {
   const { resetTransform } = useControls();

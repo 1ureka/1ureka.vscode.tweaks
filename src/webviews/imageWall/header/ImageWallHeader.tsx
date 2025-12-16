@@ -1,6 +1,6 @@
 import { Box, Breadcrumbs, Typography } from "@mui/material";
-import { imageWallDataStore } from "../data/data";
 import { formatPathArray } from "@/utils/formatter";
+import { imageWallDataStore } from "@@/imageWall/data/data";
 
 const ImageWallHeader = () => {
   const folderPathParts = imageWallDataStore((state) => state.folderPathParts);

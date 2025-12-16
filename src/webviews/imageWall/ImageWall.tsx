@@ -1,11 +1,11 @@
 import { Box, Container, Typography, ImageList, useMediaQuery } from "@mui/material";
-import { ImageWallHeader } from "./header/ImageWallHeader";
-import { ImageWallPagination } from "./header/ImageWallPagination";
-import { ImageWallItem } from "./item/ImageWallItem";
+import { ImageWallHeader } from "@@/imageWall/header/ImageWallHeader";
+import { ImageWallPagination } from "@@/imageWall/header/ImageWallPagination";
+import { ImageWallItem } from "@@/imageWall/item/ImageWallItem";
 
-import { imageWallPreferenceStore } from "./data/preference";
-import { imageWallDataStore } from "./data/data";
-import { imageWallViewData } from "./data/view";
+import { imageWallPreferenceStore } from "@@/imageWall/data/preference";
+import { imageWallDataStore } from "@@/imageWall/data/data";
+import { imageWallViewData } from "@@/imageWall/data/view";
 import type { ExtendedMetadata } from "@/utils/image";
 
 const columnCountsMap = {

@@ -1,9 +1,9 @@
 import { startReactApp } from "@/utils/ui";
-import { ImageWall } from "./ImageWall";
-import { registerInitData } from "./data/data";
-import { registerCacheClearInterval } from "./data/cache";
-import { registerClipboardEvent } from "./data/clipboard";
-import { registerPreferenceEvent } from "./data/preference";
+import { registerCacheClearInterval } from "@@/imageWall/data/cache";
+import { registerClipboardEvent } from "@@/imageWall/data/clipboard";
+import { registerInitData } from "@@/imageWall/data/data";
+import { registerPreferenceEvent } from "@@/imageWall/data/preference";
+import { ImageWall } from "@@/imageWall/ImageWall";
 
 startReactApp({
   App: ImageWall,

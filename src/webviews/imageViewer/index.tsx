@@ -1,6 +1,6 @@
 import { startReactApp } from "@/utils/ui";
-import { ImageViewer } from "./ImageViewer";
-import { registerMessageEvents } from "./data/events";
+import { registerMessageEvents } from "@@/imageViewer/data/events";
+import { ImageViewer } from "@@/imageViewer/ImageViewer";
 
 startReactApp({
   App: ImageViewer,

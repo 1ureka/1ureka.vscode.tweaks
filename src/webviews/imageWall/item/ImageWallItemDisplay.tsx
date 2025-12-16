@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { Box, Skeleton, type SxProps } from "@mui/material";
-import { useImageCache, imageWallIntersectionObserver } from "../data/cache";
+import { imageWallIntersectionObserver, useImageCache } from "@@/imageWall/data/cache";
 
 type ImageDisplayProps = {
   filePath: string;
