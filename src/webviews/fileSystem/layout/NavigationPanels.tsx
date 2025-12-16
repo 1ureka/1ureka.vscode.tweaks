@@ -1,4 +1,4 @@
-import React from "react";
+import { useState } from "react";
 import { Box, Typography } from "@mui/material";
 import { Panel } from "@@/fileSystem/components/Panel";
 import { List } from "@@/fileSystem/components/List";
@@ -143,7 +143,7 @@ const fakeHistoryItems: FakeItem[] = [
 ];
 
 const NavigationPanels = () => {
-  const [activeId, setActiveId] = React.useState("");
+  const [activeId, setActiveId] = useState("");
 
   return (
     <Box sx={{ height: 1, overflowY: "auto", scrollbarGutter: "stable", p: 0.5, pr: 0.25 }}>

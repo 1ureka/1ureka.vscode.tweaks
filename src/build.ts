@@ -66,6 +66,7 @@ async function buildWebviews() {
       platform: "browser",
       format: "iife",
       outfile: `dist/webviews/${dir}.js`,
+      jsx: "automatic",
       minify: true,
       alias: { "@": "./src", "@@": `./src/webviews` },
     });

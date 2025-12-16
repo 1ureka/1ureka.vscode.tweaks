@@ -1,7 +1,7 @@
-import React from "react";
+import { useState } from "react";
+import { colorMix } from "@/utils/ui";
 import { Box, ButtonBase, InputBase, Popover } from "@mui/material";
 import type { SxProps } from "@mui/system";
-import { colorMix } from "@/utils/ui";
 
 /**
  * 操作元件的大小（高度或寬度，取決於方向）
@@ -174,7 +174,7 @@ const actionDropdownSx: SxProps = {
  * 下拉選單元件，單獨使用仍需要包在 ActionGroup 中
  */
 const ActionDropdown = ({ children }: { children: React.ReactNode }) => {
-  const [anchorRef, setAnchorRef] = React.useState<null | HTMLElement>(null);
+  const [anchorRef, setAnchorRef] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorRef);
   const buttonSx = open ? actionDropdownButtonActiveSx : actionDropdownButtonSx;
 
