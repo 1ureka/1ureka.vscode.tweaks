@@ -116,9 +116,9 @@ const fakeHistoryItems: FakeItem[] = [
     text: "Python Projects",
   },
   {
-    id: "C:\\Users\\user\\Documents\\Python Projects\\DataAnalysis_Tool",
+    id: "C:\\Users\\user\\Documents\\Python Projects\\DataAnalysis_Tool_20250617",
     icon: "codicon codicon-folder",
-    text: "DataAnalysis_Tool",
+    text: "DataAnalysis_Tool_20250617",
   },
   {
     id: "C:\\Users\\user\\Documents",
@@ -146,7 +146,7 @@ const NavigationPanels = () => {
   const [activeId, setActiveId] = React.useState("");
 
   return (
-    <Box sx={{ height: 1, overflowY: "auto", scrollbarGutter: "stable" }}>
+    <Box sx={{ height: 1, overflowY: "auto", scrollbarGutter: "stable", p: 0.5, pr: 0.25 }}>
       <Panel title="書籤">
         <Box sx={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 1, alignItems: "start" }}>
           <List
@@ -162,7 +162,8 @@ const NavigationPanels = () => {
               <ActionButton icon="codicon codicon-add" />
               <ActionButton icon="codicon codicon-chrome-minimize" />
               <ActionDropdown>
-                <Typography sx={{ p: 2 }}>Dropdown Content</Typography>
+                <Typography sx={{ fontSize: 12 }}>12 Nov 2025 01:46</Typography>
+                <Typography sx={{ fontSize: 12 }}>DD MMM YYYY HH:SS</Typography>
               </ActionDropdown>
             </ActionGroup>
 

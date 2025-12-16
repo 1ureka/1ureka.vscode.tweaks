@@ -1,6 +1,6 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
-import { Providers } from "@/utils/ui";
+import { getTextContentWidth, Providers } from "@/utils/ui";
 
 import { Box } from "@mui/material";
 import { registerInitData } from "@@/fileSystem/data/data";
@@ -15,7 +15,7 @@ const App = () => {
   return (
     <Providers>
       <Box sx={{ height: "100dvh", width: "100dvw", overflow: "hidden", overflowX: "auto" }}>
-        <Box sx={{ minWidth: 850, display: "grid", gridTemplateColumns: "270px 1fr", p: 0.5, height: 1 }}>
+        <Box sx={{ minWidth: 850, display: "grid", gridTemplateColumns: "270px 1fr", height: 1 }}>
           <NavigationPanels />
 
           <Box>
@@ -61,25 +61,11 @@ const App = () => {
   );
 };
 
-/**
- * 測量指定字串在特定等寬字體下的像素寬度。
- */
-function measureTextWidth(text: string, font: string): number {
-  const canvas = document.createElement("canvas");
-  const context = canvas.getContext("2d");
-
-  if (!context) {
-    console.error("無法取得 Canvas 2D 上下文。");
-    return 0;
-  }
-
-  context.font = font;
-  const metrics = context.measureText(text);
-  return metrics.width;
-}
-
 const container = document.getElementById("root");
 if (container) {
+  console.log(Math.ceil(getTextContentWidth("12 Nov 2025 01:46", 12)));
+  console.log(Math.ceil(getTextContentWidth("DD MMM YYYY HH:SS", 12)));
+
   container.style.setProperty("scrollbar-color", "initial", "important");
   registerInitData();
   registerSelectionEvents();
