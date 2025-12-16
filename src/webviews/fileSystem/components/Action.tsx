@@ -2,6 +2,7 @@ import { useState } from "react";
 import { colorMix } from "@/utils/ui";
 import { Box, ButtonBase, InputBase, Popover } from "@mui/material";
 import type { SxProps } from "@mui/system";
+import { Tooltip } from "@@/fileSystem/components/Tooltip";
 
 /**
  * 操作元件的大小（高度或寬度，取決於方向）
@@ -42,7 +43,7 @@ const ActionGroup = ({ children, orientation = "horizontal", size = "medium" }: 
         "&.action-group > *": { border: "none", borderLeft, borderTop, borderColor: "action.border" },
         "&.action-group > *:first-child": { borderLeft: "none", borderTop: "none" },
 
-        "&.action-group button": {
+        "&.action-group > .action-button > button": {
           height: orientation === "horizontal" ? 1 : "auto",
           width: orientation === "vertical" ? 1 : "auto",
           aspectRatio: "1 / 1",
@@ -83,7 +84,10 @@ const actionButtonDisabledSx: SxProps = {
 };
 
 type ActionButtonProps = {
-  icon: `codicon codicon-${string}`;
+  actionIcon: `codicon codicon-${string}`;
+  actionName: string;
+  actionDetail?: string;
+  actionShortcut?: string[];
   onClick?: () => void;
   active?: boolean;
   disabled?: boolean;
@@ -91,9 +95,10 @@ type ActionButtonProps = {
 
 /**
  * 按鈕元件，單獨使用仍需要包在 ActionGroup 中
+ * TODO: 自動註冊快捷鍵與 onClick 的關聯
  */
 const ActionButton = (props: ActionButtonProps) => {
-  const { icon, onClick, active, disabled } = props;
+  const { actionIcon, actionName, actionDetail, actionShortcut, onClick, active, disabled } = props;
 
   let sx: SxProps = actionButtonSx;
   if (disabled) {
@@ -103,9 +108,13 @@ const ActionButton = (props: ActionButtonProps) => {
   }
 
   return (
-    <ButtonBase disableRipple onClick={onClick} sx={sx} disabled={disabled}>
-      <i className={icon} style={{ display: "block" }} />
-    </ButtonBase>
+    <Tooltip actionName={actionName} actionDetail={actionDetail} actionShortcut={actionShortcut}>
+      <Box className="action-button">
+        <ButtonBase disableRipple onClick={onClick} sx={sx} disabled={disabled}>
+          <i className={actionIcon} style={{ display: "block" }} />
+        </ButtonBase>
+      </Box>
+    </Tooltip>
   );
 };
 
@@ -180,9 +189,11 @@ const ActionDropdown = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <>
-      <ButtonBase disableRipple onClick={(e) => setAnchorRef(e.currentTarget)} sx={buttonSx}>
-        <i className="codicon codicon-chevron-down" style={{ display: "block" }} />
-      </ButtonBase>
+      <Box className="action-button">
+        <ButtonBase disableRipple onClick={(e) => setAnchorRef(e.currentTarget)} sx={buttonSx}>
+          <i className="codicon codicon-chevron-down" style={{ display: "block" }} />
+        </ButtonBase>
+      </Box>
 
       <Popover
         anchorEl={anchorRef}
