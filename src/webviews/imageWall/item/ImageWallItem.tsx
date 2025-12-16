@@ -1,4 +1,3 @@
-import React from "react";
 import { ImageListItem, type SxProps } from "@mui/material";
 import { ImageWallItemBar, imageWallItemBarClassName } from "./ImageWallItemBar";
 import { ImageWallItemDisplay } from "./ImageWallItemDisplay";

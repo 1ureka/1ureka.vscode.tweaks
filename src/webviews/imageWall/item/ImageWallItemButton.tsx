@@ -1,4 +1,3 @@
-import React from "react";
 import { ButtonBase } from "@mui/material";
 import { invoke } from "@/utils/message_client";
 import type { ClickImageAPI } from "@/providers/imageWallProvider";

@@ -1,4 +1,3 @@
-import React from "react";
 import { Box, Container, Typography, ImageList, useMediaQuery } from "@mui/material";
 import { ImageWallHeader } from "./header/ImageWallHeader";
 import { ImageWallPagination } from "./header/ImageWallPagination";

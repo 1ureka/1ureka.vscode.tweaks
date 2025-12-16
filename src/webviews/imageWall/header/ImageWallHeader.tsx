@@ -1,4 +1,3 @@
-import React from "react";
 import { Box, Breadcrumbs, Typography } from "@mui/material";
 import { imageWallDataStore } from "../data/data";
 import { formatPathArray } from "@/utils/formatter";

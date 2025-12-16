@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { Box, Skeleton, type SxProps } from "@mui/material";
 import { useImageCache, imageWallIntersectionObserver } from "../data/cache";
 
