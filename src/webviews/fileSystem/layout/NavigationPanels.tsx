@@ -1,16 +1,10 @@
 import { useState } from "react";
 import { Box, Typography } from "@mui/material";
 import { Panel } from "@@/fileSystem/components/Panel";
-import { List } from "@@/fileSystem/components/List";
+import { List, type ListItem } from "@@/fileSystem/components/List";
 import { ActionButton, ActionDropdown, ActionGroup } from "@@/fileSystem/components/Action";
 
-type FakeItem = {
-  id: string; // path
-  icon: `codicon codicon-${string}`; // 預設資料夾圖示, 如果是系統資料夾則會用系統圖示覆蓋，比如 OneDrive 用 "codicon codicon-globe"
-  text: string; // 資料夾名稱 (路徑的 basename) 若是系統資料夾則會用系統名稱覆蓋，比如 Documents 用 "文件"
-};
-
-const fakeBookmarkItems: FakeItem[] = [
+const fakeBookmarkItems: ListItem[] = [
   {
     id: "C:\\Users\\user\\Documents\\Python Projects",
     icon: "codicon codicon-folder",
@@ -33,7 +27,7 @@ const fakeBookmarkItems: FakeItem[] = [
   },
 ];
 
-const fakeSystemItems: FakeItem[] = [
+const fakeSystemItems: ListItem[] = [
   {
     id: "C:\\Users\\user\\Desktop",
     icon: "codicon codicon-vm",
@@ -71,7 +65,7 @@ const fakeSystemItems: FakeItem[] = [
   },
 ];
 
-const fakeVolumnItems: FakeItem[] = [
+const fakeVolumnItems: ListItem[] = [
   {
     id: "C:\\",
     icon: "codicon codicon-server",
@@ -84,7 +78,7 @@ const fakeVolumnItems: FakeItem[] = [
   },
 ];
 
-const fakeHistoryItems: FakeItem[] = [
+const fakeHistoryItems: ListItem[] = [
   {
     id: "C:\\Users\\user\\Desktop",
     icon: "codicon codicon-vm",
@@ -150,7 +144,7 @@ const NavigationPanels = () => {
       <Panel title="書籤">
         <Box sx={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 1, alignItems: "start" }}>
           <List
-            items={fakeBookmarkItems}
+            items={fakeBookmarkItems.map((item) => ({ ...item, detail: item.id }))}
             activeItemId={activeId}
             onClickItem={(item) => setActiveId(item.id)}
             defaultRows={6}
@@ -194,12 +188,16 @@ const NavigationPanels = () => {
       </Panel>
 
       <Panel title="歷史記錄">
-        <List items={fakeHistoryItems} activeItemId={fakeHistoryItems[0].id} defaultRows={6} />
+        <List
+          items={fakeHistoryItems.map((item) => ({ ...item, detail: item.id }))}
+          activeItemId={fakeHistoryItems[0].id}
+          defaultRows={6}
+        />
       </Panel>
 
       <Panel title="系統">
         <List
-          items={fakeSystemItems}
+          items={fakeSystemItems.map((item) => ({ ...item, detail: item.id }))}
           activeItemId={activeId}
           defaultRows={6}
           onClickItem={(item) => setActiveId(item.id)}
@@ -207,7 +205,11 @@ const NavigationPanels = () => {
       </Panel>
 
       <Panel title="Volumes">
-        <List items={fakeVolumnItems} activeItemId={activeId} onClickItem={(item) => setActiveId(item.id)} />
+        <List
+          items={fakeVolumnItems.map((item) => ({ ...item, detail: item.id }))}
+          activeItemId={activeId}
+          onClickItem={(item) => setActiveId(item.id)}
+        />
       </Panel>
     </Box>
   );

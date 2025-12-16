@@ -26,7 +26,7 @@ const NavigationBar = () => {
         <ActionButton
           actionIcon="codicon codicon-sync"
           actionName="重新整理"
-          actionDetail="重新整理目前視圖"
+          actionDetail="上次更新: 5 分鐘前"
           actionShortcut={["Crtl", "R"]}
         />
       </ActionGroup>

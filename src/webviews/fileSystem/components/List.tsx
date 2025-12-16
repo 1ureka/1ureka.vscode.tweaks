@@ -3,49 +3,58 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Box, SxProps, Typography } from "@mui/material";
 import { ActionButton, ActionGroup, ActionInput, actionSize } from "@@/fileSystem/components/Action";
 import { centerTextSx, colorMix } from "@/utils/ui";
-import type { Prettify } from "@/utils";
+import { Tooltip } from "@@/fileSystem/components/Tooltip";
 
 /**
  * 列表元件中，每一列的高度
  */
 const listRowHeight = 22;
 
-type ListRowProps = {
+/**
+ * 渲染列表時，應該要傳入的每個項目型別
+ */
+type ListItem = {
+  id: string;
+  /** 預設為空白圖示 (codicon-blank) */
   icon?: `codicon codicon-${string}`;
+  /** 顯示在 row 中的文字 */
   text: string;
+  /** 可選的補充資訊，將會在 tooltip 中顯示 */
+  detail?: string;
+  /** 是否為目前選取的項目 */
   active?: boolean;
-  sx?: SxProps;
 };
 
 /**
  * 列表中的列元件
  */
-const ListRow = (props: ListRowProps) => {
-  const { icon = "codicon codicon-blank", text, active, sx } = props;
+const ListRow = (props: ListItem) => {
+  const { icon = "codicon codicon-blank", text, detail, active } = props;
 
   return (
-    <Box
-      className="list-row"
-      sx={{
-        borderRadius: 1,
-        px: 0.25,
-        cursor: "default",
-        bgcolor: active ? "action.active" : undefined,
-        "&:hover": { bgcolor: active ? "action.active" : colorMix("background.content", "text.primary", 0.9) },
-        // 因為有些瀏覽器明明在 overflow 對齊時，仍會渲染上面或下面那個應該完全看不見的 item 的一小塊，因此加個內框遮住
-        boxShadow: "inset 0 0 0 1px var(--mui-palette-background-content)",
-        ...sx,
-      }}
-    >
-      <Box sx={{ display: "flex", alignItems: "center", height: listRowHeight, overflow: "hidden", gap: 0.75 }}>
-        <Box sx={{ color: "text.primary" }}>
-          <i className={icon} style={{ display: "block", fontSize: listRowHeight - 2 }} />
+    <Tooltip actionName={detail ? detail : text} placement="right">
+      <Box
+        className="list-row"
+        sx={{
+          borderRadius: 1,
+          px: 0.25,
+          cursor: "default",
+          bgcolor: active ? "action.active" : undefined,
+          "&:hover": { bgcolor: active ? "action.active" : colorMix("background.content", "text.primary", 0.9) },
+          // 因為有些瀏覽器明明在 overflow 對齊時，仍會渲染上面或下面那個應該完全看不見的 item 的一小塊，因此加個內框遮住
+          boxShadow: "inset 0 0 0 1px var(--mui-palette-background-content)",
+        }}
+      >
+        <Box sx={{ display: "flex", alignItems: "center", height: listRowHeight, overflow: "hidden", gap: 0.75 }}>
+          <Box sx={{ color: "text.primary" }}>
+            <i className={icon} style={{ display: "block", fontSize: listRowHeight - 2 }} />
+          </Box>
+          <Typography variant="caption" sx={centerTextSx}>
+            {text}
+          </Typography>
         </Box>
-        <Typography variant="caption" sx={centerTextSx}>
-          {text}
-        </Typography>
       </Box>
-    </Box>
+    </Tooltip>
   );
 };
 
@@ -259,11 +268,6 @@ const useHandleClick = (params: { onClickItem: (item: ListItem) => void; items: 
 
 // ------------------------------------------------------------------------------
 
-/**
- * 渲染列表時，應該要傳入的每個項目型別
- */
-type ListItem = Prettify<ListRowProps & { id: string }>;
-
 type ListProps = {
   items: ListItem[];
   maxRows?: number;
@@ -346,8 +350,7 @@ const List = (props: ListProps) => {
     <Box sx={{ p: 0.75, bgcolor: "background.content", borderRadius: 1 }}>
       <Box ref={scrollContainerRef} sx={scrollContainerSx} onClick={handleClick}>
         {sortedItems.map((item) => {
-          const { id, icon, text } = item;
-          return <ListRow key={id} icon={icon} text={text} active={id === activeItemId} />;
+          return <ListRow key={item.id} {...item} active={item.id === activeItemId} />;
         })}
       </Box>
 
@@ -416,4 +419,4 @@ const List = (props: ListProps) => {
  */
 const MemoedList = memo(List);
 
-export { listRowHeight, MemoedList as List };
+export { listRowHeight, MemoedList as List, type ListItem };

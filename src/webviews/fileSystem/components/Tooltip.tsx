@@ -6,6 +6,7 @@ type TooltipProps = {
   actionName: string;
   actionDetail?: string;
   actionShortcut?: string[];
+  placement?: "top" | "bottom" | "left" | "right";
 };
 
 const tooltipContainerSx: SxProps = {
@@ -53,8 +54,9 @@ const TooltipShortcutDisplay = ({ actionShortcut }: { actionShortcut: string[] }
   </Box>
 );
 
-const Tooltip = ({ children, actionName, actionDetail, actionShortcut }: TooltipProps) => (
+const Tooltip = ({ children, actionName, actionDetail, actionShortcut, placement }: TooltipProps) => (
   <MuiTooltip
+    placement={placement}
     slotProps={{ popper: { sx: { [tooltipContainerSelector]: tooltipContainerSx } } }}
     title={
       <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
