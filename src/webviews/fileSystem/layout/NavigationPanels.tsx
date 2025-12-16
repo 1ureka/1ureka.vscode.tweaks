@@ -1,0 +1,127 @@
+import React from "react";
+import { Box } from "@mui/material";
+import { Panel } from "@@/fileSystem/components/Panel";
+import { List } from "@@/fileSystem/components/List";
+import { ActionButton, ActionGroup } from "@@/fileSystem/components/Action";
+
+type FakeItem = {
+  id: string; // path
+  icon: `codicon codicon-${string}`; // 預設資料夾圖示, 如果是系統資料夾則會用系統圖示覆蓋，比如 OneDrive 用 "codicon codicon-globe"
+  text: string; // 資料夾名稱 (路徑的 basename) 若是系統資料夾則會用系統名稱覆蓋，比如 Documents 用 "文件"
+};
+
+const fakeBookmarkItems: FakeItem[] = [
+  {
+    id: "C:\\Users\\user\\Documents\\Python Projects",
+    icon: "codicon codicon-folder",
+    text: "Python Projects",
+  },
+  {
+    id: "C:\\Users\\user\\Documents\\JavaScript Projects",
+    icon: "codicon codicon-folder",
+    text: "JavaScript Projects",
+  },
+  {
+    id: "C:\\Users\\user\\Desktop\\work",
+    icon: "codicon codicon-folder",
+    text: "work",
+  },
+  {
+    id: "C:\\Users\\user\\Desktop\\圖片",
+    icon: "codicon codicon-folder",
+    text: "圖片",
+  },
+];
+
+const fakeSystemItems: FakeItem[] = [
+  {
+    id: "C:\\Users\\user\\Desktop",
+    icon: "codicon codicon-vm",
+    text: "桌面",
+  },
+  {
+    id: "C:\\Users\\user\\Documents",
+    icon: "codicon codicon-file-text",
+    text: "文件",
+  },
+  {
+    id: "C:\\Users\\user\\Pictures",
+    icon: "codicon codicon-file-media",
+    text: "圖片",
+  },
+  {
+    id: "C:\\Users\\user\\Music",
+    icon: "codicon codicon-music",
+    text: "音樂",
+  },
+  {
+    id: "C:\\Users\\user\\Downloads",
+    icon: "codicon codicon-download",
+    text: "下載",
+  },
+  {
+    id: "C:\\Users\\user\\Videos",
+    icon: "codicon codicon-device-camera-video",
+    text: "影片",
+  },
+  {
+    id: "C:\\Users\\user\\OneDrive",
+    icon: "codicon codicon-globe",
+    text: "OneDrive",
+  },
+];
+
+const fakeVolumnItems: FakeItem[] = [
+  {
+    id: "C:\\",
+    icon: "codicon codicon-server",
+    text: "本機磁碟 (C:)",
+  },
+  {
+    id: "D:\\",
+    icon: "codicon codicon-server",
+    text: "本機磁碟 (D:)",
+  },
+];
+
+const NavigationPanels = () => {
+  const [activeId, setActiveId] = React.useState("");
+
+  return (
+    <Box sx={{ height: 1, overflowY: "auto", scrollbarGutter: "stable" }}>
+      <Panel title="書籤">
+        <Box sx={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 1, alignItems: "start" }}>
+          <List
+            items={fakeBookmarkItems}
+            activeItemId={activeId}
+            onClickItem={(item) => setActiveId(item.id)}
+            defaultRows={5}
+            defaultActionExpanded
+          />
+
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+            <ActionGroup orientation="vertical" size="small">
+              <ActionButton icon="codicon codicon-add" />
+              <ActionButton icon="codicon codicon-chrome-minimize" />
+            </ActionGroup>
+
+            <ActionGroup orientation="vertical" size="small">
+              <ActionButton icon="codicon codicon-triangle-up" disabled />
+              <ActionButton icon="codicon codicon-triangle-down" disabled />
+            </ActionGroup>
+          </Box>
+        </Box>
+      </Panel>
+
+      <Panel title="Volumes">
+        <List items={fakeVolumnItems} activeItemId={activeId} onClickItem={(item) => setActiveId(item.id)} />
+      </Panel>
+
+      <Panel title="系統">
+        <List items={fakeSystemItems} activeItemId={activeId} onClickItem={(item) => setActiveId(item.id)} />
+      </Panel>
+    </Box>
+  );
+};
+
+export { NavigationPanels };
