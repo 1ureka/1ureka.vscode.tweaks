@@ -39,10 +39,17 @@ function generateReactHtml({ webviewType, webview, extensionUri, initialData }: 
     : "";
 
   const nonce = getNonce();
-  const cspContent = `default-src 'none'; img-src ${webview.cspSource} data:; script-src 'nonce-${nonce}'; style-src ${webview.cspSource} https://fonts.googleapis.com 'unsafe-inline'; font-src ${webview.cspSource} https://fonts.gstatic.com https://cdn.jsdelivr.net;`;
+
+  const csp = [
+    "default-src 'none';",
+    `img-src ${webview.cspSource} data:;`,
+    `script-src 'nonce-${nonce}';`,
+    `style-src ${webview.cspSource} https://fonts.googleapis.com 'unsafe-inline';`,
+    `font-src ${webview.cspSource} https://fonts.gstatic.com;`,
+  ];
 
   const htmlMeta = `<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">`;
-  const htmlCSP = `<meta http-equiv="Content-Security-Policy" content="${cspContent}">`;
+  const htmlCSP = `<meta http-equiv="Content-Security-Policy" content="${csp.join(" ")}">`;
   const htmlCSS = `<style>${customStyle}</style>`;
   const htmlTitle = `<title>${webviewType}</title>`;
   const htmlCodicons = `<link href="${codiconsUri}" rel="stylesheet" />`;
