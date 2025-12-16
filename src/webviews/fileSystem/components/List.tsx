@@ -376,13 +376,27 @@ const List = (props: ListProps) => {
       <Box ref={actionContainerRef} sx={actionContainerSx}>
         <ActionGroup orientation="horizontal" size="small">
           <ActionInput value={filterText} onChange={handleFilterTextChange} />
-          <ActionButton icon="codicon codicon-arrow-both" onClick={toggleInvertMatch} active={invertMatch} />
+          <ActionButton
+            actionIcon="codicon codicon-arrow-both"
+            actionName="反轉"
+            actionDetail="反轉篩選後的結果"
+            onClick={toggleInvertMatch}
+            active={invertMatch}
+          />
         </ActionGroup>
 
         <ActionGroup orientation="horizontal" size="small">
-          <ActionButton icon="codicon codicon-preserve-case" active={orderBy === "text"} onClick={toggleOrderBy} />
           <ActionButton
-            icon={order === "asc" ? "codicon codicon-arrow-down" : "codicon codicon-arrow-up"}
+            actionIcon="codicon codicon-preserve-case"
+            actionName="依名稱排序"
+            actionDetail="依其名稱順序排序"
+            active={orderBy === "text"}
+            onClick={toggleOrderBy}
+          />
+          <ActionButton
+            actionIcon={order === "asc" ? "codicon codicon-arrow-down" : "codicon codicon-arrow-up"}
+            actionName="反向"
+            actionDetail="反向目前的排序結果"
             active={order === "desc"}
             onClick={toggleOrder}
           />

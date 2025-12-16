@@ -5,14 +5,38 @@ const NavigationBar = () => {
   return (
     <Box sx={{ display: "grid", gridTemplateColumns: "auto auto 2fr 1fr auto auto", gap: 1, p: 1 }}>
       <ActionGroup>
-        <ActionButton icon="codicon codicon-arrow-left" />
-        <ActionButton icon="codicon codicon-arrow-right" />
-        <ActionButton icon="codicon codicon-merge-into" />
-        <ActionButton icon="codicon codicon-sync" />
+        <ActionButton
+          actionIcon="codicon codicon-arrow-left"
+          actionName="上個資料夾"
+          actionDetail="移動到上個資料夾"
+          actionShortcut={["Alt", "Left Arrow"]}
+        />
+        <ActionButton
+          actionIcon="codicon codicon-arrow-right"
+          actionName="下個資料夾"
+          actionDetail="移動到下個資料夾"
+          actionShortcut={["Alt", "Right Arrow"]}
+        />
+        <ActionButton
+          actionIcon="codicon codicon-merge-into"
+          actionName="上層"
+          actionDetail="移動到親代資料夾"
+          actionShortcut={["Alt", "Up Arrow"]}
+        />
+        <ActionButton
+          actionIcon="codicon codicon-sync"
+          actionName="重新整理"
+          actionDetail="重新整理目前視圖"
+          actionShortcut={["Crtl", "R"]}
+        />
       </ActionGroup>
 
       <ActionGroup>
-        <ActionButton icon="codicon codicon-new-folder" />
+        <ActionButton
+          actionIcon="codicon codicon-new-folder"
+          actionName="建立資料夾"
+          actionDetail="建立一個新的資料夾"
+        />
       </ActionGroup>
 
       <ActionGroup>
@@ -24,15 +48,25 @@ const NavigationBar = () => {
       </ActionGroup>
 
       <ActionGroup>
-        <ActionButton icon="codicon codicon-list-ordered" active />
-        <ActionButton icon="codicon codicon-table" disabled />
+        <ActionButton
+          actionIcon="codicon codicon-list-ordered"
+          actionName="顯示模式"
+          actionDetail="用垂直表格顯示"
+          active
+        />
+        <ActionButton
+          actionIcon="codicon codicon-table"
+          actionName="顯示模式"
+          actionDetail="用 Grid 顯示 (即將推出)"
+          disabled
+        />
         <ActionDropdown>
           <Box sx={{ p: 2, px: 5 }} />
         </ActionDropdown>
       </ActionGroup>
 
       <ActionGroup>
-        <ActionButton icon="codicon codicon-filter" active />
+        <ActionButton actionIcon="codicon codicon-filter" actionName="過濾器" actionDetail="啟用/停用過濾功能" active />
         <ActionDropdown>
           <Box sx={{ p: 2, px: 5 }} />
         </ActionDropdown>

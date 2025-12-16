@@ -159,8 +159,16 @@ const NavigationPanels = () => {
 
           <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
             <ActionGroup orientation="vertical" size="small">
-              <ActionButton icon="codicon codicon-add" />
-              <ActionButton icon="codicon codicon-chrome-minimize" />
+              <ActionButton
+                actionIcon="codicon codicon-add"
+                actionName="添加書籤"
+                actionDetail="為選取的/作用中的資料夾添加書籤"
+              />
+              <ActionButton
+                actionIcon="codicon codicon-chrome-minimize"
+                actionName="刪除書籤"
+                actionDetail="刪除所選的書籤"
+              />
               <ActionDropdown>
                 <Typography sx={{ fontSize: 12 }}>12 Nov 2025 01:46</Typography>
                 <Typography sx={{ fontSize: 12 }}>DD MMM YYYY HH:SS</Typography>
@@ -168,8 +176,18 @@ const NavigationPanels = () => {
             </ActionGroup>
 
             <ActionGroup orientation="vertical" size="small">
-              <ActionButton icon="codicon codicon-triangle-up" disabled />
-              <ActionButton icon="codicon codicon-triangle-down" disabled />
+              <ActionButton
+                actionIcon="codicon codicon-triangle-up"
+                disabled
+                actionName="移動書籤"
+                actionDetail="將目前所在的書籤向上移動"
+              />
+              <ActionButton
+                actionIcon="codicon codicon-triangle-down"
+                disabled
+                actionName="移動書籤"
+                actionDetail="將目前所在的書籤向下移動"
+              />
             </ActionGroup>
           </Box>
         </Box>
