@@ -50,7 +50,7 @@ const ActionGroup = ({ children, orientation = "horizontal", size = "medium" }: 
         },
 
         "&.action-group input": {
-          fontSize: actionSize[size] - 12,
+          fontSize: actionSize.small - 12,
         },
       }}
     >
@@ -119,13 +119,29 @@ const actionInputSx: SxProps = {
   height: 1,
   "&:hover": { bgcolor: colorMix("background.input", "text.primary", 0.97) },
   "& input.MuiInputBase-input": { p: 0, height: 1 },
+  "& i": { mr: 1 },
+};
+
+type ActionInputProps = {
+  icon?: `codicon codicon-${string}`;
+  placeholder?: string;
+  value?: string;
+  onChange?: (value: string) => void;
 };
 
 /**
  * 輸入框元件，單獨使用仍需要包在 ActionGroup 中
  */
-const ActionInput = ({ value, onChange }: { value?: string; onChange?: (value: string) => void }) => {
-  return <InputBase value={value} onChange={(e) => onChange?.(e.target.value)} sx={actionInputSx} />;
+const ActionInput = ({ icon, placeholder, value, onChange }: ActionInputProps) => {
+  return (
+    <InputBase
+      startAdornment={icon ? <i className={icon} style={{ display: "block" }} /> : undefined}
+      placeholder={placeholder}
+      value={value}
+      onChange={(e) => onChange?.(e.target.value)}
+      sx={actionInputSx}
+    />
+  );
 };
 
 // -------------------------------------------------------------------------------------

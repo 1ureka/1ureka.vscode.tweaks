@@ -114,7 +114,7 @@ const useListWheelScroll = (params: {
       e.preventDefault();
       const deltaRows = e.deltaY > 0 ? 1 : -1;
       const delta = listRowHeight * deltaRows;
-      scrollContainerRef.current?.scrollBy({ top: delta, behavior: "smooth" });
+      scrollContainerRef.current?.scrollBy({ top: delta, behavior: "auto" });
     };
 
     if (!scrollContainerRef.current) return;

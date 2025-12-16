@@ -1,8 +1,8 @@
 import React from "react";
-import { Box } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import { Panel } from "@@/fileSystem/components/Panel";
 import { List } from "@@/fileSystem/components/List";
-import { ActionButton, ActionGroup } from "@@/fileSystem/components/Action";
+import { ActionButton, ActionDropdown, ActionGroup } from "@@/fileSystem/components/Action";
 
 type FakeItem = {
   id: string; // path
@@ -84,6 +84,64 @@ const fakeVolumnItems: FakeItem[] = [
   },
 ];
 
+const fakeHistoryItems: FakeItem[] = [
+  {
+    id: "C:\\Users\\user\\Desktop",
+    icon: "codicon codicon-vm",
+    text: "桌面",
+  },
+  {
+    id: "C:\\Users\\user\\Desktop\\Web_Project_2025",
+    icon: "codicon codicon-folder",
+    text: "Web_Project_2025",
+  },
+  {
+    id: "C:\\Users\\user\\Desktop\\Web_Project_2025\\src",
+    icon: "codicon codicon-folder",
+    text: "src",
+  },
+  {
+    id: "C:\\Users\\user\\Desktop\\Web_Project_2025\\src\\components",
+    icon: "codicon codicon-folder",
+    text: "components",
+  },
+  {
+    id: "C:\\Users\\user\\Downloads",
+    icon: "codicon codicon-download",
+    text: "下載",
+  },
+  {
+    id: "C:\\Users\\user\\Documents\\Python Projects",
+    icon: "codicon codicon-folder",
+    text: "Python Projects",
+  },
+  {
+    id: "C:\\Users\\user\\Documents\\Python Projects\\DataAnalysis_Tool",
+    icon: "codicon codicon-folder",
+    text: "DataAnalysis_Tool",
+  },
+  {
+    id: "C:\\Users\\user\\Documents",
+    icon: "codicon codicon-file-text",
+    text: "文件",
+  },
+  {
+    id: "D:\\Backup\\Archives\\2024_Q4_Financial",
+    icon: "codicon codicon-folder",
+    text: "2024_Q4_Financial",
+  },
+  {
+    id: "C:\\Users\\user\\Documents\\JavaScript Projects\\E-Commerce_FrontEnd",
+    icon: "codicon codicon-folder",
+    text: "E-Commerce_FrontEnd",
+  },
+  {
+    id: "C:\\Users\\user\\Documents\\JavaScript Projects\\E-Commerce_FrontEnd\\assets",
+    icon: "codicon codicon-folder",
+    text: "assets",
+  },
+];
+
 const NavigationPanels = () => {
   const [activeId, setActiveId] = React.useState("");
 
@@ -95,7 +153,7 @@ const NavigationPanels = () => {
             items={fakeBookmarkItems}
             activeItemId={activeId}
             onClickItem={(item) => setActiveId(item.id)}
-            defaultRows={5}
+            defaultRows={6}
             defaultActionExpanded
           />
 
@@ -103,6 +161,9 @@ const NavigationPanels = () => {
             <ActionGroup orientation="vertical" size="small">
               <ActionButton icon="codicon codicon-add" />
               <ActionButton icon="codicon codicon-chrome-minimize" />
+              <ActionDropdown>
+                <Typography sx={{ p: 2 }}>Dropdown Content</Typography>
+              </ActionDropdown>
             </ActionGroup>
 
             <ActionGroup orientation="vertical" size="small">
@@ -113,12 +174,21 @@ const NavigationPanels = () => {
         </Box>
       </Panel>
 
-      <Panel title="Volumes">
-        <List items={fakeVolumnItems} activeItemId={activeId} onClickItem={(item) => setActiveId(item.id)} />
+      <Panel title="歷史記錄">
+        <List items={fakeHistoryItems} activeItemId={fakeHistoryItems[0].id} defaultRows={6} />
       </Panel>
 
       <Panel title="系統">
-        <List items={fakeSystemItems} activeItemId={activeId} onClickItem={(item) => setActiveId(item.id)} />
+        <List
+          items={fakeSystemItems}
+          activeItemId={activeId}
+          defaultRows={6}
+          onClickItem={(item) => setActiveId(item.id)}
+        />
+      </Panel>
+
+      <Panel title="Volumes">
+        <List items={fakeVolumnItems} activeItemId={activeId} onClickItem={(item) => setActiveId(item.id)} />
       </Panel>
     </Box>
   );
