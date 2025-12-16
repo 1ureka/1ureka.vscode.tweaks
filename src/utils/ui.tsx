@@ -27,34 +27,6 @@ const colorMix = (color1: string, color2: string, weight: number) => {
 
 // ----------------------------------------------------------------------------
 
-declare module "@mui/material/styles" {
-  interface TypeBackground {
-    default: string;
-    paper: string;
-    content: string;
-    input: string;
-  }
-  interface TypeAction {
-    button: string;
-    dropdown: string;
-    active: string;
-    border: string;
-  }
-
-  interface Palette {
-    tooltip: {
-      background: string;
-      border: string;
-    };
-  }
-  interface PaletteOptions {
-    tooltip: {
-      background: string;
-      border: string;
-    };
-  }
-}
-
 const theme = createTheme({
   cssVariables: true,
   defaultColorScheme: "dark", // 這與實際主題無關，因為是用 var(--vscode-xxx) 來取色，用 dark 是為了只需要定義一組色彩
