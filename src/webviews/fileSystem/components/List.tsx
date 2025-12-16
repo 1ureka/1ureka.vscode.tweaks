@@ -37,7 +37,7 @@ const ListRow = (props: ListRowProps) => {
         ...sx,
       }}
     >
-      <Box sx={{ display: "flex", alignItems: "center", height: listRowHeight, gap: 0.75 }}>
+      <Box sx={{ display: "flex", alignItems: "center", height: listRowHeight, overflow: "hidden", gap: 0.75 }}>
         <Box sx={{ color: "text.primary" }}>
           <i className={icon} style={{ display: "block", fontSize: listRowHeight - 2 }} />
         </Box>
@@ -326,7 +326,6 @@ const List = (props: ListProps) => {
     height: rowsRef.current * listRowHeight,
     transition: "height 0.1s",
     overflowY: "auto",
-    overflowX: "hidden",
     scrollSnapType: "y mandatory",
     "& > div": { scrollSnapAlign: "start" },
     pr: 1,
