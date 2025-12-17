@@ -1,4 +1,3 @@
-import React from "react";
 import { ImageListItemBar as MuiImageListItemBar, type SxProps } from "@mui/material";
 import { ellipsisSx } from "@/utils/ui";
 

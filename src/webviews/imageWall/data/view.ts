@@ -1,6 +1,6 @@
 import { create } from "zustand";
-import { imageWallDataStore } from "./data";
 import type { ExtendedMetadata } from "@/utils/image";
+import { imageWallDataStore } from "@@/imageWall/data/data";
 
 type ImageWallViewState = {
   page: number;

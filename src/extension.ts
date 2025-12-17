@@ -1,11 +1,11 @@
 import * as vscode from "vscode";
-import { registerExternalAppCommands } from "./commands/externalAppCommands";
-import { registerImageWallCommands } from "./commands/imageWallCommands";
-import { registerImageViewerCommands } from "./commands/imageViewerCommands";
-import { registerFileMetadataCommands } from "./commands/fileMetadataCommands";
-import { registerFileSystemCommands } from "./commands/fileSystemCommands";
-import { registerInjectStylesCommands } from "./commands/injectStylesCommands";
-import { registerNavigationCommands } from "./commands/navigationCommands";
+import { registerExternalAppCommands } from "@/commands/externalAppCommands";
+import { registerImageWallCommands } from "@/commands/imageWallCommands";
+import { registerImageViewerCommands } from "@/commands/imageViewerCommands";
+import { registerFileMetadataCommands } from "@/commands/fileMetadataCommands";
+import { registerFileSystemCommands } from "@/commands/fileSystemCommands";
+import { registerInjectStylesCommands } from "@/commands/injectStylesCommands";
+import { registerNavigationCommands } from "@/commands/navigationCommands";
 
 export function activate(context: vscode.ExtensionContext) {
   if (process.platform === "win32") {

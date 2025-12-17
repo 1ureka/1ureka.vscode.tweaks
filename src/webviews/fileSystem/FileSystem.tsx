@@ -1,8 +1,6 @@
-import React from "react";
 import { Box } from "@mui/material";
 import { FileSystemHeader } from "./header/FileSystemHeader";
 import { FileSystemTable } from "./table/FileSystemTable";
-import { FileSystemFooter } from "./footer/FileSystemFooter";
 import { LoadingDisplay } from "./global/LoadingDisplay";
 import { BoxSelectionOverlay } from "./global/BoxSelectionOverlay";
 
@@ -23,8 +21,6 @@ const FileSystem = () => (
 
       <LoadingDisplay />
     </Box>
-
-    <FileSystemFooter />
   </Box>
 );
 

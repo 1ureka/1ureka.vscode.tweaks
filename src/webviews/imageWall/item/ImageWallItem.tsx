@@ -1,8 +1,7 @@
-import React from "react";
 import { ImageListItem, type SxProps } from "@mui/material";
-import { ImageWallItemBar, imageWallItemBarClassName } from "./ImageWallItemBar";
-import { ImageWallItemDisplay } from "./ImageWallItemDisplay";
-import { ImageWallItemButton } from "./ImageWallItemButton";
+import { ImageWallItemBar, imageWallItemBarClassName } from "@@/imageWall/item/ImageWallItemBar";
+import { ImageWallItemDisplay } from "@@/imageWall/item/ImageWallItemDisplay";
+import { ImageWallItemButton } from "@@/imageWall/item/ImageWallItemButton";
 
 type ImageWallItemProps = {
   filePath: string;

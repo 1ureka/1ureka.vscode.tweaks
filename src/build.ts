@@ -66,8 +66,9 @@ async function buildWebviews() {
       platform: "browser",
       format: "iife",
       outfile: `dist/webviews/${dir}.js`,
+      jsx: "automatic",
       minify: true,
-      alias: { "@": "./src" },
+      alias: { "@": "./src", "@@": `./src/webviews` },
     });
 
     console.log(`✓ Built WebView bundle: ${dir}`);

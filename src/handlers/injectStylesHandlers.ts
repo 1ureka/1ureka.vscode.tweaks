@@ -47,11 +47,7 @@ function allowExternalSources(htmlContent: string) {
 
   let content = cspMeta.getAttribute("content") || "";
 
-  const isModified =
-    content.includes("https://fonts.googleapis.com") ||
-    content.includes("https://fonts.gstatic.com") ||
-    content.includes("https://cdn.jsdelivr.net");
-
+  const isModified = content.includes("https://fonts.googleapis.com") || content.includes("https://fonts.gstatic.com");
   if (isModified) return { success: false, message: "Content-Security-Policy 已經被修改過。" };
 
   content = content.replace(/style-src([^;]*);/, (_match, group1) => {
@@ -59,7 +55,7 @@ function allowExternalSources(htmlContent: string) {
   });
 
   content = content.replace(/font-src([^;]*);/, (_match, group1) => {
-    return `font-src${group1} https://fonts.gstatic.com https://cdn.jsdelivr.net;`;
+    return `font-src${group1} https://fonts.gstatic.com;`;
   });
 
   cspMeta.setAttribute("content", content);

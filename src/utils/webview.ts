@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import webviewCSS from "@/assets/webview.css";
 import { randomUUID } from "crypto";
 import type { OneOf } from "@/utils";
 import type { WebviewId } from "@/contribute";
@@ -38,14 +39,22 @@ function generateReactHtml({ webviewType, webview, extensionUri, initialData }: 
     : "";
 
   const nonce = getNonce();
-  const cspContent = `default-src 'none'; img-src ${webview.cspSource} data:; script-src 'nonce-${nonce}'; style-src ${webview.cspSource} 'unsafe-inline'; font-src ${webview.cspSource};`;
+
+  const csp = [
+    "default-src 'none';",
+    `img-src ${webview.cspSource} data:;`,
+    `script-src 'nonce-${nonce}';`,
+    `style-src ${webview.cspSource} https://fonts.googleapis.com 'unsafe-inline';`,
+    `font-src ${webview.cspSource} https://fonts.gstatic.com;`,
+  ];
 
   const htmlMeta = `<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">`;
-  const htmlCSP = `<meta http-equiv="Content-Security-Policy" content="${cspContent}">`;
+  const htmlCSP = `<meta http-equiv="Content-Security-Policy" content="${csp.join(" ")}">`;
+  const htmlCSS = `<style>${webviewCSS}</style>`;
   const htmlTitle = `<title>${webviewType}</title>`;
   const htmlCodicons = `<link href="${codiconsUri}" rel="stylesheet" />`;
 
-  const htmlHead = `<head>${htmlMeta}${htmlCSP}${htmlTitle}${htmlCodicons}${initialDataScript}</head>`;
+  const htmlHead = `<head>${htmlMeta}${htmlCSP}${htmlCSS}${htmlTitle}${htmlCodicons}${initialDataScript}</head>`;
   const htmlBody = `<body><div id="root"></div><script nonce="${nonce}" src="${jsWebviewUri}"></script></body>`;
 
   return `<!DOCTYPE html><html lang="zh-TW">${htmlHead}${htmlBody}</html>`;
