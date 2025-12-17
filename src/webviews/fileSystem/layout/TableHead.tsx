@@ -1,6 +1,6 @@
 import { ellipsisSx } from "@/utils/ui";
 import { Box, SxProps, Typography } from "@mui/material";
-import { fileSystemViewStore } from "@@/fileSystem/store/view";
+import { viewStateStore } from "@@/fileSystem/store/data";
 import { setSorting } from "@@/fileSystem/action/view";
 import { type TableColumn, tableColumns, tableHeadHeight, tableIconWidth } from "@@/fileSystem/layout/tableConfig";
 
@@ -113,8 +113,8 @@ const tableHeadSx: SxProps = {
  * 用於系統瀏覽器的表格標題列元件
  */
 const TableHead = () => {
-  const sortField = fileSystemViewStore((state) => state.sortField);
-  const sortOrder = fileSystemViewStore((state) => state.sortOrder);
+  const sortField = viewStateStore((state) => state.sortField);
+  const sortOrder = viewStateStore((state) => state.sortOrder);
 
   return (
     <Box sx={tableHeadSx}>

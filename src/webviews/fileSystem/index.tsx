@@ -4,6 +4,7 @@ import { registerInitDataEvents } from "@@/fileSystem/events/data";
 import { registerMessageEvents } from "@@/fileSystem/events/message";
 import { registerClipboardEvents } from "@@/fileSystem/events/clipboard";
 import { registerNavigateShortcuts, registerSelectionShortcuts } from "@@/fileSystem/events/shortcuts";
+import { setupDependencyChain } from "@@/fileSystem/store/dependency";
 
 import { Box } from "@mui/material";
 import { NavigationPanels } from "@@/fileSystem/layout/NavigationPanels";
@@ -36,5 +37,6 @@ startReactApp({
     registerNavigateShortcuts();
     registerMessageEvents();
     registerClipboardEvents();
+    setupDependencyChain();
   },
 });

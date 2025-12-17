@@ -1,6 +1,6 @@
 import { refresh } from "@@/fileSystem/action/navigation";
 import { selectAll, selectInvert, selectNone, toggleBoxSelectionMode } from "@@/fileSystem/action/selection";
-import { fileSystemBoxSelectionStore } from "@@/fileSystem/store/other";
+import { selectionStore } from "@@/fileSystem/store/data";
 
 /**
  * 註冊有關導航的快捷鍵
@@ -52,7 +52,7 @@ const registerSelectionShortcuts = () => {
         toggleBoxSelectionMode();
       }
 
-      const { isBoxSelecting } = fileSystemBoxSelectionStore.getState();
+      const { isBoxSelecting } = selectionStore.getState();
 
       if (e.key === "Escape" && isBoxSelecting) {
         e.preventDefault();
