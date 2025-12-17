@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { memo } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { Box, ButtonBase, Typography, type SxProps } from "@mui/material";
 
@@ -15,6 +15,8 @@ import { fileSystemLoadingStore } from "@@/fileSystem/store/queue";
 import { navigateToFolder } from "@@/fileSystem/action/navigation";
 import { selectRow } from "@@/fileSystem/action/selection";
 import { openFile } from "@@/fileSystem/action/operation";
+
+const tableBodyContainerId = "table-body" + crypto.randomUUID().slice(0, 8);
 
 const tableAlternateBgcolor = colorMix("background.content", "text.primary", 0.98);
 
@@ -44,28 +46,17 @@ const tableBodyContainerSx: SxProps = {
 /**
  * 用於呈現表格主體的容器組件
  */
-const TableBodyContainer = ({ children, ref }: { children: React.ReactNode; ref?: React.Ref<HTMLDivElement> }) => {
-  const containerRef = useRef<HTMLDivElement>(null);
-
+const TableBodyContainer = ({ children }: { children: React.ReactNode }) => {
   const handleScroll = () => {
-    if (containerRef.current) {
-      const scrollTop = containerRef.current.scrollTop;
-      containerRef.current.style.setProperty("--scroll-top", `${-scrollTop}px`);
-    }
-  };
-
-  const combinedRef = (node: HTMLDivElement | null) => {
-    containerRef.current = node;
-
-    if (typeof ref === "function") {
-      ref(node);
-    } else if (ref) {
-      ref.current = node;
+    const container = document.getElementById(tableBodyContainerId);
+    if (container) {
+      const scrollTop = container.scrollTop;
+      container.style.setProperty("--scroll-top", `${-scrollTop}px`);
     }
   };
 
   return (
-    <Box ref={combinedRef} onScroll={handleScroll} sx={tableBodyContainerSx}>
+    <Box id={tableBodyContainerId} onScroll={handleScroll} sx={tableBodyContainerSx}>
       {children}
     </Box>
   );
@@ -131,13 +122,13 @@ const tableRowClipboardBorderSx: SxProps = {
 /**
  * 用於給正存在剪貼簿中的 row 提供虛線邊框動畫
  */
-const TableRowBorder = () => (
+const TableRowBorder = memo(() => (
   <Box sx={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
     <Box component="svg" preserveAspectRatio="none" width="100%" height="100%" sx={tableRowClipboardBorderSx}>
       <rect width="calc(100%)" height="calc(100%)" />
     </Box>
   </Box>
-);
+));
 
 // ---------------------------------------------------------------------------------
 
@@ -227,7 +218,7 @@ const tableRowSx: SxProps = {
 /**
  * 用於呈現一個普通的資料列
  */
-const TableRow = ({ index }: { index: number }) => {
+const TableRow = memo(({ index }: { index: number }) => {
   const viewEntries = viewDataStore((state) => state.entries);
   const selected = selectionStore((state) => state.selected);
   const clipboardEntries = clipboardStore((state) => state.entries);
@@ -272,21 +263,20 @@ const TableRow = ({ index }: { index: number }) => {
       {isInClipboard && <TableRowBorder />}
     </ButtonBase>
   );
-};
+});
 
 // ---------------------------------------------------------------------------------
 
 /**
- * ?
+ *
  */
-const TableBody = () => {
-  const containerRef = useRef<HTMLDivElement>(null);
+const TableBodyRows = () => {
   const viewEntries = viewDataStore((state) => state.entries);
   const filter = viewStateStore((state) => state.filter);
   const loading = fileSystemLoadingStore((state) => state.loading);
 
   const rowVirtualizer = useVirtualizer({
-    getScrollElement: () => containerRef.current,
+    getScrollElement: () => document.getElementById(tableBodyContainerId),
     count: viewEntries.length,
     estimateSize: () => tableRowHeight,
     overscan: 1,
@@ -316,26 +306,33 @@ const TableBody = () => {
   }
 
   return (
-    <TableBodyContainer ref={containerRef}>
-      <Box sx={virtualItemListWrapperSx}>
-        {viewEntries.length === 0 && (
-          <Box sx={virtualItemWrapperSx} style={{ height: `${tableRowHeight}px`, transform: `translateY(0px)` }}>
-            <Box sx={{ display: "grid", placeItems: "center", height: tableRowHeight }}>
-              <Typography variant="caption" sx={{ color: "text.secondary" }}>
-                {noItemMessage}
-              </Typography>
-            </Box>
+    <Box sx={virtualItemListWrapperSx}>
+      {viewEntries.length === 0 && (
+        <Box sx={virtualItemWrapperSx} style={{ height: `${tableRowHeight}px`, transform: `translateY(0px)` }}>
+          <Box sx={{ display: "grid", placeItems: "center", height: tableRowHeight }}>
+            <Typography variant="caption" sx={{ color: "text.secondary" }}>
+              {noItemMessage}
+            </Typography>
           </Box>
-        )}
+        </Box>
+      )}
 
-        {rowVirtualizer.getVirtualItems().map(({ key, size, start, index }) => (
-          <Box key={key} sx={virtualItemWrapperSx} style={{ height: `${size}px`, transform: `translateY(${start}px)` }}>
-            <TableRow index={index} />
-          </Box>
-        ))}
-      </Box>
-    </TableBodyContainer>
+      {rowVirtualizer.getVirtualItems().map(({ key, size, start, index }) => (
+        <Box key={key} sx={virtualItemWrapperSx} style={{ height: `${size}px`, transform: `translateY(${start}px)` }}>
+          <TableRow index={index} />
+        </Box>
+      ))}
+    </Box>
   );
 };
+
+/**
+ * ?
+ */
+const TableBody = () => (
+  <TableBodyContainer>
+    <TableBodyRows />
+  </TableBodyContainer>
+);
 
 export { TableBody };
