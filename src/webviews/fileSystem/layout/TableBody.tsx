@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { memo, useEffect } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { Box, ButtonBase, Typography, type SxProps } from "@mui/material";
 
@@ -15,6 +15,8 @@ import { fileSystemLoadingStore } from "@@/fileSystem/store/queue";
 import { navigateToFolder } from "@@/fileSystem/action/navigation";
 import { selectRow } from "@@/fileSystem/action/selection";
 import { openFile } from "@@/fileSystem/action/operation";
+
+const tableBodyContainerId = "table-body" + crypto.randomUUID().slice(0, 8);
 
 const tableAlternateBgcolor = colorMix("background.content", "text.primary", 0.98);
 
@@ -44,28 +46,17 @@ const tableBodyContainerSx: SxProps = {
 /**
  * 用於呈現表格主體的容器組件
  */
-const TableBodyContainer = ({ children, ref }: { children: React.ReactNode; ref?: React.Ref<HTMLDivElement> }) => {
-  const containerRef = useRef<HTMLDivElement>(null);
-
+const TableBodyContainer = ({ children }: { children: React.ReactNode }) => {
   const handleScroll = () => {
-    if (containerRef.current) {
-      const scrollTop = containerRef.current.scrollTop;
-      containerRef.current.style.setProperty("--scroll-top", `${-scrollTop}px`);
-    }
-  };
-
-  const combinedRef = (node: HTMLDivElement | null) => {
-    containerRef.current = node;
-
-    if (typeof ref === "function") {
-      ref(node);
-    } else if (ref) {
-      ref.current = node;
+    const container = document.getElementById(tableBodyContainerId);
+    if (container) {
+      const scrollTop = container.scrollTop;
+      container.style.setProperty("--scroll-top", `${-scrollTop}px`);
     }
   };
 
   return (
-    <Box ref={combinedRef} onScroll={handleScroll} sx={tableBodyContainerSx}>
+    <Box id={tableBodyContainerId} onScroll={handleScroll} sx={tableBodyContainerSx}>
       {children}
     </Box>
   );
@@ -131,65 +122,15 @@ const tableRowClipboardBorderSx: SxProps = {
 /**
  * 用於給正存在剪貼簿中的 row 提供虛線邊框動畫
  */
-const TableRowBorder = () => (
+const TableRowBorder = memo(() => (
   <Box sx={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
     <Box component="svg" preserveAspectRatio="none" width="100%" height="100%" sx={tableRowClipboardBorderSx}>
       <rect width="calc(100%)" height="calc(100%)" />
     </Box>
   </Box>
-);
+));
 
 // ---------------------------------------------------------------------------------
-
-/**
- * 根據項目路徑和名稱創建拖放開始事件處理器
- */
-const createHandleDragStart = (params: { filePath: string; fileName: string }) => {
-  const { filePath, fileName } = params;
-
-  const handler: React.DragEventHandler<HTMLButtonElement> = (e) => {
-    const fileUrl = `file:///${filePath.replace(/\\/g, "/")}`;
-    const mimeType = "application/octet-stream";
-    const downloadURL = `${mimeType}:${fileName}:${fileUrl}`;
-
-    e.dataTransfer.setData("DownloadURL", downloadURL);
-    e.dataTransfer.setData("text/uri-list", fileUrl);
-    e.dataTransfer.setData("application/vnd.code.uri-list", JSON.stringify([fileUrl]));
-    e.dataTransfer.setData("codefiles", JSON.stringify([filePath]));
-    e.dataTransfer.setData("resourceurls", JSON.stringify([fileUrl]));
-    e.dataTransfer.effectAllowed = "copy";
-  };
-
-  return handler;
-};
-
-/**
- * 根據檔案類型和路徑創建點擊事件處理器
- */
-const createHandleClick = (params: { fileType: string; filePath: string; index: number }) => {
-  const { fileType, filePath, index } = params;
-
-  return (e: React.MouseEvent<HTMLButtonElement>) => {
-    selectRow({ index, isAdditive: e.ctrlKey || e.metaKey, isRange: e.shiftKey });
-
-    if (e.detail !== 2) return;
-
-    if (fileType === "folder" || fileType === "file-symlink-directory") {
-      navigateToFolder({ dirPath: filePath });
-    } else if (fileType === "file" || fileType === "file-symlink-file") {
-      openFile(filePath);
-    }
-  };
-};
-
-/**
- * 根據項目創建右鍵點擊事件處理器，方便在右鍵選單重新命名、刪除時能夠選取該列
- */
-const createHandleContextMenu = ({ index }: { index: number }) => {
-  return () => {
-    selectRow({ index, isAdditive: true, isRange: false, forceSelect: true });
-  };
-};
 
 /**
  * 為項目指派對應的圖示
@@ -227,24 +168,19 @@ const tableRowSx: SxProps = {
 /**
  * 用於呈現一個普通的資料列
  */
-const TableRow = ({ index }: { index: number }) => {
+const TableRow = memo(({ index }: { index: number }) => {
   const viewEntries = viewDataStore((state) => state.entries);
   const selected = selectionStore((state) => state.selected);
   const clipboardEntries = clipboardStore((state) => state.entries);
 
   const row = assignIcon(viewEntries[index]);
+
   const isInClipboard = row.filePath in clipboardEntries;
-  const className = selected[index] ? "selected" : undefined;
-
-  const isDraggable = row.fileType === "file";
-  const draggableProps = isDraggable ? { draggable: true, onDragStart: createHandleDragStart(row) } : {};
-
-  const handleClick = createHandleClick({ ...row, index });
-  const handleContextMenu = createHandleContextMenu({ index });
-  const pointerProps = { onClick: handleClick, onContextMenu: handleContextMenu };
+  const className = selected[index] ? `selected table-row` : `table-row`;
+  const draggable = row.fileType === "file";
 
   return (
-    <ButtonBase focusRipple sx={tableRowSx} className={className} {...pointerProps} {...draggableProps}>
+    <ButtonBase focusRipple sx={tableRowSx} className={className} data-index={index} draggable={draggable}>
       <Box sx={{ width: tableIconWidth, display: "flex", alignItems: "center", justifyContent: "center" }}>
         <i className={row.icon} style={{ display: "flex", alignItems: "center", fontSize: tableIconFontSize }} />
       </Box>
@@ -272,21 +208,20 @@ const TableRow = ({ index }: { index: number }) => {
       {isInClipboard && <TableRowBorder />}
     </ButtonBase>
   );
-};
+});
 
 // ---------------------------------------------------------------------------------
 
 /**
- * ?
+ * 專注於用虛擬化渲染表格主體中的所有資料列
  */
-const TableBody = () => {
-  const containerRef = useRef<HTMLDivElement>(null);
+const TableBodyRows = () => {
   const viewEntries = viewDataStore((state) => state.entries);
   const filter = viewStateStore((state) => state.filter);
   const loading = fileSystemLoadingStore((state) => state.loading);
 
   const rowVirtualizer = useVirtualizer({
-    getScrollElement: () => containerRef.current,
+    getScrollElement: () => document.getElementById(tableBodyContainerId),
     count: viewEntries.length,
     estimateSize: () => tableRowHeight,
     overscan: 1,
@@ -316,24 +251,125 @@ const TableBody = () => {
   }
 
   return (
-    <TableBodyContainer ref={containerRef}>
-      <Box sx={virtualItemListWrapperSx}>
-        {viewEntries.length === 0 && (
-          <Box sx={virtualItemWrapperSx} style={{ height: `${tableRowHeight}px`, transform: `translateY(0px)` }}>
-            <Box sx={{ display: "grid", placeItems: "center", height: tableRowHeight }}>
-              <Typography variant="caption" sx={{ color: "text.secondary" }}>
-                {noItemMessage}
-              </Typography>
-            </Box>
+    <Box sx={virtualItemListWrapperSx}>
+      {viewEntries.length === 0 && (
+        <Box sx={virtualItemWrapperSx} style={{ height: `${tableRowHeight}px`, transform: `translateY(0px)` }}>
+          <Box sx={{ display: "grid", placeItems: "center", height: tableRowHeight }}>
+            <Typography variant="caption" sx={{ color: "text.secondary" }}>
+              {noItemMessage}
+            </Typography>
           </Box>
-        )}
+        </Box>
+      )}
 
-        {rowVirtualizer.getVirtualItems().map(({ key, size, start, index }) => (
-          <Box key={key} sx={virtualItemWrapperSx} style={{ height: `${size}px`, transform: `translateY(${start}px)` }}>
-            <TableRow index={index} />
-          </Box>
-        ))}
-      </Box>
+      {rowVirtualizer.getVirtualItems().map(({ key, size, start, index }) => (
+        <Box key={key} sx={virtualItemWrapperSx} style={{ height: `${size}px`, transform: `translateY(${start}px)` }}>
+          <TableRow index={index} />
+        </Box>
+      ))}
+    </Box>
+  );
+};
+
+// ---------------------------------------------------------------------------------
+
+/**
+ * 根據點擊事件獲取對應的資料列索引
+ */
+const getIndexFromEvent = (e: Event) => {
+  const target = e.target as HTMLElement;
+
+  const indexStr = target.closest(".table-row")?.getAttribute("data-index");
+  if (indexStr === undefined) return null;
+
+  const index = Number(indexStr);
+  if (isNaN(index)) return null;
+
+  return index;
+};
+
+/**
+ * 處理開始拖動某一資料列的事件
+ */
+const handleDragStart = (e: DragEvent) => {
+  if (!e.dataTransfer) return;
+
+  const index = getIndexFromEvent(e);
+  if (index === null) return;
+
+  const row = viewDataStore.getState().entries[index];
+  if (!row) return;
+
+  const { filePath, fileName } = row;
+
+  const fileUrl = `file:///${filePath.replace(/\\/g, "/")}`;
+  const mimeType = "application/octet-stream";
+  const downloadURL = `${mimeType}:${fileName}:${fileUrl}`;
+
+  e.dataTransfer.setData("DownloadURL", downloadURL);
+  e.dataTransfer.setData("text/uri-list", fileUrl);
+  e.dataTransfer.setData("application/vnd.code.uri-list", JSON.stringify([fileUrl]));
+  e.dataTransfer.setData("codefiles", JSON.stringify([filePath]));
+  e.dataTransfer.setData("resourceurls", JSON.stringify([fileUrl]));
+  e.dataTransfer.effectAllowed = "copy";
+};
+
+/**
+ * 處理點擊某一資料列的事件
+ */
+const handleClick = (e: MouseEvent) => {
+  const index = getIndexFromEvent(e);
+  if (index === null) return;
+
+  const row = viewDataStore.getState().entries[index];
+  if (!row) return;
+
+  selectRow({ index, isAdditive: e.ctrlKey || e.metaKey, isRange: e.shiftKey });
+
+  if (e.detail !== 2) return;
+
+  const { fileType, filePath } = row;
+
+  if (fileType === "folder" || fileType === "file-symlink-directory") {
+    navigateToFolder({ dirPath: filePath });
+  } else if (fileType === "file" || fileType === "file-symlink-file") {
+    openFile(filePath);
+  }
+};
+
+/**
+ * 處理右鍵點擊某一資料列的事件
+ */
+const handleContextMenu = (e: MouseEvent) => {
+  const index = getIndexFromEvent(e);
+  if (index === null) return;
+
+  // 該設置是為了方便在右鍵選單中透過強制選取該列，來重新命名、刪除等操作
+  selectRow({ index, isAdditive: true, isRange: false, forceSelect: true });
+};
+
+/**
+ * ?
+ */
+const TableBody = () => {
+  useEffect(() => {
+    const container = document.getElementById(tableBodyContainerId);
+    if (!container) return;
+
+    container.addEventListener("click", handleClick);
+    container.addEventListener("contextmenu", handleContextMenu);
+    container.addEventListener("dragstart", handleDragStart);
+
+    return () => {
+      container.removeEventListener("click", handleClick);
+      container.removeEventListener("contextmenu", handleContextMenu);
+      container.removeEventListener("dragstart", handleDragStart);
+    };
+  }, []);
+
+  return (
+    <TableBodyContainer>
+      <TableBodyRows />
     </TableBodyContainer>
   );
 };
