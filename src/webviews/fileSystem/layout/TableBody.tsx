@@ -231,6 +231,7 @@ const TableBodyRows = () => {
     position: "relative",
     height: `${rowVirtualizer.getTotalSize()}px`,
     width: 1,
+    transition: "opacity 0.05s step-end", // 所有小於 50ms 的載入時間都不顯示載入回饋，以避免閃爍
   };
 
   const virtualItemWrapperSx: SxProps = {
@@ -251,7 +252,7 @@ const TableBodyRows = () => {
   }
 
   return (
-    <Box sx={virtualItemListWrapperSx}>
+    <Box sx={virtualItemListWrapperSx} style={loading ? { opacity: 0.5 } : undefined}>
       {viewEntries.length === 0 && (
         <Box sx={virtualItemWrapperSx} style={{ height: `${tableRowHeight}px`, transform: `translateY(0px)` }}>
           <Box sx={{ display: "grid", placeItems: "center", height: tableRowHeight }}>

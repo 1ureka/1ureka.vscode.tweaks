@@ -11,10 +11,12 @@ import { NavigationPanels } from "@@/fileSystem/layout/NavigationPanels";
 import { NavigationBar } from "@@/fileSystem/layout/NavigationBar";
 import { TableHead } from "@@/fileSystem/layout/TableHead";
 import { TableBody } from "@@/fileSystem/layout/TableBody";
+import { LoadingDisplay } from "@@/fileSystem/layout/LoadingDisplay";
 
 const Container = ({ children }: { children: React.ReactNode }) => (
-  <Box sx={{ height: "100dvh", width: "100dvw", overflow: "hidden", overflowX: "auto" }}>
+  <Box sx={{ position: "relative", height: "100dvh", width: "100dvw", overflow: "hidden", overflowX: "auto" }}>
     <Box sx={{ minWidth: 850, display: "grid", gridTemplateColumns: "270px 1fr", height: 1 }}>{children}</Box>
+    <LoadingDisplay />
   </Box>
 );
 
