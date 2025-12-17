@@ -82,7 +82,7 @@ const TableHeadCell = ({ column, sortOrder, active, onClick }: TableHeadCellProp
 
   return (
     <Box className={`table-head-cell ${state} align-${align}`} sx={tableCellSx} style={layoutStyle} onClick={onClick}>
-      <Typography className={state} variant="body2" sx={tableCellLableSx}>
+      <Typography className={state} variant="caption" sx={tableCellLableSx}>
         {label}
       </Typography>
       {state !== "disabled" && <span className={`codicon codicon-arrow-${sortOrder === "asc" ? "up" : "down"}`} />}
@@ -102,7 +102,7 @@ const tableHeadSx: SxProps = {
   borderBottomLeftRadius: 0,
   borderBottomRightRadius: 0,
   bgcolor: "background.paper",
-  px: 1.5,
+  px: 0.5,
 
   // 讓 head 與 row/body 對齊，避免右側與 row/body 右側是不對齊的情況
   overflowY: "auto",

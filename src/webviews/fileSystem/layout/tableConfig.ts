@@ -69,7 +69,7 @@ const tableColumns: TableColumn[] = [
 /**
  * 表格標題列的高度
  */
-const tableHeadHeight = 32;
+const tableHeadHeight = 30;
 
 /**
  * 表格每 row 的高度
