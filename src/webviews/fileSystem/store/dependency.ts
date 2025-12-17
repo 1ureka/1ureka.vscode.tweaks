@@ -92,4 +92,4 @@ const setupDependencyChain = () => {
   viewDataStore.subscribe(handleSelectionUpdate);
 };
 
-setupDependencyChain();
+export { setupDependencyChain };
