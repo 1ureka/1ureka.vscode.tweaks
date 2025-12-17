@@ -32,11 +32,11 @@ const App = () => (
 startReactApp({
   App,
   beforeRender: () => {
+    setupDependencyChain();
     registerInitDataEvents();
     registerSelectionShortcuts();
     registerNavigateShortcuts();
     registerMessageEvents();
     registerClipboardEvents();
-    setupDependencyChain();
   },
 });

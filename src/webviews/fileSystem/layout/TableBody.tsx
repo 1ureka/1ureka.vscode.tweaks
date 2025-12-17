@@ -1,4 +1,4 @@
-import { memo } from "react";
+import { memo, useEffect } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { Box, ButtonBase, Typography, type SxProps } from "@mui/material";
 
@@ -133,56 +133,6 @@ const TableRowBorder = memo(() => (
 // ---------------------------------------------------------------------------------
 
 /**
- * 根據項目路徑和名稱創建拖放開始事件處理器
- */
-const createHandleDragStart = (params: { filePath: string; fileName: string }) => {
-  const { filePath, fileName } = params;
-
-  const handler: React.DragEventHandler<HTMLButtonElement> = (e) => {
-    const fileUrl = `file:///${filePath.replace(/\\/g, "/")}`;
-    const mimeType = "application/octet-stream";
-    const downloadURL = `${mimeType}:${fileName}:${fileUrl}`;
-
-    e.dataTransfer.setData("DownloadURL", downloadURL);
-    e.dataTransfer.setData("text/uri-list", fileUrl);
-    e.dataTransfer.setData("application/vnd.code.uri-list", JSON.stringify([fileUrl]));
-    e.dataTransfer.setData("codefiles", JSON.stringify([filePath]));
-    e.dataTransfer.setData("resourceurls", JSON.stringify([fileUrl]));
-    e.dataTransfer.effectAllowed = "copy";
-  };
-
-  return handler;
-};
-
-/**
- * 根據檔案類型和路徑創建點擊事件處理器
- */
-const createHandleClick = (params: { fileType: string; filePath: string; index: number }) => {
-  const { fileType, filePath, index } = params;
-
-  return (e: React.MouseEvent<HTMLButtonElement>) => {
-    selectRow({ index, isAdditive: e.ctrlKey || e.metaKey, isRange: e.shiftKey });
-
-    if (e.detail !== 2) return;
-
-    if (fileType === "folder" || fileType === "file-symlink-directory") {
-      navigateToFolder({ dirPath: filePath });
-    } else if (fileType === "file" || fileType === "file-symlink-file") {
-      openFile(filePath);
-    }
-  };
-};
-
-/**
- * 根據項目創建右鍵點擊事件處理器，方便在右鍵選單重新命名、刪除時能夠選取該列
- */
-const createHandleContextMenu = ({ index }: { index: number }) => {
-  return () => {
-    selectRow({ index, isAdditive: true, isRange: false, forceSelect: true });
-  };
-};
-
-/**
  * 為項目指派對應的圖示
  */
 const assignIcon = (entry: InspectDirectoryEntry) => {
@@ -224,18 +174,13 @@ const TableRow = memo(({ index }: { index: number }) => {
   const clipboardEntries = clipboardStore((state) => state.entries);
 
   const row = assignIcon(viewEntries[index]);
+
   const isInClipboard = row.filePath in clipboardEntries;
-  const className = selected[index] ? "selected" : undefined;
-
-  const isDraggable = row.fileType === "file";
-  const draggableProps = isDraggable ? { draggable: true, onDragStart: createHandleDragStart(row) } : {};
-
-  const handleClick = createHandleClick({ ...row, index });
-  const handleContextMenu = createHandleContextMenu({ index });
-  const pointerProps = { onClick: handleClick, onContextMenu: handleContextMenu };
+  const className = selected[index] ? `selected table-row` : `table-row`;
+  const draggable = row.fileType === "file";
 
   return (
-    <ButtonBase focusRipple sx={tableRowSx} className={className} {...pointerProps} {...draggableProps}>
+    <ButtonBase focusRipple sx={tableRowSx} className={className} data-index={index} draggable={draggable}>
       <Box sx={{ width: tableIconWidth, display: "flex", alignItems: "center", justifyContent: "center" }}>
         <i className={row.icon} style={{ display: "flex", alignItems: "center", fontSize: tableIconFontSize }} />
       </Box>
@@ -268,7 +213,7 @@ const TableRow = memo(({ index }: { index: number }) => {
 // ---------------------------------------------------------------------------------
 
 /**
- *
+ * 專注於用虛擬化渲染表格主體中的所有資料列
  */
 const TableBodyRows = () => {
   const viewEntries = viewDataStore((state) => state.entries);
@@ -326,13 +271,107 @@ const TableBodyRows = () => {
   );
 };
 
+// ---------------------------------------------------------------------------------
+
+/**
+ * 根據點擊事件獲取對應的資料列索引
+ */
+const getIndexFromEvent = (e: Event) => {
+  const target = e.target as HTMLElement;
+
+  const indexStr = target.closest(".table-row")?.getAttribute("data-index");
+  if (indexStr === undefined) return null;
+
+  const index = Number(indexStr);
+  if (isNaN(index)) return null;
+
+  return index;
+};
+
+/**
+ * 處理開始拖動某一資料列的事件
+ */
+const handleDragStart = (e: DragEvent) => {
+  if (!e.dataTransfer) return;
+
+  const index = getIndexFromEvent(e);
+  if (index === null) return;
+
+  const row = viewDataStore.getState().entries[index];
+  if (!row) return;
+
+  const { filePath, fileName } = row;
+
+  const fileUrl = `file:///${filePath.replace(/\\/g, "/")}`;
+  const mimeType = "application/octet-stream";
+  const downloadURL = `${mimeType}:${fileName}:${fileUrl}`;
+
+  e.dataTransfer.setData("DownloadURL", downloadURL);
+  e.dataTransfer.setData("text/uri-list", fileUrl);
+  e.dataTransfer.setData("application/vnd.code.uri-list", JSON.stringify([fileUrl]));
+  e.dataTransfer.setData("codefiles", JSON.stringify([filePath]));
+  e.dataTransfer.setData("resourceurls", JSON.stringify([fileUrl]));
+  e.dataTransfer.effectAllowed = "copy";
+};
+
+/**
+ * 處理點擊某一資料列的事件
+ */
+const handleClick = (e: MouseEvent) => {
+  const index = getIndexFromEvent(e);
+  if (index === null) return;
+
+  const row = viewDataStore.getState().entries[index];
+  if (!row) return;
+
+  selectRow({ index, isAdditive: e.ctrlKey || e.metaKey, isRange: e.shiftKey });
+
+  if (e.detail !== 2) return;
+
+  const { fileType, filePath } = row;
+
+  if (fileType === "folder" || fileType === "file-symlink-directory") {
+    navigateToFolder({ dirPath: filePath });
+  } else if (fileType === "file" || fileType === "file-symlink-file") {
+    openFile(filePath);
+  }
+};
+
+/**
+ * 處理右鍵點擊某一資料列的事件
+ */
+const handleContextMenu = (e: MouseEvent) => {
+  const index = getIndexFromEvent(e);
+  if (index === null) return;
+
+  // 該設置是為了方便在右鍵選單中透過強制選取該列，來重新命名、刪除等操作
+  selectRow({ index, isAdditive: true, isRange: false, forceSelect: true });
+};
+
 /**
  * ?
  */
-const TableBody = () => (
-  <TableBodyContainer>
-    <TableBodyRows />
-  </TableBodyContainer>
-);
+const TableBody = () => {
+  useEffect(() => {
+    const container = document.getElementById(tableBodyContainerId);
+    if (!container) return;
+
+    container.addEventListener("click", handleClick);
+    container.addEventListener("contextmenu", handleContextMenu);
+    container.addEventListener("dragstart", handleDragStart);
+
+    return () => {
+      container.removeEventListener("click", handleClick);
+      container.removeEventListener("contextmenu", handleContextMenu);
+      container.removeEventListener("dragstart", handleDragStart);
+    };
+  }, []);
+
+  return (
+    <TableBodyContainer>
+      <TableBodyRows />
+    </TableBodyContainer>
+  );
+};
 
 export { TableBody };
