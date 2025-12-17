@@ -4,13 +4,14 @@ import { Box, ButtonBase, Typography, type SxProps } from "@mui/material";
 
 import { colorMix, ellipsisSx } from "@/utils/ui";
 import { formatFileSize, formatFileType, formatFixedLengthDateTime } from "@/utils/formatter";
-import { fileSystemViewDataStore } from "@@/fileSystem/data/view";
+import { fileSystemViewDataStore, fileSystemViewStore } from "@@/fileSystem/data/view";
 import { tableColumns, tableIconFontSize, tableIconWidth, tableRowHeight } from "@@/fileSystem/layout/tableConfig";
 import type { TableColumn } from "@@/fileSystem/layout/tableConfig";
 import { selectRow } from "@@/fileSystem/data/selection";
 import { navigateToFolder } from "@@/fileSystem/data/navigate";
 import { openFile } from "@@/fileSystem/data/action";
 import { useIsInClipboard } from "@@/fileSystem/data/clipboard";
+import { fileSystemLoadingStore } from "@@/fileSystem/data/queue";
 
 const tableAlternateBgcolor = colorMix("background.content", "text.primary", 0.98);
 
@@ -248,6 +249,8 @@ const TableRow = ({ index }: { index: number }) => {
 const TableBody = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const viewEntries = fileSystemViewDataStore((state) => state.entries);
+  const filter = fileSystemViewStore((state) => state.filter);
+  const loading = fileSystemLoadingStore((state) => state.loading);
 
   const rowVirtualizer = useVirtualizer({
     getScrollElement: () => containerRef.current,
@@ -269,9 +272,29 @@ const TableBody = () => {
     width: 1,
   };
 
+  let noItemMessage = "此資料夾是空的";
+
+  if (loading) {
+    noItemMessage = "載入中...";
+  } else if (filter === "file") {
+    noItemMessage = "此資料夾中沒有檔案";
+  } else if (filter === "folder") {
+    noItemMessage = "此資料夾中沒有資料夾";
+  }
+
   return (
     <TableBodyContainer ref={containerRef}>
       <Box sx={virtualItemListWrapperSx}>
+        {viewEntries.length === 0 && (
+          <Box sx={virtualItemWrapperSx} style={{ height: `${tableRowHeight}px`, transform: `translateY(0px)` }}>
+            <Box sx={{ display: "grid", placeItems: "center", height: tableRowHeight }}>
+              <Typography variant="caption" sx={{ color: "text.secondary" }}>
+                {noItemMessage}
+              </Typography>
+            </Box>
+          </Box>
+        )}
+
         {rowVirtualizer.getVirtualItems().map(({ key, size, start, index }) => (
           <Box key={key} sx={virtualItemWrapperSx} style={{ height: `${size}px`, transform: `translateY(${start}px)` }}>
             <TableRow index={index} />
