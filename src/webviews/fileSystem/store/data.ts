@@ -1,6 +1,12 @@
+/**
+ * @file 狀態容器
+ * @description 該文件負責定義對於 UI 來說只讀的狀態容器，可參考 README.md 中的說明
+ */
+
 import { create } from "zustand";
 import { getInitialData, invoke } from "@/utils/message_client";
 import type { ShowInfoAPI } from "@/providers/fileSystemProvider";
+import type { InspectDirectoryEntry } from "@/utils/system";
 import type { FileSystemInitialData } from "@/providers/fileSystemProvider";
 
 const initialData = getInitialData<FileSystemInitialData>();
@@ -9,11 +15,56 @@ if (!initialData) {
   throw new Error("無法取得檔案系統初始資料");
 }
 
+// ----------------------------------------------------------------------------
+
+type ViewState = {
+  sortField: keyof Pick<InspectDirectoryEntry, "fileName" | "mtime" | "ctime" | "size">;
+  sortOrder: "asc" | "desc";
+  filter: "all" | "file" | "folder";
+};
+
+type ViewDataState = {
+  entries: InspectDirectoryEntry[];
+};
+
+type SelectionState = {
+  isBoxSelecting: boolean;
+  selected: (0 | 1)[];
+  lastSelectedIndex: number | null;
+};
+
+type ClipboardState = {
+  entries: { [filePath: string]: InspectDirectoryEntry };
+};
+
+// ----------------------------------------------------------------------------
+
 /**
  * 建立前端用於儲存檔案系統資料的容器
  */
-const fileSystemDataStore = create<FileSystemInitialData>(() => ({
-  ...initialData,
-}));
+const dataStore = create<FileSystemInitialData>(() => ({ ...initialData }));
 
-export { fileSystemDataStore };
+/**
+ * 建立用於檢視系統瀏覽器的狀態容器
+ */
+const viewStateStore = create<ViewState>(() => ({ sortField: "fileName", sortOrder: "asc", filter: "all" }));
+
+/**
+ * 建立用於儲存根據檢視條件計算後，要顯示的資料狀態的容器
+ */
+const viewDataStore = create<ViewDataState>(() => ({ entries: [] }));
+
+/**
+ * 建立用於儲存選取狀態的容器
+ */
+const selectionStore = create<SelectionState>(() => ({ isBoxSelecting: false, selected: [], lastSelectedIndex: null }));
+
+/**
+ * 建立用於儲存剪貼簿資料的容器
+ */
+const clipboardStore = create<ClipboardState>(() => ({ entries: {} }));
+
+// ----------------------------------------------------------------------------
+
+export { dataStore, viewStateStore, viewDataStore, selectionStore, clipboardStore };
+export type { ViewState };

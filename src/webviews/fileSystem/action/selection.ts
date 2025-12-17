@@ -1,16 +1,15 @@
-import { fileSystemBoxSelectionStore } from "@@/fileSystem/store/other";
-import { fileSystemViewDataStore } from "@@/fileSystem/store/view";
+import { selectionStore } from "@@/fileSystem/store/data";
 
 /** 開關框選模式 */
 const toggleBoxSelectionMode = (forceMode?: boolean) => {
-  fileSystemBoxSelectionStore.setState((state) => ({ isBoxSelecting: forceMode ?? !state.isBoxSelecting }));
+  selectionStore.setState((state) => ({ isBoxSelecting: forceMode ?? !state.isBoxSelecting }));
 };
 
 /** 選取某個項目 */
 const selectRow = (params: { index: number; isAdditive: boolean; isRange: boolean; forceSelect?: boolean }) => {
   const { index: currentIndex, isAdditive, isRange, forceSelect } = params;
 
-  fileSystemViewDataStore.setState((state) => {
+  selectionStore.setState((state) => {
     if (currentIndex < 0 || currentIndex >= state.selected.length) {
       return {}; // 無效索引，不觸發重新渲染
     }
@@ -55,7 +54,7 @@ const selectRow = (params: { index: number; isAdditive: boolean; isRange: boolea
 
 /** 全選 */
 const selectAll = () => {
-  fileSystemViewDataStore.setState((state) => {
+  selectionStore.setState((state) => {
     const newSelected = Array<0 | 1>(state.selected.length).fill(1);
     return { selected: newSelected, lastSelectedIndex: null };
   });
@@ -63,7 +62,7 @@ const selectAll = () => {
 
 /** 清空選取 */
 const selectNone = () => {
-  fileSystemViewDataStore.setState((state) => {
+  selectionStore.setState((state) => {
     const newSelected = Array<0 | 1>(state.selected.length).fill(0);
     return { selected: newSelected, lastSelectedIndex: null };
   });
@@ -71,7 +70,7 @@ const selectNone = () => {
 
 /** 反轉選取 */
 const selectInvert = () => {
-  fileSystemViewDataStore.setState((state) => {
+  selectionStore.setState((state) => {
     const newSelected = state.selected.map((value) => (1 - value) as 0 | 1);
     return { selected: newSelected, lastSelectedIndex: null };
   });

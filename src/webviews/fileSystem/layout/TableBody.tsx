@@ -9,9 +9,8 @@ import { tableColumns, tableIconFontSize, tableIconWidth, tableRowHeight } from 
 import type { TableColumn } from "@@/fileSystem/layout/tableConfig";
 import type { InspectDirectoryEntry } from "@/utils/system";
 
-import { fileSystemViewDataStore, fileSystemViewStore } from "@@/fileSystem/store/view";
+import { clipboardStore, selectionStore, viewDataStore, viewStateStore } from "@@/fileSystem/store/data";
 import { fileSystemLoadingStore } from "@@/fileSystem/store/queue";
-import { fileSystemClipboardStore } from "@@/fileSystem/store/other";
 
 import { navigateToFolder } from "@@/fileSystem/action/navigation";
 import { selectRow } from "@@/fileSystem/action/selection";
@@ -229,9 +228,9 @@ const tableRowSx: SxProps = {
  * 用於呈現一個普通的資料列
  */
 const TableRow = ({ index }: { index: number }) => {
-  const viewEntries = fileSystemViewDataStore((state) => state.entries);
-  const selected = fileSystemViewDataStore((state) => state.selected);
-  const clipboardEntries = fileSystemClipboardStore((state) => state.entries);
+  const viewEntries = viewDataStore((state) => state.entries);
+  const selected = selectionStore((state) => state.selected);
+  const clipboardEntries = clipboardStore((state) => state.entries);
 
   const row = assignIcon(viewEntries[index]);
   const isInClipboard = row.filePath in clipboardEntries;
@@ -282,8 +281,8 @@ const TableRow = ({ index }: { index: number }) => {
  */
 const TableBody = () => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const viewEntries = fileSystemViewDataStore((state) => state.entries);
-  const filter = fileSystemViewStore((state) => state.filter);
+  const viewEntries = viewDataStore((state) => state.entries);
+  const filter = viewStateStore((state) => state.filter);
   const loading = fileSystemLoadingStore((state) => state.loading);
 
   const rowVirtualizer = useVirtualizer({
