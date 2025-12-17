@@ -105,6 +105,9 @@ const theme = createTheme({
   typography: {
     fontFamily: getVarValue("editor-font-family"),
   },
+  shape: {
+    borderRadius: 6,
+  },
 });
 
 // ----------------------------------------------------------------------------

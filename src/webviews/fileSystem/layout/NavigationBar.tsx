@@ -3,7 +3,7 @@ import { ActionButton, ActionDropdown, ActionGroup, ActionInput } from "@@/fileS
 
 const NavigationBar = () => {
   return (
-    <Box sx={{ display: "grid", gridTemplateColumns: "auto auto 2fr 1fr auto auto", gap: 1, p: 1 }}>
+    <Box sx={{ display: "grid", gridTemplateColumns: "auto auto 2fr 1fr auto auto", gap: 1, pb: 1 }}>
       <ActionGroup>
         <ActionButton
           actionIcon="codicon codicon-arrow-left"
