@@ -3,7 +3,7 @@ import * as vscode from "vscode";
 import { onDidReceiveInvoke } from "@/utils/message_host";
 import { createWebviewPanelManager } from "@/utils/webview";
 import { handleDelete, handleInitialData, handlePaste, handleRename } from "@/handlers/fileSystemHandlers";
-import { handleCreateFile, handleCreateDir, handleReadDirectory, handleGoto } from "@/handlers/fileSystemHandlers";
+import { handleCreateFile, handleCreateDir, handleReadDirectory } from "@/handlers/fileSystemHandlers";
 import type { WithProgress } from "@/utils";
 
 import fileSystemLight from "@/assets/file-system-light.svg";
@@ -44,10 +44,6 @@ type OpenInTargetAPI = {
   id: "openInTarget";
   handler: (params: { dirPath: string; target: OpenInTarget }) => void;
 };
-type GotoPathAPI = {
-  id: "gotoPath";
-  handler: (params: { dirPath: string }) => ReturnType<typeof handleGoto>;
-};
 type PasteAPI = {
   id: "paste";
   handler: (params: { srcList: string[]; destDir: string }) => ReturnType<typeof handlePaste>;
@@ -63,7 +59,7 @@ type DeleteAPI = {
 
 export type { FileSystemInitialData };
 export type { ShowInfoAPI, SetSystemClipboardAPI, ReadDirAPI, CreateFileAPI, CreateDirAPI, PasteAPI };
-export type { OpenFileAPI, OpenInTargetAPI, GotoPathAPI, RenameAPI, DeleteAPI };
+export type { OpenFileAPI, OpenInTargetAPI, RenameAPI, DeleteAPI };
 
 // ---------------------------------------------------------------------------------
 
@@ -84,10 +80,6 @@ function FileSystemPanelProvider(context: vscode.ExtensionContext) {
   const showErrorReport = async (content: string) => {
     const doc = await vscode.workspace.openTextDocument({ content, language: "markdown" });
     vscode.window.showTextDocument(doc, { preview: false });
-  };
-
-  const showGotoInputBox = async (dirPath: string) => {
-    return await vscode.window.showInputBox({ title: "前往...", prompt: "輸入路徑", value: dirPath });
   };
 
   const showCreateInputBox = async (prompt: string, placeHolder: string) => {
@@ -208,9 +200,6 @@ function FileSystemPanelProvider(context: vscode.ExtensionContext) {
     });
     onDidReceiveInvoke<OpenInTargetAPI>(panel, "openInTarget", ({ dirPath, target }) => {
       openTarget(dirPath, target);
-    });
-    onDidReceiveInvoke<GotoPathAPI>(panel, "gotoPath", ({ dirPath }) => {
-      return handleGoto({ getInputPath: () => showGotoInputBox(dirPath), onError: showError });
     });
     onDidReceiveInvoke<PasteAPI>(panel, "paste", async ({ srcList, destDir }) => {
       const pick = await vscode.window.showQuickPick(pasteOptions, pastePickOptions);

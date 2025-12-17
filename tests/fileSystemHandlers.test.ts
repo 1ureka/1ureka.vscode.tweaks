@@ -5,7 +5,7 @@ import fs from "fs-extra";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { cleanupFixtures, getFixturesPath, setupFixtures } from "./fixtures.helpers";
 
-import { handleInitialData, handleReadDirectory, handleGoto } from "@/handlers/fileSystemHandlers";
+import { handleInitialData, handleReadDirectory } from "@/handlers/fileSystemHandlers";
 import { handleCreateDir, handleCreateFile, handlePaste } from "@/handlers/fileSystemHandlers";
 import { handleRename, handleDelete } from "@/handlers/fileSystemHandlers";
 
@@ -372,80 +372,6 @@ describe("handleCreateDir", () => {
     });
 
     expect(errorMessage).toContain("無法建立新資料夾");
-    expect(result).toBeNull();
-  });
-});
-
-// --------------------------------------------------------------------
-
-describe("handleGoto", () => {
-  beforeEach(async () => {
-    await setupFixtures();
-  });
-
-  afterEach(async () => {
-    await cleanupFixtures();
-  });
-
-  it("應該成功跳轉到存在的資料夾", async () => {
-    const targetPath = getFixturesPath("multiple-files");
-
-    const result = await handleGoto({
-      getInputPath: async () => targetPath,
-      onError: (error) => console.error(error),
-    });
-
-    expect(result).not.toBeNull();
-    expect(result?.currentPath).toBe(path.resolve(targetPath));
-    expect(result?.entries).toHaveLength(3);
-  });
-
-  it("應該跳轉到檔案所在的父資料夾", async () => {
-    const filePath = getFixturesPath("multiple-files", "file1.txt");
-
-    const result = await handleGoto({
-      getInputPath: async () => filePath,
-      onError: (error) => console.error(error),
-    });
-
-    expect(result).not.toBeNull();
-    expect(result?.currentPath).toBe(getFixturesPath("multiple-files"));
-    expect(result?.entries).toHaveLength(3);
-  });
-
-  it("應該處理相對路徑", async () => {
-    const relativePath = path.relative(process.cwd(), getFixturesPath("empty-folder"));
-
-    const result = await handleGoto({
-      getInputPath: async () => relativePath,
-      onError: (error) => console.error(error),
-    });
-
-    expect(result).not.toBeNull();
-    expect(result?.currentPath).toBe(path.resolve(getFixturesPath("empty-folder")));
-  });
-
-  it("當路徑不存在時應該產生錯誤", async () => {
-    const nonExistentPath = getFixturesPath("non-existent-path");
-    let errorMessage = "";
-
-    const result = await handleGoto({
-      getInputPath: async () => nonExistentPath,
-      onError: (error) => {
-        errorMessage = error;
-      },
-    });
-
-    expect(result).toBeNull();
-    expect(errorMessage).toBe("路徑不存在");
-  });
-
-  it("當使用者取消輸入時應該返回 null", async () => {
-    const result = await handleGoto({
-      getInputPath: async () => undefined,
-      onError: (error) => console.error(error),
-    });
-
     expect(result).toBeNull();
   });
 });

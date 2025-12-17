@@ -5,7 +5,7 @@ import { tryCatch } from "@/utils";
 import { generateErrorMessage } from "@/utils/formatter";
 import { readDirectory, inspectDirectory, isRootDirectory, pathToArray, toParentPath } from "@/utils/system";
 import type { InspectDirectoryEntry } from "@/utils/system";
-import type { PromiseOpt, WithProgress } from "@/utils";
+import type { WithProgress } from "@/utils";
 
 type ReadDirectoryResult = {
   // 有關當前目錄的資訊
@@ -99,33 +99,6 @@ const handleCreateDir = async (params: { dirPath: string; folderName: string; sh
 
   return handleReadDirectory({ dirPath });
 };
-
-/**
- * 處理跳轉路徑
- */
-async function handleGoto(params: { getInputPath: () => PromiseOpt<string>; onError: (error: string) => void }) {
-  const { getInputPath, onError } = params;
-
-  const inputPath = await getInputPath();
-  if (!inputPath) return null;
-
-  const resolvedPath = path.resolve(inputPath);
-
-  const stats = await fs.stat(resolvedPath).catch(() => null);
-  if (!stats) {
-    onError("路徑不存在");
-    return null;
-  }
-
-  if (stats.isFile()) {
-    return handleReadDirectory({ dirPath: path.dirname(resolvedPath) });
-  } else if (stats.isDirectory()) {
-    return handleReadDirectory({ dirPath: resolvedPath });
-  } else {
-    onError("路徑不是有效的檔案或資料夾");
-    return null;
-  }
-}
 
 /**
  * 錯誤發生時的副作用說明對照表
@@ -286,4 +259,4 @@ const handleDelete = async (params: {
 };
 
 export { handleInitialData, handleCreateFile, handleCreateDir, handlePaste, handleRename, handleDelete };
-export { handleReadDirectory, handleGoto };
+export { handleReadDirectory };
