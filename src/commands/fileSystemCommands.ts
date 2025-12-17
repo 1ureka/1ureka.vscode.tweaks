@@ -1,8 +1,8 @@
 import * as vscode from "vscode";
 import type { CreateFileAPI, CreateDirAPI, ReadDirAPI, RenameAPI, DeleteAPI } from "@/providers/fileSystemProvider";
-import type { OpenInWorkspaceAPI, OpenInTerminalAPI, OpenInImageWallAPI } from "@/webviews/fileSystem/data/message";
-import type { FilterAllAPI, FilterFoldersAPI, FilterFilesAPI } from "@/webviews/fileSystem/data/message";
-import type { CopyNameAPI, CopyPathAPI } from "@/webviews/fileSystem/data/message";
+import type { OpenInWorkspaceAPI, OpenInTerminalAPI, OpenInImageWallAPI } from "@@/fileSystem/events/message";
+import type { FilterAllAPI, FilterFoldersAPI, FilterFilesAPI } from "@@/fileSystem/events/message";
+import type { CopyNameAPI, CopyPathAPI } from "@@/fileSystem/events/message";
 import { FileSystemPanelProvider } from "@/providers/fileSystemProvider";
 import { forwardCommandToWebview } from "@/utils/message_host";
 import { createCommandManager } from "@/utils/command";

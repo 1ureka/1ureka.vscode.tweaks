@@ -4,14 +4,16 @@ import { Box, ButtonBase, Typography, type SxProps } from "@mui/material";
 
 import { colorMix, ellipsisSx } from "@/utils/ui";
 import { formatFileSize, formatFileType, formatFixedLengthDateTime } from "@/utils/formatter";
-import { fileSystemViewDataStore, fileSystemViewStore } from "@@/fileSystem/data/view";
 import { tableColumns, tableIconFontSize, tableIconWidth, tableRowHeight } from "@@/fileSystem/layout/tableConfig";
 import type { TableColumn } from "@@/fileSystem/layout/tableConfig";
-import { selectRow } from "@@/fileSystem/data/selection";
-import { navigateToFolder } from "@@/fileSystem/data/navigate";
-import { openFile } from "@@/fileSystem/data/action";
-import { useIsInClipboard } from "@@/fileSystem/data/clipboard";
-import { fileSystemLoadingStore } from "@@/fileSystem/data/queue";
+
+import { fileSystemViewDataStore, fileSystemViewStore } from "@@/fileSystem/store/view";
+import { fileSystemLoadingStore } from "@@/fileSystem/store/queue";
+import { fileSystemClipboardStore } from "@@/fileSystem/store/other";
+
+import { navigateToFolder } from "@@/fileSystem/action/navigation";
+import { selectRow } from "@@/fileSystem/action/selection";
+import { openFile } from "@@/fileSystem/action/operation";
 
 const tableAlternateBgcolor = colorMix("background.content", "text.primary", 0.98);
 
@@ -148,6 +150,28 @@ const TableRowBorder = () => (
 // ---------------------------------------------------------------------------------
 
 /**
+ * 根據項目路徑和名稱創建拖放開始事件處理器
+ */
+const createHandleDragStart = (params: { filePath: string; fileName: string }) => {
+  const { filePath, fileName } = params;
+
+  const handler: React.DragEventHandler<HTMLButtonElement> = (e) => {
+    const fileUrl = `file:///${filePath.replace(/\\/g, "/")}`;
+    const mimeType = "application/octet-stream";
+    const downloadURL = `${mimeType}:${fileName}:${fileUrl}`;
+
+    e.dataTransfer.setData("DownloadURL", downloadURL);
+    e.dataTransfer.setData("text/uri-list", fileUrl);
+    e.dataTransfer.setData("application/vnd.code.uri-list", JSON.stringify([fileUrl]));
+    e.dataTransfer.setData("codefiles", JSON.stringify([filePath]));
+    e.dataTransfer.setData("resourceurls", JSON.stringify([fileUrl]));
+    e.dataTransfer.effectAllowed = "copy";
+  };
+
+  return handler;
+};
+
+/**
  * 根據檔案類型和路徑創建點擊事件處理器
  */
 const createHandleClick = (params: { fileType: string; filePath: string; index: number }) => {
@@ -196,22 +220,21 @@ const tableRowSx: SxProps = {
 const TableRow = ({ index }: { index: number }) => {
   const viewEntries = fileSystemViewDataStore((state) => state.entries);
   const selected = fileSystemViewDataStore((state) => state.selected);
+  const clipboardEntries = fileSystemClipboardStore((state) => state.entries);
 
   const row = viewEntries[index];
-  const isInClipboard = useIsInClipboard(row.filePath);
-  //   const isDraggable = row.fileType === "file";
+  const isInClipboard = row.filePath in clipboardEntries;
+  const className = selected[index] ? "selected" : undefined;
 
-  //   const draggableProps: Partial<ButtonBaseProps> = isDraggable
-  //     ? { draggable: true, onDragStart: createHandleDragStart(row) }
-  //     : {};
+  const isDraggable = row.fileType === "file";
+  const draggableProps = isDraggable ? { draggable: true, onDragStart: createHandleDragStart(row) } : {};
 
   const handleClick = createHandleClick({ ...row, index });
   const handleContextMenu = createHandleContextMenu({ index });
-
   const pointerProps = { onClick: handleClick, onContextMenu: handleContextMenu };
 
   return (
-    <ButtonBase focusRipple sx={tableRowSx} className={selected[index] ? "selected" : undefined} {...pointerProps}>
+    <ButtonBase focusRipple sx={tableRowSx} className={className} {...pointerProps} {...draggableProps}>
       <Box sx={{ width: tableIconWidth, display: "flex", alignItems: "center", justifyContent: "center" }}>
         <i className={row.icon} style={{ display: "flex", alignItems: "center", fontSize: tableIconFontSize }} />
       </Box>

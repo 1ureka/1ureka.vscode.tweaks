@@ -1,4 +1,4 @@
-import type { FileProperties } from "@/webviews/fileSystem/data/view";
+import type { FileProperties } from "@/webviews/fileSystem/store/view";
 
 /**
  * 表格單元格的對齊方式

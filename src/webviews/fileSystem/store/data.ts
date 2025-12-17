@@ -1,8 +1,6 @@
 import { create } from "zustand";
-import { requestQueue } from "./queue";
 import { getInitialData, invoke } from "@/utils/message_client";
-
-import type { ShowInfoAPI, ReadDirAPI } from "@/providers/fileSystemProvider";
+import type { ShowInfoAPI } from "@/providers/fileSystemProvider";
 import type { FileSystemInitialData } from "@/providers/fileSystemProvider";
 
 const initialData = getInitialData<FileSystemInitialData>();
@@ -18,15 +16,4 @@ const fileSystemDataStore = create<FileSystemInitialData>(() => ({
   ...initialData,
 }));
 
-/**
- * 初始化，利用注入的初始資料，來獲取完整資料
- */
-const registerInitData = async () => {
-  const result = await requestQueue.add(() =>
-    invoke<ReadDirAPI>("readDirectory", { dirPath: initialData.currentPath })
-  );
-
-  fileSystemDataStore.setState({ ...result });
-};
-
-export { fileSystemDataStore, registerInitData };
+export { fileSystemDataStore };

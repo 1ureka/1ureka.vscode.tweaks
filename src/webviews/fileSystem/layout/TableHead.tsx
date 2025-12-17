@@ -1,7 +1,7 @@
 import { ellipsisSx } from "@/utils/ui";
 import { Box, SxProps, Typography } from "@mui/material";
-import { fileSystemViewStore } from "@@/fileSystem/data/view";
-import { setSorting } from "@@/fileSystem/data/action";
+import { fileSystemViewStore } from "@@/fileSystem/store/view";
+import { setSorting } from "@@/fileSystem/action/view";
 import { type TableColumn, tableColumns, tableHeadHeight, tableIconWidth } from "@@/fileSystem/layout/tableConfig";
 
 /**

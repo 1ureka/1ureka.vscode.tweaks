@@ -1,9 +1,9 @@
 import { onReceiveCommand } from "@/utils/message_client";
-import { refresh } from "./navigate";
-import { handleCopyToSystem } from "./clipboard";
-import { setFilter, createNewFile, createNewFolder, startRenaming, deleteItems } from "./action";
-import { openInWorkspace, openInTerminal, openInImageWall } from "./action";
-import type { ReadDirAPI, CreateDirAPI, CreateFileAPI, RenameAPI, DeleteAPI } from "@/providers/fileSystemProvider";
+import type { ReadDirAPI, CreateDirAPI, CreateFileAPI } from "@/providers/fileSystemProvider";
+import { openInImageWall, openInTerminal, openInWorkspace, refresh } from "@@/fileSystem/action/navigation";
+import { createNewFile, createNewFolder } from "@@/fileSystem/action/operation";
+import { setFilter } from "@@/fileSystem/action/view";
+import { handleCopyToSystem } from "@@/fileSystem/action/clipboard";
 
 type FilterAllAPI = { id: "filterAll"; handler: () => void };
 type FilterFoldersAPI = { id: "filterFolders"; handler: () => void };
@@ -34,8 +34,6 @@ const registerMessageEvents = async () => {
   onReceiveCommand<FilterFilesAPI>("filterFiles", () => setFilter("file"));
   onReceiveCommand<CopyNameAPI>("copyNamesToSystemClipboard", () => handleCopyToSystem({ mode: "names" }));
   onReceiveCommand<CopyPathAPI>("copyPathsToSystemClipboard", () => handleCopyToSystem({ mode: "paths" }));
-  onReceiveCommand<RenameAPI>("rename", () => startRenaming());
-  onReceiveCommand<DeleteAPI>("delete", () => deleteItems());
 };
 
 export { registerMessageEvents };

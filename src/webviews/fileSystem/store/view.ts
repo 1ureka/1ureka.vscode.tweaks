@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { fileSystemDataStore } from "./data";
+import { fileSystemDataStore } from "@@/fileSystem/store/data";
 import { extensionIconMap } from "@/assets/fileExtMap";
 import type { InspectDirectoryEntry } from "@/utils/system";
 import type { Prettify } from "@/utils";
@@ -29,14 +29,12 @@ type ViewDataStore = {
   entries: FileProperties[];
   selected: (0 | 1)[];
   lastSelectedIndex: number | null;
-  renamingIndex: number | null;
 };
 
 const initialViewData: ViewDataStore = {
   entries: [],
   selected: [],
   lastSelectedIndex: null,
-  renamingIndex: null,
 };
 
 /**
@@ -135,7 +133,6 @@ const handleDataUpdate = () => {
     entries: entriesWithIcons,
     selected,
     lastSelectedIndex: null,
-    renamingIndex: null,
   });
 };
 

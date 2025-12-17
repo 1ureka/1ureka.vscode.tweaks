@@ -1,10 +1,9 @@
 import { startReactApp } from "@/utils/ui";
 
-import { registerInitData } from "@@/fileSystem/data/data";
-import { registerSelectionEvents } from "@@/fileSystem/data/selection";
-import { registerNavigateShortcuts } from "@@/fileSystem/data/navigate";
-import { registerMessageEvents } from "@@/fileSystem/data/message";
-import { registerClipboardEvents } from "@@/fileSystem/data/clipboard";
+import { registerInitDataEvents } from "@@/fileSystem/events/data";
+import { registerMessageEvents } from "@@/fileSystem/events/message";
+import { registerClipboardEvents } from "@@/fileSystem/events/clipboard";
+import { registerNavigateShortcuts, registerSelectionShortcuts } from "@@/fileSystem/events/shortcuts";
 
 import { Box } from "@mui/material";
 import { NavigationPanels } from "@@/fileSystem/layout/NavigationPanels";
@@ -32,8 +31,8 @@ const App = () => (
 startReactApp({
   App,
   beforeRender: () => {
-    registerInitData();
-    registerSelectionEvents();
+    registerInitDataEvents();
+    registerSelectionShortcuts();
     registerNavigateShortcuts();
     registerMessageEvents();
     registerClipboardEvents();
