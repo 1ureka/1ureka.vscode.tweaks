@@ -2,10 +2,12 @@ import { useRef } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { Box, ButtonBase, Typography, type SxProps } from "@mui/material";
 
+import { extensionIconMap } from "@/assets/fileExtMap";
 import { colorMix, ellipsisSx } from "@/utils/ui";
 import { formatFileSize, formatFileType, formatFixedLengthDateTime } from "@/utils/formatter";
 import { tableColumns, tableIconFontSize, tableIconWidth, tableRowHeight } from "@@/fileSystem/layout/tableConfig";
 import type { TableColumn } from "@@/fileSystem/layout/tableConfig";
+import type { InspectDirectoryEntry } from "@/utils/system";
 
 import { fileSystemViewDataStore, fileSystemViewStore } from "@@/fileSystem/store/view";
 import { fileSystemLoadingStore } from "@@/fileSystem/store/queue";
@@ -20,20 +22,11 @@ const tableAlternateBgcolor = colorMix("background.content", "text.primary", 0.9
 /**
  * ### 表格背景設計
  *
- * 1. 視覺穩定性：
+ * 1. 背景由容器繪製，而非子元素。這確保了即便資料列數較少時，斑馬紋依然能鋪滿整個視圖空間。
  *
- * 背景由容器繪製，而非子元素。這確保了即便資料列數較少時，斑馬紋依然能鋪滿整個視圖空間，
- * 避免了網頁常見的「底部斷層」感，達到類似 Blender 等專業軟體的 UI 質感。
+ * 2. 不使用 background-attachment: local 改用「預設背景 + CSS 變數同步」是為了避免 Scrollbar Gutter 區域出現空白 (沒有斑馬背景)。
  *
- * 2. 解決 Scrollbar Gutter 渲染問題：
- *
- * 不使用 background-attachment: local 是為了避免捲軸背景區域出現空白斷層 (沒有斑馬背景)。
- * 改用「預設背景 + CSS 變數同步」來達成完美的跨瀏覽器捲軸連貫性。
- *
- * 3. 開發解耦 (Decoupling)：
- *
- * Row 元件無需維護 index 或 nth-child 狀態，對於虛擬列表 (Virtual List) 或排序功能
- * 具有極佳的適配性與效能表現。
+ * 3. Row 元件無需維護 index 或 nth-child 狀態，對於虛擬列表 (Virtual List) 或排序功能具有極佳的適配性與效能表現。
  */
 const tableBodyContainerSx: SxProps = {
   flex: 1,
@@ -200,6 +193,24 @@ const createHandleContextMenu = ({ index }: { index: number }) => {
 };
 
 /**
+ * 為項目指派對應的圖示
+ */
+const assignIcon = (entry: InspectDirectoryEntry) => {
+  let icon: `codicon codicon-${string}` = `codicon codicon-${entry.fileType}`;
+
+  if (entry.fileType !== "file") return { ...entry, icon };
+
+  const fileName = entry.fileName.toLowerCase();
+  const extension = fileName.includes(".") ? fileName.split(".").pop() || "" : "";
+
+  if (extension in extensionIconMap) {
+    icon = extensionIconMap[extension];
+  }
+
+  return { ...entry, icon };
+};
+
+/**
  * 用於表格中每一列的樣式
  */
 const tableRowSx: SxProps = {
@@ -222,7 +233,7 @@ const TableRow = ({ index }: { index: number }) => {
   const selected = fileSystemViewDataStore((state) => state.selected);
   const clipboardEntries = fileSystemClipboardStore((state) => state.entries);
 
-  const row = viewEntries[index];
+  const row = assignIcon(viewEntries[index]);
   const isInClipboard = row.filePath in clipboardEntries;
   const className = selected[index] ? "selected" : undefined;
 

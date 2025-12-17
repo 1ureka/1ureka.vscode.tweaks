@@ -1,4 +1,4 @@
-import type { FileProperties } from "@/webviews/fileSystem/store/view";
+import type { InspectDirectoryEntry } from "@/utils/system";
 
 /**
  * 表格單元格的對齊方式
@@ -8,7 +8,7 @@ type TableCellAlign = "left" | "right" | "center";
 /**
  * 可用的表格欄位
  */
-type TableFields = Exclude<keyof FileProperties, "icon" | "filePath">;
+type TableFields = Exclude<keyof InspectDirectoryEntry, "icon" | "filePath">;
 
 /**
  * 表格某一個 column 的資訊定義，比如欄位名稱、對齊方式等
