@@ -378,7 +378,12 @@ const List = (props: ListProps) => {
 
       <Box ref={actionContainerRef} sx={actionContainerSx}>
         <ActionGroup orientation="horizontal" size="small">
-          <ActionInput value={filterText} onChange={handleFilterTextChange} />
+          <ActionInput
+            actionName="依名稱過濾"
+            actionDetail="僅顯示符合此名稱的項目"
+            value={filterText}
+            onChange={handleFilterTextChange}
+          />
           <ActionButton
             actionIcon="codicon codicon-arrow-both"
             actionName="反轉"
