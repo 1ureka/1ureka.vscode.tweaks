@@ -29,14 +29,12 @@ type ViewDataStore = {
   entries: FileProperties[];
   selected: (0 | 1)[];
   lastSelectedIndex: number | null;
-  renamingIndex: number | null;
 };
 
 const initialViewData: ViewDataStore = {
   entries: [],
   selected: [],
   lastSelectedIndex: null,
-  renamingIndex: null,
 };
 
 /**
@@ -135,7 +133,6 @@ const handleDataUpdate = () => {
     entries: entriesWithIcons,
     selected,
     lastSelectedIndex: null,
-    renamingIndex: null,
   });
 };
 

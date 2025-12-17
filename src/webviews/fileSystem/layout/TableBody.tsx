@@ -150,6 +150,28 @@ const TableRowBorder = () => (
 // ---------------------------------------------------------------------------------
 
 /**
+ * 根據項目路徑和名稱創建拖放開始事件處理器
+ */
+const createHandleDragStart = (params: { filePath: string; fileName: string }) => {
+  const { filePath, fileName } = params;
+
+  const handler: React.DragEventHandler<HTMLButtonElement> = (e) => {
+    const fileUrl = `file:///${filePath.replace(/\\/g, "/")}`;
+    const mimeType = "application/octet-stream";
+    const downloadURL = `${mimeType}:${fileName}:${fileUrl}`;
+
+    e.dataTransfer.setData("DownloadURL", downloadURL);
+    e.dataTransfer.setData("text/uri-list", fileUrl);
+    e.dataTransfer.setData("application/vnd.code.uri-list", JSON.stringify([fileUrl]));
+    e.dataTransfer.setData("codefiles", JSON.stringify([filePath]));
+    e.dataTransfer.setData("resourceurls", JSON.stringify([fileUrl]));
+    e.dataTransfer.effectAllowed = "copy";
+  };
+
+  return handler;
+};
+
+/**
  * 根據檔案類型和路徑創建點擊事件處理器
  */
 const createHandleClick = (params: { fileType: string; filePath: string; index: number }) => {
@@ -202,20 +224,17 @@ const TableRow = ({ index }: { index: number }) => {
 
   const row = viewEntries[index];
   const isInClipboard = row.filePath in clipboardEntries;
+  const className = selected[index] ? "selected" : undefined;
 
-  //   const isDraggable = row.fileType === "file";
-
-  //   const draggableProps: Partial<ButtonBaseProps> = isDraggable
-  //     ? { draggable: true, onDragStart: createHandleDragStart(row) }
-  //     : {};
+  const isDraggable = row.fileType === "file";
+  const draggableProps = isDraggable ? { draggable: true, onDragStart: createHandleDragStart(row) } : {};
 
   const handleClick = createHandleClick({ ...row, index });
   const handleContextMenu = createHandleContextMenu({ index });
-
   const pointerProps = { onClick: handleClick, onContextMenu: handleContextMenu };
 
   return (
-    <ButtonBase focusRipple sx={tableRowSx} className={selected[index] ? "selected" : undefined} {...pointerProps}>
+    <ButtonBase focusRipple sx={tableRowSx} className={className} {...pointerProps} {...draggableProps}>
       <Box sx={{ width: tableIconWidth, display: "flex", alignItems: "center", justifyContent: "center" }}>
         <i className={row.icon} style={{ display: "flex", alignItems: "center", fontSize: tableIconFontSize }} />
       </Box>
@@ -260,7 +279,7 @@ const TableBody = () => {
     getScrollElement: () => containerRef.current,
     count: viewEntries.length,
     estimateSize: () => tableRowHeight,
-    overscan: 10,
+    overscan: 1,
   });
 
   const virtualItemListWrapperSx: SxProps = {

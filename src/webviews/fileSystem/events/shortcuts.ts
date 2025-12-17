@@ -1,7 +1,6 @@
 import { refresh } from "@@/fileSystem/action/navigation";
 import { selectAll, selectInvert, selectNone, toggleBoxSelectionMode } from "@@/fileSystem/action/selection";
 import { fileSystemBoxSelectionStore } from "@@/fileSystem/store/other";
-import { fileSystemViewDataStore } from "@@/fileSystem/store/view";
 
 /**
  * 註冊有關導航的快捷鍵
@@ -35,9 +34,6 @@ const registerSelectionShortcuts = () => {
   window.addEventListener(
     "keydown",
     (e) => {
-      // 如果正在重新命名，則不處理選取快捷鍵，避免干擾
-      if (fileSystemViewDataStore.getState().renamingIndex !== null) return;
-
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "a") {
         e.preventDefault();
         e.stopPropagation();
