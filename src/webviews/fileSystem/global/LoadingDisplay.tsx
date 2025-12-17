@@ -1,6 +1,5 @@
-import React from "react";
+import { fileSystemLoadingStore } from "@@/fileSystem/store/queue";
 import { Box, LinearProgress } from "@mui/material";
-import { fileSystemLoadingStore } from "@/webviews/fileSystem/data/queue";
 
 const loadingContainerSx = {
   position: "absolute",

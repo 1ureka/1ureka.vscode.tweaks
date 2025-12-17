@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { fileSystemDataStore } from "./data";
+import { fileSystemDataStore } from "@@/fileSystem/store/data";
 import { extensionIconMap } from "@/assets/fileExtMap";
 import type { InspectDirectoryEntry } from "@/utils/system";
 import type { Prettify } from "@/utils";

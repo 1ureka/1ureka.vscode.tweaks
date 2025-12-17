@@ -4,14 +4,16 @@ import { Box, ButtonBase, Typography, type SxProps } from "@mui/material";
 
 import { colorMix, ellipsisSx } from "@/utils/ui";
 import { formatFileSize, formatFileType, formatFixedLengthDateTime } from "@/utils/formatter";
-import { fileSystemViewDataStore, fileSystemViewStore } from "@@/fileSystem/data/view";
 import { tableColumns, tableIconFontSize, tableIconWidth, tableRowHeight } from "@@/fileSystem/layout/tableConfig";
 import type { TableColumn } from "@@/fileSystem/layout/tableConfig";
-import { selectRow } from "@@/fileSystem/data/selection";
-import { navigateToFolder } from "@@/fileSystem/data/navigate";
-import { openFile } from "@@/fileSystem/data/action";
-import { useIsInClipboard } from "@@/fileSystem/data/clipboard";
-import { fileSystemLoadingStore } from "@@/fileSystem/data/queue";
+
+import { fileSystemViewDataStore, fileSystemViewStore } from "@@/fileSystem/store/view";
+import { fileSystemLoadingStore } from "@@/fileSystem/store/queue";
+import { fileSystemClipboardStore } from "@@/fileSystem/store/other";
+
+import { navigateToFolder } from "@@/fileSystem/action/navigation";
+import { selectRow } from "@@/fileSystem/action/selection";
+import { openFile } from "@@/fileSystem/action/operation";
 
 const tableAlternateBgcolor = colorMix("background.content", "text.primary", 0.98);
 
@@ -196,9 +198,11 @@ const tableRowSx: SxProps = {
 const TableRow = ({ index }: { index: number }) => {
   const viewEntries = fileSystemViewDataStore((state) => state.entries);
   const selected = fileSystemViewDataStore((state) => state.selected);
+  const clipboardEntries = fileSystemClipboardStore((state) => state.entries);
 
   const row = viewEntries[index];
-  const isInClipboard = useIsInClipboard(row.filePath);
+  const isInClipboard = row.filePath in clipboardEntries;
+
   //   const isDraggable = row.fileType === "file";
 
   //   const draggableProps: Partial<ButtonBaseProps> = isDraggable
@@ -256,7 +260,7 @@ const TableBody = () => {
     getScrollElement: () => containerRef.current,
     count: viewEntries.length,
     estimateSize: () => tableRowHeight,
-    overscan: 1,
+    overscan: 10,
   });
 
   const virtualItemListWrapperSx: SxProps = {

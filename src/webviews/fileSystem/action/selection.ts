@@ -1,21 +1,9 @@
-import { create } from "zustand";
-import { fileSystemViewDataStore } from "./view";
-
-const fileSystemBoxSelectionStore = create<{ isBoxSelecting: boolean }>(() => ({ isBoxSelecting: false }));
+import { fileSystemBoxSelectionStore } from "@@/fileSystem/store/other";
+import { fileSystemViewDataStore } from "@@/fileSystem/store/view";
 
 /** 開關框選模式 */
 const toggleBoxSelectionMode = (forceMode?: boolean) => {
   fileSystemBoxSelectionStore.setState((state) => ({ isBoxSelecting: forceMode ?? !state.isBoxSelecting }));
-};
-
-/** 取得是否處於框選模式的 hook */
-const useIsBoxSelecting = () => {
-  return fileSystemBoxSelectionStore((state) => state.isBoxSelecting);
-};
-
-/** 取得是否處於框選模式的普通函式 */
-const getIsBoxSelecting = () => {
-  return fileSystemBoxSelectionStore.getState().isBoxSelecting;
 };
 
 /** 選取某個項目 */
@@ -89,43 +77,4 @@ const selectInvert = () => {
   });
 };
 
-/** 在全局註冊有關選取的事件 */
-const registerSelectionEvents = () => {
-  window.addEventListener(
-    "keydown",
-    (e) => {
-      // 如果正在重新命名，則不處理選取快捷鍵，避免干擾
-      if (fileSystemViewDataStore.getState().renamingIndex !== null) return;
-
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "a") {
-        e.preventDefault();
-        e.stopPropagation();
-        if (e.shiftKey) selectNone();
-        else selectAll();
-      }
-
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "i") {
-        e.preventDefault();
-        selectInvert();
-      }
-
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "b") {
-        e.preventDefault();
-        e.stopPropagation();
-        toggleBoxSelectionMode();
-      }
-
-      const { isBoxSelecting } = fileSystemBoxSelectionStore.getState();
-
-      if (e.key === "Escape" && isBoxSelecting) {
-        e.preventDefault();
-        e.stopPropagation();
-        toggleBoxSelectionMode(false);
-      }
-    },
-    true
-  );
-};
-
-export { toggleBoxSelectionMode, useIsBoxSelecting, getIsBoxSelecting };
-export { selectRow, selectNone, selectAll, selectInvert, registerSelectionEvents };
+export { toggleBoxSelectionMode, selectRow, selectNone, selectAll, selectInvert };
