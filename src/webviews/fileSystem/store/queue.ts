@@ -46,12 +46,12 @@ function createRequestQueue(onLoadingChange: (loading: boolean) => void) {
   return { add };
 }
 
-const fileSystemLoadingStore = create<{ loading: boolean }>(() => ({
+const loadingStore = create<{ loading: boolean }>(() => ({
   loading: true,
 }));
 
 const requestQueue = createRequestQueue((loading) => {
-  fileSystemLoadingStore.setState({ loading });
+  loadingStore.setState({ loading });
 });
 
-export { requestQueue, fileSystemLoadingStore };
+export { requestQueue, loadingStore };

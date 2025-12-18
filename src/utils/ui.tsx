@@ -98,6 +98,9 @@ const theme = createTheme({
           background: getVarValue("editorHoverWidget-background"),
           border: getVarValue("editorHoverWidget-border"),
         },
+        info: {
+          main: getVarValue("editor-selectionBackground"),
+        },
         divider: getVarValue("panel-border"),
       },
     },

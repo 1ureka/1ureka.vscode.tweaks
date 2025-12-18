@@ -1,5 +1,6 @@
 import { Box } from "@mui/material";
 import { ActionButton, ActionDropdown, ActionGroup, ActionInput } from "@@/fileSystem/components/Action";
+import { navigateUp, refresh } from "@@/fileSystem/action/navigation";
 
 const NavigationBar = () => {
   return (
@@ -22,12 +23,14 @@ const NavigationBar = () => {
           actionName="上層"
           actionDetail="移動到親代資料夾"
           actionShortcut={["Alt", "Up Arrow"]}
+          onClick={navigateUp}
         />
         <ActionButton
           actionIcon="codicon codicon-sync"
           actionName="重新整理"
           actionDetail="上次更新: 5 分鐘前"
           actionShortcut={["Crtl", "R"]}
+          onClick={refresh}
         />
       </ActionGroup>
 
@@ -40,11 +43,16 @@ const NavigationBar = () => {
       </ActionGroup>
 
       <ActionGroup>
-        <ActionInput />
+        <ActionInput actionName="目錄" actionDetail="目前所在的路徑" />
       </ActionGroup>
 
       <ActionGroup>
-        <ActionInput icon="codicon codicon-search" placeholder="搜尋" />
+        <ActionInput
+          actionName="搜尋"
+          actionDetail="模糊搜尋檔案或資料夾名稱"
+          actionIcon="codicon codicon-search"
+          placeholder="搜尋"
+        />
       </ActionGroup>
 
       <ActionGroup>

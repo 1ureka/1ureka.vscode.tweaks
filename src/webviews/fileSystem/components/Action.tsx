@@ -132,7 +132,10 @@ const actionInputSx: SxProps = {
 };
 
 type ActionInputProps = {
-  icon?: `codicon codicon-${string}`;
+  actionIcon?: `codicon codicon-${string}`;
+  actionName: string;
+  actionDetail?: string;
+  actionShortcut?: string[];
   placeholder?: string;
   value?: string;
   onChange?: (value: string) => void;
@@ -140,16 +143,20 @@ type ActionInputProps = {
 
 /**
  * 輸入框元件，單獨使用仍需要包在 ActionGroup 中
+ * TODO: 自動註冊快捷鍵與 onFocus 的關聯
  */
-const ActionInput = ({ icon, placeholder, value, onChange }: ActionInputProps) => {
+const ActionInput = (props: ActionInputProps) => {
+  const { actionIcon, actionName, actionDetail, actionShortcut, placeholder, value, onChange } = props;
   return (
-    <InputBase
-      startAdornment={icon ? <i className={icon} style={{ display: "block" }} /> : undefined}
-      placeholder={placeholder}
-      value={value}
-      onChange={(e) => onChange?.(e.target.value)}
-      sx={actionInputSx}
-    />
+    <Tooltip actionName={actionName} actionDetail={actionDetail} actionShortcut={actionShortcut}>
+      <InputBase
+        startAdornment={actionIcon ? <i className={actionIcon} style={{ display: "block" }} /> : undefined}
+        placeholder={placeholder}
+        value={value}
+        onChange={(e) => onChange?.(e.target.value)}
+        sx={actionInputSx}
+      />
+    </Tooltip>
   );
 };
 

@@ -1,13 +1,10 @@
-import { ellipsisSx } from "@/utils/ui";
+import { memo } from "react";
 import { Box, SxProps, Typography } from "@mui/material";
+import { ellipsisSx } from "@/utils/ui";
+
 import { viewStateStore } from "@@/fileSystem/store/data";
 import { setSorting } from "@@/fileSystem/action/view";
 import { type TableColumn, tableColumns, tableHeadHeight, tableIconWidth } from "@@/fileSystem/layout/tableConfig";
-
-/**
- * 表格標題列單元格的 props 型別
- */
-type TableHeadCellProps = { column: TableColumn; sortOrder: "asc" | "desc"; active: boolean; onClick: () => void };
 
 /**
  * 用於表格標題列的單元格樣式變體
@@ -68,20 +65,23 @@ const tableCellLableSx: SxProps = {
 /**
  * 用於表格標題列的單元格
  */
-const TableHeadCell = ({ column, sortOrder, active, onClick }: TableHeadCellProps) => {
-  const { label, align, weight, width, sortable } = column;
+const TableHeadCell = ({ column }: { column: TableColumn }) => {
+  const { field, label, align, weight, width, sortable } = column;
+  const sortField = viewStateStore((state) => state.sortField);
+  const sortOrder = viewStateStore((state) => state.sortOrder);
 
   const layoutStyle: React.CSSProperties = width ? { width } : { flex: weight };
+  const handleClick = field !== "fileType" ? () => setSorting(field) : undefined;
 
   let state: TableHeadCellVariant;
   if (!sortable) {
     state = "disabled";
   } else {
-    state = active ? "active" : "default";
+    state = sortField === field ? "active" : "default";
   }
 
   return (
-    <Box className={`table-head-cell ${state} align-${align}`} sx={tableCellSx} style={layoutStyle} onClick={onClick}>
+    <Box className={`${state} align-${align}`} sx={tableCellSx} style={layoutStyle} onClick={handleClick}>
       <Typography className={state} variant="caption" sx={tableCellLableSx}>
         {label}
       </Typography>
@@ -112,28 +112,13 @@ const tableHeadSx: SxProps = {
 /**
  * 用於系統瀏覽器的表格標題列元件
  */
-const TableHead = () => {
-  const sortField = viewStateStore((state) => state.sortField);
-  const sortOrder = viewStateStore((state) => state.sortOrder);
-
-  return (
-    <Box sx={tableHeadSx}>
-      <Box sx={{ width: tableIconWidth }} />
-
-      {tableColumns.map((column) => {
-        const { field } = column;
-        return (
-          <TableHeadCell
-            key={field}
-            column={column}
-            active={field === sortField}
-            sortOrder={sortOrder}
-            onClick={() => field !== "fileType" && setSorting(field)}
-          />
-        );
-      })}
-    </Box>
-  );
-};
+const TableHead = memo(() => (
+  <Box sx={tableHeadSx}>
+    <Box sx={{ width: tableIconWidth }} />
+    {tableColumns.map((column) => (
+      <TableHeadCell key={column.field} column={column} />
+    ))}
+  </Box>
+));
 
 export { TableHead };
