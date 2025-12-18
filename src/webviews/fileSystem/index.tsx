@@ -7,11 +7,12 @@ import { registerNavigateShortcuts, registerSelectionShortcuts } from "@@/fileSy
 import { setupDependencyChain } from "@@/fileSystem/store/dependency";
 
 import { Box } from "@mui/material";
+import { LoadingDisplay } from "@@/fileSystem/layout/LoadingDisplay";
 import { NavigationPanels } from "@@/fileSystem/layout/NavigationPanels";
 import { NavigationBar } from "@@/fileSystem/layout/NavigationBar";
 import { TableHead } from "@@/fileSystem/layout/TableHead";
 import { TableBody } from "@@/fileSystem/layout/TableBody";
-import { LoadingDisplay } from "@@/fileSystem/layout/LoadingDisplay";
+import { ActionBar } from "@@/fileSystem/layout/ActionBar";
 
 const Container = ({ children }: { children: React.ReactNode }) => (
   <Box sx={{ position: "relative", height: "100dvh", width: "100dvw", overflow: "hidden", overflowX: "auto" }}>
@@ -27,6 +28,7 @@ const App = () => (
       <NavigationBar />
       <TableHead />
       <TableBody />
+      <ActionBar />
     </Box>
   </Container>
 );
