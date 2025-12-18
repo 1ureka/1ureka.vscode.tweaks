@@ -1,17 +1,14 @@
-import { memo, useEffect } from "react";
+import { memo } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { Box, Typography, type SxProps } from "@mui/material";
 
 import { colorMix } from "@/utils/ui";
 import { tableRowHeight } from "@@/fileSystem/layout/tableConfig";
-import { TableRow, tableRowClassName, tableRowIndexAttr } from "@@/fileSystem/layout/TableRow";
+import { TableRow } from "@@/fileSystem/layout/TableRow";
 
+import { loadingStore } from "@@/fileSystem/store/queue";
 import { viewDataStore, viewStateStore } from "@@/fileSystem/store/data";
-import { fileSystemLoadingStore } from "@@/fileSystem/store/queue";
-
-import { navigateToFolder } from "@@/fileSystem/action/navigation";
-import { selectRow } from "@@/fileSystem/action/selection";
-import { openFile, startFileDrag } from "@@/fileSystem/action/operation";
+import { useTableBodyEventHandlers } from "@@/fileSystem/action/table";
 
 /**
  * 用於標識表格主體容器的唯一 ID，補充 1. 已經保證每次只會有一個存在 2. 這是寫在模組層，因此不會有重渲染導致 ID 變化的問題
@@ -71,7 +68,7 @@ const TableBodyContainer = ({ children }: { children: React.ReactNode }) => {
  * 用於在沒有任何項目時顯示訊息
  */
 const NoItemDisplay = () => {
-  const loading = fileSystemLoadingStore((state) => state.loading);
+  const loading = loadingStore((state) => state.loading);
   const filter = viewStateStore((state) => state.filter);
 
   let noItemMessage = "此資料夾是空的";
@@ -119,7 +116,7 @@ const virtualItemWrapperSx: SxProps = {
  */
 const TableBodyVirtualRows = () => {
   const viewEntries = viewDataStore((state) => state.entries);
-  const loading = fileSystemLoadingStore((state) => state.loading);
+  const loading = loadingStore((state) => state.loading);
 
   const rowVirtualizer = useVirtualizer({
     getScrollElement: () => document.getElementById(tableBodyContainerId),
@@ -153,85 +150,10 @@ const TableBodyVirtualRows = () => {
 // ---------------------------------------------------------------------------------
 
 /**
- * 根據點擊事件獲取對應的資料列索引
- */
-const getIndexFromEvent = (e: Event) => {
-  const target = e.target as HTMLElement;
-
-  const indexStr = target.closest(`.${tableRowClassName}`)?.getAttribute(tableRowIndexAttr);
-  if (indexStr === undefined) return null;
-
-  const index = Number(indexStr);
-  if (isNaN(index)) return null;
-
-  return index;
-};
-
-/**
- * 處理開始拖動某一資料列的事件
- */
-const handleDragStart = (e: DragEvent) => {
-  const index = getIndexFromEvent(e);
-  if (index === null) return;
-
-  const row = viewDataStore.getState().entries[index];
-  if (!row) return;
-
-  startFileDrag({ e, ...row });
-};
-
-/**
- * 處理點擊某一資料列的事件
- */
-const handleClick = (e: MouseEvent) => {
-  const index = getIndexFromEvent(e);
-  if (index === null) return;
-
-  const row = viewDataStore.getState().entries[index];
-  if (!row) return;
-
-  selectRow({ index, isAdditive: e.ctrlKey || e.metaKey, isRange: e.shiftKey });
-
-  if (e.detail !== 2) return;
-
-  const { fileType, filePath } = row;
-
-  if (fileType === "folder" || fileType === "file-symlink-directory") {
-    navigateToFolder({ dirPath: filePath });
-  } else if (fileType === "file" || fileType === "file-symlink-file") {
-    openFile(filePath);
-  }
-};
-
-/**
- * 處理右鍵點擊某一資料列的事件
- */
-const handleContextMenu = (e: MouseEvent) => {
-  const index = getIndexFromEvent(e);
-  if (index === null) return;
-
-  // 該設置是為了方便在右鍵選單中透過強制選取該列，來重新命名、刪除等操作
-  selectRow({ index, isAdditive: true, isRange: false, forceSelect: true });
-};
-
-/**
- * ?
+ * 表格主體組件
  */
 const TableBody = memo(() => {
-  useEffect(() => {
-    const container = document.getElementById(tableBodyContainerId);
-    if (!container) return;
-
-    container.addEventListener("click", handleClick);
-    container.addEventListener("contextmenu", handleContextMenu);
-    container.addEventListener("dragstart", handleDragStart);
-
-    return () => {
-      container.removeEventListener("click", handleClick);
-      container.removeEventListener("contextmenu", handleContextMenu);
-      container.removeEventListener("dragstart", handleDragStart);
-    };
-  }, []);
+  useTableBodyEventHandlers();
 
   return (
     <TableBodyContainer>
@@ -240,4 +162,4 @@ const TableBody = memo(() => {
   );
 });
 
-export { TableBody };
+export { TableBody, tableBodyContainerId };

@@ -1,4 +1,4 @@
-import { fileSystemLoadingStore } from "@@/fileSystem/store/queue";
+import { loadingStore } from "@@/fileSystem/store/queue";
 import { Box, LinearProgress } from "@mui/material";
 
 const loadingContainerSx = {
@@ -16,7 +16,7 @@ const loadingContainerSx = {
 };
 
 const LoadingDisplay = () => {
-  const loading = fileSystemLoadingStore((state) => state.loading);
+  const loading = loadingStore((state) => state.loading);
 
   if (!loading) return null;
 
