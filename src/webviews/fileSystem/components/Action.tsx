@@ -137,6 +137,7 @@ type ActionInputProps = {
   actionDetail?: string;
   actionShortcut?: string[];
   placeholder?: string;
+  readOnly?: boolean;
   value?: string;
   onChange?: (value: string) => void;
 };
@@ -146,7 +147,7 @@ type ActionInputProps = {
  * TODO: 自動註冊快捷鍵與 onFocus 的關聯
  */
 const ActionInput = (props: ActionInputProps) => {
-  const { actionIcon, actionName, actionDetail, actionShortcut, placeholder, value, onChange } = props;
+  const { actionIcon, actionName, actionDetail, actionShortcut, placeholder, value, onChange, readOnly } = props;
   return (
     <Tooltip actionName={actionName} actionDetail={actionDetail} actionShortcut={actionShortcut}>
       <InputBase
@@ -155,6 +156,7 @@ const ActionInput = (props: ActionInputProps) => {
         value={value}
         onChange={(e) => onChange?.(e.target.value)}
         sx={actionInputSx}
+        readOnly={readOnly}
       />
     </Tooltip>
   );

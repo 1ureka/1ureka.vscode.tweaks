@@ -7,6 +7,7 @@ import { navigateToFolder } from "@@/fileSystem/action/navigation";
 import { openFile, startFileDrag } from "@@/fileSystem/action/operation";
 import { selectRow } from "@@/fileSystem/action/selection";
 import { selectionStore, viewDataStore } from "@@/fileSystem/store/data";
+import { clamp } from "@/utils";
 
 /**
  * 根據事件獲取對應的資料列索引
@@ -64,27 +65,34 @@ function handleAutoScroll(clientY: number, scrollContainer: HTMLElement) {
 /**
  * 獲取當前選擇狀態後，根據框選區域計算新的選擇狀態，並觸發狀態更新
  */
-function createHandleCalculateSelection({ rowsContainer, clientY }: { rowsContainer: HTMLElement; clientY: number }) {
+function createHandleCalculateSelection({ rowsContainer, startY }: { rowsContainer: HTMLElement; startY: number }) {
   const relativeToRowsTop = (currentY: number) => currentY - rowsContainer.getBoundingClientRect().top;
-  const normalizedStartY = relativeToRowsTop(clientY);
+  const normalizedStartY = relativeToRowsTop(startY);
 
   return (currentY: number) => {
     const normalizedCurrentY = relativeToRowsTop(currentY);
     const newSelected = [...selectionStore.getState().selected];
 
-    for (let index = 0; index < newSelected.length; index++) {
-      // 計算當前行的 Y 座標範圍
-      const rowTop = index * tableRowHeight;
-      const rowBottom = rowTop + tableRowHeight;
-      // 判斷是否與框選區域相交
-      const boxTop = Math.min(normalizedStartY, normalizedCurrentY);
-      const boxBottom = Math.max(normalizedStartY, normalizedCurrentY);
-      const intersects = !(boxBottom < rowTop || boxTop > rowBottom);
+    if (newSelected.length === 0) return;
 
-      newSelected[index] = intersects ? 1 : 0;
+    const unit = tableRowHeight;
+    const boxTop = Math.min(normalizedStartY, normalizedCurrentY);
+    const boxBottom = Math.max(normalizedStartY, normalizedCurrentY);
+
+    const startIndex = Math.floor(boxTop / unit);
+    const endIndex = Math.ceil(boxBottom / unit);
+
+    const boundedStartIndex = clamp({ value: startIndex, interval: [0, newSelected.length] });
+    const boundedEndIndex = clamp({ value: endIndex, interval: [0, newSelected.length] });
+
+    for (let index = 0; index < newSelected.length; index++) {
+      newSelected[index] = index >= boundedStartIndex && index < boundedEndIndex ? 1 : 0;
     }
 
-    selectionStore.setState({ selected: newSelected });
+    const targetIndex = currentY > startY ? endIndex - 1 : startIndex;
+    const lastSelectedIndex = clamp({ value: targetIndex, interval: [0, newSelected.length - 1] });
+
+    selectionStore.setState({ selected: newSelected, lastSelectedIndex });
   };
 }
 
@@ -178,7 +186,7 @@ const handleDragStart = (e: DragEvent) => {
 
     const handleCalculateSelection = createHandleCalculateSelection({
       rowsContainer: boxContainer,
-      clientY: e.clientY,
+      startY: e.clientY,
     });
     const { handleDrawStart, handleDraw, handleDrawEnd } = createHandleDrawBox({
       boxContainer,

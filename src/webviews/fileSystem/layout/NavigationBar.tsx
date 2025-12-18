@@ -1,10 +1,12 @@
-import { Box } from "@mui/material";
-import { ActionButton, ActionDropdown, ActionGroup, ActionInput } from "@@/fileSystem/components/Action";
-import { navigateUp, refresh } from "@@/fileSystem/action/navigation";
-import { dataStore } from "@@/fileSystem/store/data";
-import { formatRelativeTime } from "@/utils/formatter";
 import { useEffect, useState } from "react";
+import { ActionButton, ActionDropdown, ActionGroup, ActionInput } from "@@/fileSystem/components/Action";
+import { Box } from "@mui/material";
+import { formatRelativeTime } from "@/utils/formatter";
 import { setSchedule } from "@/utils";
+
+import { dataStore } from "@@/fileSystem/store/data";
+import { navigateUp, refresh } from "@@/fileSystem/action/navigation";
+import { createNewFolder } from "@@/fileSystem/action/operation";
 
 const ActionButtonRefresh = () => {
   const timestamp = dataStore((state) => state.timestamp);
@@ -70,6 +72,7 @@ const NavigationBar = () => {
           actionIcon="codicon codicon-new-folder"
           actionName="建立資料夾"
           actionDetail="建立一個新的資料夾"
+          onClick={createNewFolder}
         />
       </ActionGroup>
 
