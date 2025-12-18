@@ -84,11 +84,25 @@ const tableRowCellSx: SxProps = {
 /**
  * 用於表格某 row 中的單元格
  */
-const TableCell = (props: { text: string; variant: "primary" | "secondary"; column: TableColumn }) => {
-  const { text, variant } = props;
-  const { align, weight, width } = props.column;
+const TableCell = ({ column, row }: { column: TableColumn; row: InspectDirectoryEntry }) => {
+  const { fileName, fileType, ctime, mtime, size } = row;
+  const { field, align, weight, width } = column;
 
+  const variant = field === "fileName" ? "primary" : "secondary";
   const layoutStyle: React.CSSProperties = width ? { width } : { flex: weight };
+
+  let text: string;
+  if (field === "fileType") {
+    text = formatFileType({ fileName, fileType });
+  } else if (field === "ctime") {
+    text = formatFixedLengthDateTime(new Date(ctime));
+  } else if (field === "mtime") {
+    text = formatFixedLengthDateTime(new Date(mtime));
+  } else if (field === "size") {
+    text = fileType === "file" ? formatFileSize(size) : "";
+  } else {
+    text = String(row[field]);
+  }
 
   return (
     <Box style={layoutStyle} sx={tableRowCellSx} className={`align-${align}`}>
@@ -138,16 +152,14 @@ const TableRowBorder = memo(() => (
 const assignIcon = (entry: InspectDirectoryEntry) => {
   let icon: `codicon codicon-${string}` = `codicon codicon-${entry.fileType}`;
 
-  if (entry.fileType !== "file") return { ...entry, icon };
+  if (entry.fileType !== "file") return icon;
 
   const fileName = entry.fileName.toLowerCase();
   const extension = fileName.includes(".") ? fileName.split(".").pop() || "" : "";
 
-  if (extension in extensionIconMap) {
-    icon = extensionIconMap[extension];
-  }
+  if (extension in extensionIconMap) icon = extensionIconMap[extension];
 
-  return { ...entry, icon };
+  return icon;
 };
 
 /**
@@ -173,7 +185,7 @@ const TableRow = memo(({ index }: { index: number }) => {
   const selected = selectionStore((state) => state.selected);
   const clipboardEntries = clipboardStore((state) => state.entries);
 
-  const row = assignIcon(viewEntries[index]);
+  const row = viewEntries[index];
 
   const isInClipboard = row.filePath in clipboardEntries;
   const className = selected[index] ? `selected table-row` : `table-row`;
@@ -182,28 +194,12 @@ const TableRow = memo(({ index }: { index: number }) => {
   return (
     <ButtonBase focusRipple sx={tableRowSx} className={className} data-index={index} draggable={draggable}>
       <Box sx={{ width: tableIconWidth, display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <i className={row.icon} style={{ display: "flex", alignItems: "center", fontSize: tableIconFontSize }} />
+        <i className={assignIcon(row)} style={{ display: "flex", alignItems: "center", fontSize: tableIconFontSize }} />
       </Box>
 
-      {tableColumns.map((column) => {
-        const { field } = column;
-        const textVariant = field === "fileName" ? "primary" : "secondary";
-        let formatted: string;
-
-        if (field === "fileType") {
-          formatted = formatFileType({ fileName: row.fileName, fileType: row.fileType });
-        } else if (field === "ctime") {
-          formatted = formatFixedLengthDateTime(new Date(row.ctime));
-        } else if (field === "mtime") {
-          formatted = formatFixedLengthDateTime(new Date(row.mtime));
-        } else if (field === "size") {
-          formatted = row.fileType === "file" ? formatFileSize(row.size) : "";
-        } else {
-          formatted = String(row[field]);
-        }
-
-        return <TableCell key={field} variant={textVariant} text={formatted} column={column} />;
-      })}
+      {tableColumns.map((column) => (
+        <TableCell key={column.field} column={column} row={row} />
+      ))}
 
       {isInClipboard && <TableRowBorder />}
     </ButtonBase>
