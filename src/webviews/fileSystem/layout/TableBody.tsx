@@ -14,7 +14,7 @@ import { fileSystemLoadingStore } from "@@/fileSystem/store/queue";
 
 import { navigateToFolder } from "@@/fileSystem/action/navigation";
 import { selectRow } from "@@/fileSystem/action/selection";
-import { openFile } from "@@/fileSystem/action/operation";
+import { openFile, startFileDrag } from "@@/fileSystem/action/operation";
 
 const tableBodyContainerId = "table-body" + crypto.randomUUID().slice(0, 8);
 
@@ -293,26 +293,13 @@ const getIndexFromEvent = (e: Event) => {
  * 處理開始拖動某一資料列的事件
  */
 const handleDragStart = (e: DragEvent) => {
-  if (!e.dataTransfer) return;
-
   const index = getIndexFromEvent(e);
   if (index === null) return;
 
   const row = viewDataStore.getState().entries[index];
   if (!row) return;
 
-  const { filePath, fileName } = row;
-
-  const fileUrl = `file:///${filePath.replace(/\\/g, "/")}`;
-  const mimeType = "application/octet-stream";
-  const downloadURL = `${mimeType}:${fileName}:${fileUrl}`;
-
-  e.dataTransfer.setData("DownloadURL", downloadURL);
-  e.dataTransfer.setData("text/uri-list", fileUrl);
-  e.dataTransfer.setData("application/vnd.code.uri-list", JSON.stringify([fileUrl]));
-  e.dataTransfer.setData("codefiles", JSON.stringify([filePath]));
-  e.dataTransfer.setData("resourceurls", JSON.stringify([fileUrl]));
-  e.dataTransfer.effectAllowed = "copy";
+  startFileDrag({ e, ...row });
 };
 
 /**
