@@ -16,6 +16,11 @@ import { useTableBodyEventHandlers } from "@@/fileSystem/action/table";
 const tableBodyContainerId = "table-body" + crypto.randomUUID().slice(0, 8);
 
 /**
+ * 用於標示表格主體中，用於包裹虛擬化列表的容器的唯一 ID
+ */
+const tableBodyVirtualListContainerId = "table-body-virtual-list" + crypto.randomUUID().slice(0, 8);
+
+/**
  * 表格交替背景色
  */
 const tableAlternateBgcolor = colorMix("background.content", "text.primary", 0.98);
@@ -131,7 +136,7 @@ const TableBodyVirtualRows = () => {
   };
 
   return (
-    <Box sx={virtualItemListWrapperSx} style={virtualItemListWrapperStyle}>
+    <Box id={tableBodyVirtualListContainerId} sx={virtualItemListWrapperSx} style={virtualItemListWrapperStyle}>
       {viewEntries.length === 0 && (
         <Box sx={virtualItemWrapperSx} style={{ height: `${tableRowHeight}px`, transform: `translateY(0px)` }}>
           <NoItemDisplay />
@@ -162,4 +167,4 @@ const TableBody = memo(() => {
   );
 });
 
-export { TableBody, tableBodyContainerId };
+export { TableBody, tableBodyContainerId, tableBodyVirtualListContainerId };

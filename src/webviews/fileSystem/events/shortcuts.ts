@@ -16,7 +16,7 @@ const registerNavigateShortcuts = () => {
         refresh();
       }
 
-      // Crtl + G 或 Cmd + G：前往指定目錄
+      // Ctrl + G 或 Cmd + G：前往指定目錄
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "g") {
         e.preventDefault();
         e.stopPropagation();

@@ -1,8 +1,45 @@
 import { Box } from "@mui/material";
 import { ActionButton, ActionDropdown, ActionGroup, ActionInput } from "@@/fileSystem/components/Action";
 import { navigateUp, refresh } from "@@/fileSystem/action/navigation";
+import { dataStore } from "@@/fileSystem/store/data";
+import { formatRelativeTime } from "@/utils/formatter";
+import { useEffect, useState } from "react";
+import { setSchedule } from "@/utils";
+
+const ActionButtonRefresh = () => {
+  const timestamp = dataStore((state) => state.timestamp);
+  const [lastUpdate, setLastUpdate] = useState(formatRelativeTime(new Date(timestamp)));
+
+  useEffect(() => {
+    setLastUpdate(formatRelativeTime(new Date(timestamp)));
+
+    const dispose = setSchedule({
+      configs: [
+        { timeout: 1000, count: 60 }, // 每秒更新，持續 1 分鐘
+        { timeout: 60000, count: Infinity }, // 接著每分鐘更新
+      ],
+      task: () => {
+        setLastUpdate(formatRelativeTime(new Date(timestamp)));
+      },
+    });
+
+    return () => dispose();
+  }, [timestamp]);
+
+  return (
+    <ActionButton
+      actionIcon="codicon codicon-sync"
+      actionName="重新整理"
+      actionDetail={`上次更新: ${lastUpdate}`}
+      actionShortcut={["Ctrl", "R"]}
+      onClick={refresh}
+    />
+  );
+};
 
 const NavigationBar = () => {
+  const currentPath = dataStore((state) => state.currentPath);
+
   return (
     <Box sx={{ display: "grid", gridTemplateColumns: "auto auto 2fr 1fr auto auto", gap: 1, pb: 1 }}>
       <ActionGroup>
@@ -25,13 +62,7 @@ const NavigationBar = () => {
           actionShortcut={["Alt", "Up Arrow"]}
           onClick={navigateUp}
         />
-        <ActionButton
-          actionIcon="codicon codicon-sync"
-          actionName="重新整理"
-          actionDetail="上次更新: 5 分鐘前"
-          actionShortcut={["Crtl", "R"]}
-          onClick={refresh}
-        />
+        <ActionButtonRefresh />
       </ActionGroup>
 
       <ActionGroup>
@@ -43,7 +74,7 @@ const NavigationBar = () => {
       </ActionGroup>
 
       <ActionGroup>
-        <ActionInput actionName="目錄" actionDetail="目前所在的路徑" />
+        <ActionInput actionName="目錄" actionDetail="目前所在的路徑" value={currentPath} />
       </ActionGroup>
 
       <ActionGroup>
