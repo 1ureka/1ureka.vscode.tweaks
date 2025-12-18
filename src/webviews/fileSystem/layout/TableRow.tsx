@@ -137,24 +137,21 @@ const tableRowSx: SxProps = {
  * 用於呈現一個普通的資料列
  */
 const TableRow = memo(({ index }: { index: number }) => {
+  const indexDataProp = { [tableRowIndexAttr]: index };
   const viewEntries = viewDataStore((state) => state.entries);
-  const selected = selectionStore((state) => state.selected);
-  const clipboardEntries = clipboardStore((state) => state.entries);
-
   const row = viewEntries[index];
 
+  const clipboardEntries = clipboardStore((state) => state.entries);
   const isInClipboard = row.filePath in clipboardEntries;
-  const draggable = row.fileType === "file";
 
   let className = tableRowClassName;
+  const selected = selectionStore((state) => state.selected);
   if (selected[index]) {
     className += " selected";
   }
 
-  const indexDataProp = { [tableRowIndexAttr]: index };
-
   return (
-    <ButtonBase sx={tableRowSx} className={className} {...indexDataProp} draggable={draggable}>
+    <ButtonBase sx={tableRowSx} className={className} {...indexDataProp} draggable>
       <Box sx={{ width: tableIconWidth, display: "flex", alignItems: "center", justifyContent: "center" }}>
         <i className={assignIcon(row)} style={{ display: "flex", alignItems: "center", fontSize: tableIconFontSize }} />
       </Box>
