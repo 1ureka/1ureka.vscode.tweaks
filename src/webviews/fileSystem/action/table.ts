@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { tableRowClassName, tableRowIndexAttr } from "@@/fileSystem/layout/TableRow";
 import { tableBodyContainerId, tableBodyVirtualListContainerId } from "@@/fileSystem/layout/TableBody";
+import { tableRowHeight } from "@@/fileSystem/layout/tableConfig";
 
 import { navigateToFolder } from "@@/fileSystem/action/navigation";
 import { openFile, startFileDrag } from "@@/fileSystem/action/operation";
@@ -21,6 +22,71 @@ const getIndexFromEvent = (e: Event) => {
 
   return index;
 };
+
+/**
+ * 根據滑鼠位置自動滾動容器
+ * @param scrollContainer 要滾動的目標容器
+ */
+function handleAutoScroll(clientY: number, scrollContainer: HTMLElement) {
+  const scrollThreshold = 100; // 距離邊緣多少像素開始滾動
+  const maxScrollSpeed = 30; // 最大滾動速度 (像素/幀)
+  const accelerationPower = 2; // 加速曲線的次方數 (P > 1 產生加速效果)
+
+  // 作為邊界的定義，比如若果是 window，則判斷標準就是游標與視窗邊緣的距離
+  const containerRect = scrollContainer.getBoundingClientRect();
+  const distanceFromTopEdge = clientY - containerRect.top;
+  const distanceFromBottomEdge = containerRect.bottom - clientY;
+
+  let scrollSpeed = 0;
+
+  // --- 向上滾動 ---
+  if (distanceFromTopEdge < scrollThreshold) {
+    // 從 [0, scrollThreshold] 映射到 [0, 1] 的比例 (0 在邊緣, 1 在閾值邊界)
+    const normalizedDistance = distanceFromTopEdge / scrollThreshold;
+
+    // 計算速度比例 (1 - normalizedDistance) 從 1 (邊緣) 降到 0 (閾值邊界)
+    // 使用 Math.pow 進行非線性加速：
+    // 當 normalizedDistance 接近 0 (靠近邊緣) 時，ratio 接近 1^P = 1
+    // 當 normalizedDistance 接近 1 (遠離邊緣) 時，ratio 接近 0^P = 0
+    const ratio = Math.pow(1 - normalizedDistance, accelerationPower);
+    scrollSpeed = ratio * maxScrollSpeed;
+    scrollContainer.scrollTop -= scrollSpeed;
+  }
+  // --- 向下滾動 ---
+  else if (distanceFromBottomEdge < scrollThreshold) {
+    const normalizedDistance = distanceFromBottomEdge / scrollThreshold;
+    const ratio = Math.pow(1 - normalizedDistance, accelerationPower);
+    scrollSpeed = ratio * maxScrollSpeed;
+    scrollContainer.scrollTop += scrollSpeed;
+  }
+}
+
+/**
+ * 獲取當前選擇狀態後，根據框選區域計算新的選擇狀態，並觸發狀態更新
+ */
+function createHandleCalculateSelection({ rowsContainer, clientY }: { rowsContainer: HTMLElement; clientY: number }) {
+  const relativeToRowsTop = (currentY: number) => currentY - rowsContainer.getBoundingClientRect().top;
+  const normalizedStartY = relativeToRowsTop(clientY);
+
+  return (currentY: number) => {
+    const normalizedCurrentY = relativeToRowsTop(currentY);
+    const newSelected = [...selectionStore.getState().selected];
+
+    for (let index = 0; index < newSelected.length; index++) {
+      // 計算當前行的 Y 座標範圍
+      const rowTop = index * tableRowHeight;
+      const rowBottom = rowTop + tableRowHeight;
+      // 判斷是否與框選區域相交
+      const boxTop = Math.min(normalizedStartY, normalizedCurrentY);
+      const boxBottom = Math.max(normalizedStartY, normalizedCurrentY);
+      const intersects = !(boxBottom < rowTop || boxTop > rowBottom);
+
+      newSelected[index] = intersects ? 1 : 0;
+    }
+
+    selectionStore.setState({ selected: newSelected });
+  };
+}
 
 /**
  * 根據起始點創建繪製框選框的函式
@@ -107,8 +173,13 @@ const handleDragStart = (e: DragEvent) => {
     e.preventDefault();
 
     const boxContainer = document.getElementById(tableBodyVirtualListContainerId);
-    if (!boxContainer) return;
+    const scrollContainer = document.getElementById(tableBodyContainerId);
+    if (!boxContainer || !scrollContainer) return;
 
+    const handleCalculateSelection = createHandleCalculateSelection({
+      rowsContainer: boxContainer,
+      clientY: e.clientY,
+    });
     const { handleDrawStart, handleDraw, handleDrawEnd } = createHandleDrawBox({
       boxContainer,
       startX: e.clientX,
@@ -123,6 +194,8 @@ const handleDragStart = (e: DragEvent) => {
     const handleUpdate = () => {
       if (stopFlag) return;
       handleDraw({ ...position });
+      handleCalculateSelection(position.clientY);
+      handleAutoScroll(position.clientY, scrollContainer);
       requestAnimationFrame(handleUpdate);
     };
 
