@@ -16,8 +16,24 @@ import { navigateToFolder } from "@@/fileSystem/action/navigation";
 import { selectRow } from "@@/fileSystem/action/selection";
 import { openFile, startFileDrag } from "@@/fileSystem/action/operation";
 
+/**
+ * 用於標識表格主體容器的唯一 ID，補充 1. 已經保證每次只會有一個存在 2. 這是寫在模組層，因此不會有重渲染導致 ID 變化的問題
+ */
 const tableBodyContainerId = "table-body" + crypto.randomUUID().slice(0, 8);
 
+/**
+ * 用於標示表格列的 class 名稱
+ */
+const tableRowClassName = "table-row";
+
+/**
+ * 表格列儲存在 html 中的指標屬性名稱
+ */
+const tableRowIndexAttr = "data-index";
+
+/**
+ * 表格交替背景色
+ */
 const tableAlternateBgcolor = colorMix("background.content", "text.primary", 0.98);
 
 /**
@@ -188,11 +204,17 @@ const TableRow = memo(({ index }: { index: number }) => {
   const row = viewEntries[index];
 
   const isInClipboard = row.filePath in clipboardEntries;
-  const className = selected[index] ? `selected table-row` : `table-row`;
   const draggable = row.fileType === "file";
 
+  let className = tableRowClassName;
+  if (selected[index]) {
+    className += " selected";
+  }
+
+  const indexDataProp = { [tableRowIndexAttr]: index };
+
   return (
-    <ButtonBase focusRipple sx={tableRowSx} className={className} data-index={index} draggable={draggable}>
+    <ButtonBase sx={tableRowSx} className={className} {...indexDataProp} draggable={draggable}>
       <Box sx={{ width: tableIconWidth, display: "flex", alignItems: "center", justifyContent: "center" }}>
         <i className={assignIcon(row)} style={{ display: "flex", alignItems: "center", fontSize: tableIconFontSize }} />
       </Box>
@@ -276,7 +298,7 @@ const TableBodyRows = () => {
 const getIndexFromEvent = (e: Event) => {
   const target = e.target as HTMLElement;
 
-  const indexStr = target.closest(".table-row")?.getAttribute("data-index");
+  const indexStr = target.closest(`.${tableRowClassName}`)?.getAttribute(tableRowIndexAttr);
   if (indexStr === undefined) return null;
 
   const index = Number(indexStr);
