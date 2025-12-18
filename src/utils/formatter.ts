@@ -44,6 +44,37 @@ function formatFixedLengthDateTime(dateObj: Date): string {
   return formattedString;
 }
 
+/** 用於格式化相對時間的 Intl.RelativeTimeFormat 實例，使用 undefined 讓它自動抓取環境語系 */
+const rtf = new Intl.RelativeTimeFormat(undefined, { numeric: "auto" });
+
+/** 定義時間單位及其對應的進位門檻 */
+const divisions: { amount: number; name: Intl.RelativeTimeFormatUnit }[] = [
+  { amount: 60, name: "second" },
+  { amount: 60, name: "minute" },
+  { amount: 24, name: "hour" },
+  { amount: 7, name: "day" },
+  { amount: 4.34524, name: "week" },
+  { amount: 12, name: "month" },
+  { amount: Infinity, name: "year" },
+];
+
+/** 將 Date 物件格式化為本地語系的相對現在時間字串 */
+function formatRelativeTime(date: Date): string {
+  const now = new Date();
+  let duration = (date.getTime() - now.getTime()) / 1000;
+
+  for (const division of divisions) {
+    // 如果絕對值小於當前單位的進位門檻
+    if (Math.abs(duration) < division.amount) {
+      return rtf.format(Math.round(duration), division.name);
+    }
+    // 進入下一個更大的單位
+    duration /= division.amount;
+  }
+
+  return "";
+}
+
 /** 格式化檔案大小為易讀字串 */
 function formatFileSize(size: number): string {
   const units = ["B", "KiB", "MiB", "GiB", "TiB", "PiB"];
@@ -138,5 +169,5 @@ const formatFileType = (params: { fileName: string; fileType: string }): string 
   return label;
 };
 
-export { formatFixedLengthDateTime };
+export { formatFixedLengthDateTime, formatRelativeTime };
 export { formatPathArray, formatDateCompact, formatDateFull, formatFileSize, formatFileType, generateErrorMessage };
