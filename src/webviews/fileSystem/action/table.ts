@@ -71,6 +71,7 @@ function createHandleCalculateSelection({ rowsContainer, clientY }: { rowsContai
   return (currentY: number) => {
     const normalizedCurrentY = relativeToRowsTop(currentY);
     const newSelected = [...selectionStore.getState().selected];
+    let lastSelectedIndex: number | null = null;
 
     for (let index = 0; index < newSelected.length; index++) {
       // 計算當前行的 Y 座標範圍
@@ -82,9 +83,10 @@ function createHandleCalculateSelection({ rowsContainer, clientY }: { rowsContai
       const intersects = !(boxBottom < rowTop || boxTop > rowBottom);
 
       newSelected[index] = intersects ? 1 : 0;
+      if (intersects) lastSelectedIndex = index;
     }
 
-    selectionStore.setState({ selected: newSelected });
+    selectionStore.setState({ selected: newSelected, lastSelectedIndex });
   };
 }
 
