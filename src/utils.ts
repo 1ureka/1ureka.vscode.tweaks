@@ -161,5 +161,21 @@ function setSchedule({ configs, task }: { configs: { timeout: number; count: num
   return dispose;
 }
 
+/**
+ * 將數值限制在指定區間內
+ *
+ * @example
+ * const clampedValue = clamp({ value: 15, interval: [0, 10] }); // clampedValue 的值為 10
+ * const clampedValue2 = clamp({ value: -5, interval: [0, 10] }); // clampedValue2 的值為 0
+ * const clampedValue3 = clamp({ value: 5, interval: [0, 10] }); // clampedValue3 的值為 5
+ */
+const clamp = (params: { value: number; interval: [number, number] }) => {
+  const { value, interval } = params;
+  const [bound1, bound2] = interval;
+  const min = Math.min(bound1, bound2);
+  const max = Math.max(bound1, bound2);
+  return Math.min(Math.max(value, min), max);
+};
+
 export type { Prettify, OneOf, Promised, PromiseOpt, WithProgress, WithProgressMessage };
-export { tryCatch, defer, setSchedule };
+export { tryCatch, defer, setSchedule, clamp };
