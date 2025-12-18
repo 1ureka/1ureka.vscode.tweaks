@@ -1,105 +1,24 @@
 import { memo, useEffect } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { Box, ButtonBase, Typography, type SxProps } from "@mui/material";
+import { createTableComponent } from "@@/fileSystem/components/Table";
 
 import { extensionIconMap } from "@/assets/fileExtMap";
-import { colorMix, ellipsisSx } from "@/utils/ui";
 import { formatFileSize, formatFileType, formatFixedLengthDateTime } from "@/utils/formatter";
 import { tableColumns, tableIconFontSize, tableIconWidth, tableRowHeight } from "@@/fileSystem/layout/tableConfig";
-import type { TableColumn } from "@@/fileSystem/layout/tableConfig";
 import type { InspectDirectoryEntry } from "@/utils/system";
 
-import { clipboardStore, selectionStore, viewDataStore, viewStateStore } from "@@/fileSystem/store/data";
+import { clipboardStore, dataStore, selectionStore, viewDataStore, viewStateStore } from "@@/fileSystem/store/data";
 import { fileSystemLoadingStore } from "@@/fileSystem/store/queue";
 
 import { navigateToFolder } from "@@/fileSystem/action/navigation";
 import { selectRow } from "@@/fileSystem/action/selection";
 import { openFile } from "@@/fileSystem/action/operation";
 
-const tableBodyContainerId = "table-body" + crypto.randomUUID().slice(0, 8);
-
-const tableAlternateBgcolor = colorMix("background.content", "text.primary", 0.98);
-
-/**
- * ### 表格背景設計
- *
- * 1. 背景由容器繪製，而非子元素。這確保了即便資料列數較少時，斑馬紋依然能鋪滿整個視圖空間。
- *
- * 2. 不使用 background-attachment: local 改用「預設背景 + CSS 變數同步」是為了避免 Scrollbar Gutter 區域出現空白 (沒有斑馬背景)。
- *
- * 3. Row 元件無需維護 index 或 nth-child 狀態，對於虛擬列表 (Virtual List) 或排序功能具有極佳的適配性與效能表現。
- */
-const tableBodyContainerSx: SxProps = {
-  flex: 1,
-  overflowY: "auto",
-  scrollbarGutter: "stable",
-  minHeight: 0,
-  borderRadius: 1,
-  borderTopLeftRadius: 0,
-  borderTopRightRadius: 0,
-  backgroundImage: `linear-gradient(var(--mui-palette-background-content) 50%, ${tableAlternateBgcolor} 50%)`,
-  backgroundSize: `100% ${tableRowHeight * 2}px`,
-  backgroundRepeat: "repeat",
-  backgroundPositionY: "var(--scroll-top, 0px)",
-};
-
-/**
- * 用於呈現表格主體的容器組件
- */
-const TableBodyContainer = ({ children }: { children: React.ReactNode }) => {
-  const handleScroll = () => {
-    const container = document.getElementById(tableBodyContainerId);
-    if (container) {
-      const scrollTop = container.scrollTop;
-      container.style.setProperty("--scroll-top", `${-scrollTop}px`);
-    }
-  };
-
-  return (
-    <Box id={tableBodyContainerId} onScroll={handleScroll} sx={tableBodyContainerSx}>
-      {children}
-    </Box>
-  );
-};
-
-// ---------------------------------------------------------------------------------
-
-/**
- * 用於表格某 row 中的單元格的樣式
- */
-const tableRowCellSx: SxProps = {
-  minWidth: 0,
-  display: "flex",
-  alignItems: "center",
-
-  "&.align-left": { justifyContent: "flex-start" },
-  "&.align-center": { justifyContent: "center" },
-  "&.align-right": { justifyContent: "flex-end" },
-
-  "& > span": { ...ellipsisSx, whiteSpace: "pre" },
-  "& > span.primary": { color: "text.primary" },
-  "& > span.secondary": { color: "text.secondary" },
-} as SxProps;
-
-/**
- * 用於表格某 row 中的單元格
- */
-const TableCell = (props: { text: string; variant: "primary" | "secondary"; column: TableColumn }) => {
-  const { text, variant } = props;
-  const { align, weight, width } = props.column;
-
-  const layoutStyle: React.CSSProperties = width ? { width } : { flex: weight };
-
-  return (
-    <Box style={layoutStyle} sx={tableRowCellSx} className={`align-${align}`}>
-      <Typography component="span" variant="caption" className={variant}>
-        {text}
-      </Typography>
-    </Box>
-  );
-};
-
-// ---------------------------------------------------------------------------------
+const { TableCell, TableBodyContainer, getTableBodyContainer } = createTableComponent({
+  columns: tableColumns,
+  dataStore,
+});
 
 /**
  * 用於正存在剪貼簿中的 row 的虛線邊框樣式
@@ -215,13 +134,13 @@ const TableRow = memo(({ index }: { index: number }) => {
 /**
  * 專注於用虛擬化渲染表格主體中的所有資料列
  */
-const TableBodyRows = () => {
+const TableBodyVirtualRows = () => {
   const viewEntries = viewDataStore((state) => state.entries);
   const filter = viewStateStore((state) => state.filter);
   const loading = fileSystemLoadingStore((state) => state.loading);
 
   const rowVirtualizer = useVirtualizer({
-    getScrollElement: () => document.getElementById(tableBodyContainerId),
+    getScrollElement: getTableBodyContainer,
     count: viewEntries.length,
     estimateSize: () => tableRowHeight,
     overscan: 1,
@@ -354,7 +273,7 @@ const handleContextMenu = (e: MouseEvent) => {
  */
 const TableBody = () => {
   useEffect(() => {
-    const container = document.getElementById(tableBodyContainerId);
+    const container = getTableBodyContainer();
     if (!container) return;
 
     container.addEventListener("click", handleClick);
@@ -370,7 +289,7 @@ const TableBody = () => {
 
   return (
     <TableBodyContainer>
-      <TableBodyRows />
+      <TableBodyVirtualRows />
     </TableBodyContainer>
   );
 };
