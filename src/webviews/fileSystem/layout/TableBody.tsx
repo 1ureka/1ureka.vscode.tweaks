@@ -1,15 +1,12 @@
 import { memo, useEffect } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { Box, ButtonBase, Typography, type SxProps } from "@mui/material";
+import { Box, Typography, type SxProps } from "@mui/material";
 
-import { extensionIconMap } from "@/assets/fileExtMap";
-import { colorMix, ellipsisSx } from "@/utils/ui";
-import { formatFileSize, formatFileType, formatFixedLengthDateTime } from "@/utils/formatter";
-import { tableColumns, tableIconFontSize, tableIconWidth, tableRowHeight } from "@@/fileSystem/layout/tableConfig";
-import type { TableColumn } from "@@/fileSystem/layout/tableConfig";
-import type { InspectDirectoryEntry } from "@/utils/system";
+import { colorMix } from "@/utils/ui";
+import { tableRowHeight } from "@@/fileSystem/layout/tableConfig";
+import { TableRow, tableRowClassName, tableRowIndexAttr } from "@@/fileSystem/layout/TableRow";
 
-import { clipboardStore, selectionStore, viewDataStore, viewStateStore } from "@@/fileSystem/store/data";
+import { viewDataStore, viewStateStore } from "@@/fileSystem/store/data";
 import { fileSystemLoadingStore } from "@@/fileSystem/store/queue";
 
 import { navigateToFolder } from "@@/fileSystem/action/navigation";
@@ -20,16 +17,6 @@ import { openFile, startFileDrag } from "@@/fileSystem/action/operation";
  * 用於標識表格主體容器的唯一 ID，補充 1. 已經保證每次只會有一個存在 2. 這是寫在模組層，因此不會有重渲染導致 ID 變化的問題
  */
 const tableBodyContainerId = "table-body" + crypto.randomUUID().slice(0, 8);
-
-/**
- * 用於標示表格列的 class 名稱
- */
-const tableRowClassName = "table-row";
-
-/**
- * 表格列儲存在 html 中的指標屬性名稱
- */
-const tableRowIndexAttr = "data-index";
 
 /**
  * 表格交替背景色
@@ -81,183 +68,11 @@ const TableBodyContainer = ({ children }: { children: React.ReactNode }) => {
 // ---------------------------------------------------------------------------------
 
 /**
- * 用於表格某 row 中的單元格的樣式
+ * 用於在沒有任何項目時顯示訊息
  */
-const tableRowCellSx: SxProps = {
-  minWidth: 0,
-  display: "flex",
-  alignItems: "center",
-
-  "&.align-left": { justifyContent: "flex-start" },
-  "&.align-center": { justifyContent: "center" },
-  "&.align-right": { justifyContent: "flex-end" },
-
-  "& > span": { ...ellipsisSx, whiteSpace: "pre" },
-  "& > span.primary": { color: "text.primary" },
-  "& > span.secondary": { color: "text.secondary" },
-} as SxProps;
-
-/**
- * 用於表格某 row 中的單元格
- */
-const TableCell = ({ column, row }: { column: TableColumn; row: InspectDirectoryEntry }) => {
-  const { fileName, fileType, ctime, mtime, size } = row;
-  const { field, align, weight, width } = column;
-
-  const variant = field === "fileName" ? "primary" : "secondary";
-  const layoutStyle: React.CSSProperties = width ? { width } : { flex: weight };
-
-  let text: string;
-  if (field === "fileType") {
-    text = formatFileType({ fileName, fileType });
-  } else if (field === "ctime") {
-    text = formatFixedLengthDateTime(new Date(ctime));
-  } else if (field === "mtime") {
-    text = formatFixedLengthDateTime(new Date(mtime));
-  } else if (field === "size") {
-    text = fileType === "file" ? formatFileSize(size) : "";
-  } else {
-    text = String(row[field]);
-  }
-
-  return (
-    <Box style={layoutStyle} sx={tableRowCellSx} className={`align-${align}`}>
-      <Typography component="span" variant="caption" className={variant}>
-        {text}
-      </Typography>
-    </Box>
-  );
-};
-
-// ---------------------------------------------------------------------------------
-
-/**
- * 用於正存在剪貼簿中的 row 的虛線邊框樣式
- */
-const tableRowClipboardBorderSx: SxProps = {
-  "& > rect": {
-    stroke: "var(--mui-palette-text-primary)",
-    strokeOpacity: 0.2,
-    strokeWidth: 1.5,
-    strokeDasharray: "14 8",
-    fill: "none",
-    animation: "dash 2s linear infinite",
-    rx: "var(--mui-shape-borderRadius)",
-    ry: "var(--mui-shape-borderRadius)",
-  },
-
-  "@keyframes dash": { to: { strokeDashoffset: -110 } },
-};
-
-/**
- * 用於給正存在剪貼簿中的 row 提供虛線邊框動畫
- */
-const TableRowBorder = memo(() => (
-  <Box sx={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
-    <Box component="svg" preserveAspectRatio="none" width="100%" height="100%" sx={tableRowClipboardBorderSx}>
-      <rect width="calc(100%)" height="calc(100%)" />
-    </Box>
-  </Box>
-));
-
-// ---------------------------------------------------------------------------------
-
-/**
- * 為項目指派對應的圖示
- */
-const assignIcon = (entry: InspectDirectoryEntry) => {
-  let icon: `codicon codicon-${string}` = `codicon codicon-${entry.fileType}`;
-
-  if (entry.fileType !== "file") return icon;
-
-  const fileName = entry.fileName.toLowerCase();
-  const extension = fileName.includes(".") ? fileName.split(".").pop() || "" : "";
-
-  if (extension in extensionIconMap) icon = extensionIconMap[extension];
-
-  return icon;
-};
-
-/**
- * 用於表格中每一列的樣式
- */
-const tableRowSx: SxProps = {
-  position: "relative",
-  width: 1,
-  height: tableRowHeight,
-  display: "flex",
-  alignItems: "stretch",
-  justifyContent: "stretch",
-  px: 0.5,
-  overflow: "visible",
-  "&.selected": { bgcolor: "action.active" },
-};
-
-/**
- * 用於呈現一個普通的資料列
- */
-const TableRow = memo(({ index }: { index: number }) => {
-  const viewEntries = viewDataStore((state) => state.entries);
-  const selected = selectionStore((state) => state.selected);
-  const clipboardEntries = clipboardStore((state) => state.entries);
-
-  const row = viewEntries[index];
-
-  const isInClipboard = row.filePath in clipboardEntries;
-  const draggable = row.fileType === "file";
-
-  let className = tableRowClassName;
-  if (selected[index]) {
-    className += " selected";
-  }
-
-  const indexDataProp = { [tableRowIndexAttr]: index };
-
-  return (
-    <ButtonBase sx={tableRowSx} className={className} {...indexDataProp} draggable={draggable}>
-      <Box sx={{ width: tableIconWidth, display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <i className={assignIcon(row)} style={{ display: "flex", alignItems: "center", fontSize: tableIconFontSize }} />
-      </Box>
-
-      {tableColumns.map((column) => (
-        <TableCell key={column.field} column={column} row={row} />
-      ))}
-
-      {isInClipboard && <TableRowBorder />}
-    </ButtonBase>
-  );
-});
-
-// ---------------------------------------------------------------------------------
-
-/**
- * 專注於用虛擬化渲染表格主體中的所有資料列
- */
-const TableBodyRows = () => {
-  const viewEntries = viewDataStore((state) => state.entries);
-  const filter = viewStateStore((state) => state.filter);
+const NoItemDisplay = () => {
   const loading = fileSystemLoadingStore((state) => state.loading);
-
-  const rowVirtualizer = useVirtualizer({
-    getScrollElement: () => document.getElementById(tableBodyContainerId),
-    count: viewEntries.length,
-    estimateSize: () => tableRowHeight,
-    overscan: 1,
-  });
-
-  const virtualItemListWrapperSx: SxProps = {
-    position: "relative",
-    height: `${rowVirtualizer.getTotalSize()}px`,
-    width: 1,
-    transition: "opacity 0.05s step-end", // 所有小於 50ms 的載入時間都不顯示載入回饋，以避免閃爍
-  };
-
-  const virtualItemWrapperSx: SxProps = {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    width: 1,
-  };
+  const filter = viewStateStore((state) => state.filter);
 
   let noItemMessage = "此資料夾是空的";
 
@@ -270,14 +85,59 @@ const TableBodyRows = () => {
   }
 
   return (
-    <Box sx={virtualItemListWrapperSx} style={loading ? { opacity: 0.5 } : undefined}>
+    <Box sx={{ display: "grid", placeItems: "center", height: tableRowHeight }}>
+      <Typography variant="caption" sx={{ color: "text.secondary" }}>
+        {noItemMessage}
+      </Typography>
+    </Box>
+  );
+};
+
+// ---------------------------------------------------------------------------------
+
+/**
+ * 用於虛擬化渲染整個列表的容器樣式 (也就是有著整個列表總高度的容器)
+ */
+const virtualItemListWrapperSx: SxProps = {
+  position: "relative",
+  width: 1,
+  transition: "opacity 0.05s step-end", // 所有小於 50ms 的載入時間都不顯示載入回饋，以避免閃爍
+};
+
+/**
+ * 用於虛擬化渲染/定位單一項目的容器樣式
+ */
+const virtualItemWrapperSx: SxProps = {
+  position: "absolute",
+  top: 0,
+  left: 0,
+  width: 1,
+};
+
+/**
+ * 專注於用虛擬化渲染表格主體中的所有資料列
+ */
+const TableBodyVirtualRows = () => {
+  const viewEntries = viewDataStore((state) => state.entries);
+  const loading = fileSystemLoadingStore((state) => state.loading);
+
+  const rowVirtualizer = useVirtualizer({
+    getScrollElement: () => document.getElementById(tableBodyContainerId),
+    count: viewEntries.length,
+    estimateSize: () => tableRowHeight,
+    overscan: 1,
+  });
+
+  const virtualItemListWrapperStyle: React.CSSProperties = {
+    height: `${rowVirtualizer.getTotalSize()}px`,
+    opacity: loading ? 0.5 : 1,
+  };
+
+  return (
+    <Box sx={virtualItemListWrapperSx} style={virtualItemListWrapperStyle}>
       {viewEntries.length === 0 && (
         <Box sx={virtualItemWrapperSx} style={{ height: `${tableRowHeight}px`, transform: `translateY(0px)` }}>
-          <Box sx={{ display: "grid", placeItems: "center", height: tableRowHeight }}>
-            <Typography variant="caption" sx={{ color: "text.secondary" }}>
-              {noItemMessage}
-            </Typography>
-          </Box>
+          <NoItemDisplay />
         </Box>
       )}
 
@@ -357,7 +217,7 @@ const handleContextMenu = (e: MouseEvent) => {
 /**
  * ?
  */
-const TableBody = () => {
+const TableBody = memo(() => {
   useEffect(() => {
     const container = document.getElementById(tableBodyContainerId);
     if (!container) return;
@@ -375,9 +235,9 @@ const TableBody = () => {
 
   return (
     <TableBodyContainer>
-      <TableBodyRows />
+      <TableBodyVirtualRows />
     </TableBodyContainer>
   );
-};
+});
 
 export { TableBody };
