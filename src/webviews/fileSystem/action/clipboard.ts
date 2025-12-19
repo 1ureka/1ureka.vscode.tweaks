@@ -5,9 +5,9 @@ import { clipboardStore, dataStore, selectionStore, viewDataStore } from "@@/fil
 import { requestQueue } from "@@/fileSystem/store/queue";
 
 /**
- * 將目前選取的檔案寫入到剪貼簿，會覆蓋先前的內容
+ * 將目前選取的檔案寫入到應用程式剪貼簿，會覆蓋先前的內容
  */
-const setClipboard = () => {
+const writeClipboard = () => {
   const { selected } = selectionStore.getState();
   const { entries } = viewDataStore.getState();
 
@@ -26,18 +26,11 @@ const setClipboard = () => {
 };
 
 /**
- * 獲取剪貼簿中的項目 (給 react 外部使用)
+ * 觸發將應用程式剪貼簿中的項目放置到目前資料夾的流程
  */
-const getClipboardList = () => {
+const readClipboard = async () => {
   const { entries } = clipboardStore.getState();
-  return Object.values(entries);
-};
-
-/**
- * 將剪貼簿中的項目貼上到目前資料夾，透過呼叫 Paste API
- */
-const invokeClipboardPaste = async () => {
-  const clipboardList = getClipboardList();
+  const clipboardList = Object.values(entries);
   if (clipboardList.length === 0) return;
 
   const srcList = clipboardList.map((entry) => entry.filePath);
@@ -51,22 +44,18 @@ const invokeClipboardPaste = async () => {
 };
 
 /**
- * 將選擇中的項目的路徑寫入系統剪貼簿
+ * 將最後選擇的項目的路徑或名稱寫入系統剪貼簿
  */
-const handleCopyToSystem = ({ mode }: { mode: "paths" | "names" }) => {
-  const { selected } = selectionStore.getState();
+const writeSystemClipboard = (type: "path" | "name") => {
+  const { lastSelectedIndex } = selectionStore.getState();
+  if (!lastSelectedIndex) return;
+
   const { entries } = viewDataStore.getState();
-  const fileList = entries.filter((_, index) => Boolean(selected[index]));
+  const item = entries[lastSelectedIndex];
+  if (!item) return;
 
-  if (fileList.length === 0) return;
-
-  if (mode === "names") {
-    const names = fileList.map(({ fileName }) => fileName).join("\n");
-    return invoke<SetSystemClipboardAPI>("setSystemClipboard", { text: names });
-  } else if (mode === "paths") {
-    const paths = fileList.map(({ filePath }) => filePath).join("\n");
-    return invoke<SetSystemClipboardAPI>("setSystemClipboard", { text: paths });
-  }
+  const text = type === "name" ? item.fileName : item.filePath;
+  return invoke<SetSystemClipboardAPI>("setSystemClipboard", { text });
 };
 
-export { setClipboard, invokeClipboardPaste, handleCopyToSystem };
+export { writeClipboard, readClipboard, writeSystemClipboard };

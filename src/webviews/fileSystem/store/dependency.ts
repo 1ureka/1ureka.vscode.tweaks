@@ -3,7 +3,7 @@
  * @description 該文件負責定義更新鏈/依賴鏈，可參考 README.md 中的說明
  */
 
-import { dataStore, viewDataStore, viewStateStore, selectionStore } from "@@/fileSystem/store/data";
+import { dataStore, viewDataStore, viewStateStore, selectionStore, renameStore } from "@@/fileSystem/store/data";
 import type { InspectDirectoryEntry } from "@/utils/system";
 
 /**
@@ -72,17 +72,34 @@ const handleSelectionUpdate = () => {
 
   const selected = Array<0 | 1>(entries.length).fill(0);
 
-  selectionStore.setState({ isBoxSelecting: false, selected, lastSelectedIndex: null });
+  selectionStore.setState({ selected, lastSelectedIndex: null });
+};
+
+/**
+ * 當最後選取的項目更改時，捨棄暫存的重新命名狀態，改為新項目的名稱
+ */
+const handleRenameReset = () => {
+  const { lastSelectedIndex } = selectionStore.getState();
+  const { entries } = viewDataStore.getState();
+
+  if (lastSelectedIndex === null) {
+    renameStore.setState({ srcName: "", destName: "" });
+    return;
+  }
+
+  const srcName = entries[lastSelectedIndex]?.fileName || "";
+  renameStore.setState({ srcName, destName: srcName });
 };
 
 // ----------------------------------------------------------------------------
 
 /**
  * 定義更新鏈/依賴鏈，由於 handler 都是同步的，因此鏈上任意一點產生的反應都會是原子化的
+ * 具體來說，在 JavaScript 的 單執行緒（Single-threaded） 模型下，這條「訂閱鏈」本質上就是一個連續執行的執行棧（Call Stack）
  *
  * ```
  * 來源資料 ──┐
- *            ├──> 檢視資料 ────> 選取狀態
+ *            ├──> 檢視資料 ────> 選取狀態 ───> 重新命名狀態
  * 檢視條件 ──┘
  * ```
  */
@@ -90,6 +107,7 @@ const setupDependencyChain = () => {
   dataStore.subscribe(handleViewDataUpdate);
   viewStateStore.subscribe(handleViewDataUpdate);
   viewDataStore.subscribe(handleSelectionUpdate);
+  selectionStore.subscribe(handleRenameReset);
 };
 
 export { setupDependencyChain };

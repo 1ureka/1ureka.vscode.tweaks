@@ -6,7 +6,7 @@ import { requestQueue } from "@@/fileSystem/store/queue";
 /**
  * 初始化，利用注入的初始資料，來獲取完整資料
  */
-const registerInitDataEvents = async () => {
+const readInitData = async () => {
   const initialData = dataStore.getState();
 
   const result = await requestQueue.add(() =>
@@ -16,4 +16,4 @@ const registerInitDataEvents = async () => {
   dataStore.setState({ ...result });
 };
 
-export { registerInitDataEvents };
+export { readInitData };

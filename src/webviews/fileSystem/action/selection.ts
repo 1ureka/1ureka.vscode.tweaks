@@ -1,10 +1,5 @@
 import { selectionStore } from "@@/fileSystem/store/data";
 
-/** 開關框選模式 */
-const toggleBoxSelectionMode = (forceMode?: boolean) => {
-  selectionStore.setState((state) => ({ isBoxSelecting: forceMode ?? !state.isBoxSelecting }));
-};
-
 /** 選取某個項目 */
 const selectRow = (params: { index: number; isAdditive: boolean; isRange: boolean; forceSelect?: boolean }) => {
   const { index: currentIndex, isAdditive, isRange, forceSelect } = params;
@@ -76,4 +71,4 @@ const selectInvert = () => {
   });
 };
 
-export { toggleBoxSelectionMode, selectRow, selectNone, selectAll, selectInvert };
+export { selectRow, selectNone, selectAll, selectInvert };

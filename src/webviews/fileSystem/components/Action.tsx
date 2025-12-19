@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { centerTextSx, colorMix } from "@/utils/ui";
 import { Box, ButtonBase, InputBase, Popover, Typography } from "@mui/material";
-import type { SxProps } from "@mui/system";
+import type { SxProps, PopoverOrigin } from "@mui/material";
 import { Tooltip } from "@@/fileSystem/components/Tooltip";
 
 /**
@@ -203,7 +203,8 @@ const actionDropdownActiveSx: SxProps = {
 };
 
 const actionDropdownMenuSx: SxProps = {
-  mt: 0.5,
+  ".menu-bottom &": { mt: 0.5 },
+  ".menu-top &": { mt: -0.5 },
   p: 1,
   bgcolor: "tooltip.background",
   border: 1,
@@ -216,33 +217,48 @@ type ActionDropdownProps = {
   children: React.ReactNode;
   actionName: string;
   actionDetail?: string;
+  menuPlacement?: "bottom" | "top";
   tooltipPlacement?: TooltipPlacement;
 };
 
 /**
  * 下拉選單元件，單獨使用仍需要包在 ActionGroup 中
  */
-const ActionDropdown = ({ children, actionName, actionDetail, tooltipPlacement }: ActionDropdownProps) => {
+const ActionDropdown = (props: ActionDropdownProps) => {
+  const { children, actionName, actionDetail, tooltipPlacement } = props;
+  const { menuPlacement = "bottom" } = props;
+
   const [anchorRef, setAnchorRef] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorRef);
   const buttonSx = open ? actionDropdownActiveSx : actionDropdownSx;
+
+  let anchorOrigin: PopoverOrigin = { vertical: "bottom", horizontal: "center" };
+  let transformOrigin: PopoverOrigin = { vertical: "top", horizontal: "center" };
+  let iconStyle: React.CSSProperties = { display: "block" };
+
+  if (menuPlacement === "top") {
+    anchorOrigin = { vertical: "top", horizontal: "center" };
+    transformOrigin = { vertical: "bottom", horizontal: "center" };
+    iconStyle = { display: "block", transform: "rotate(180deg)" };
+  }
 
   return (
     <>
       <Tooltip actionName={actionName} actionDetail={actionDetail} placement={tooltipPlacement}>
         <Box className={actionButtonClassName}>
           <ButtonBase disableRipple onClick={(e) => setAnchorRef(e.currentTarget)} sx={buttonSx}>
-            <i className="codicon codicon-chevron-down" style={{ display: "block" }} />
+            <i className="codicon codicon-chevron-down" style={iconStyle} />
           </ButtonBase>
         </Box>
       </Tooltip>
 
       <Popover
+        className={`menu-${menuPlacement}`}
         anchorEl={anchorRef}
         open={open}
         onClose={() => setAnchorRef(null)}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-        transformOrigin={{ vertical: "top", horizontal: "center" }}
+        anchorOrigin={anchorOrigin}
+        transformOrigin={transformOrigin}
         slotProps={{ paper: { elevation: 0, sx: actionDropdownMenuSx } }}
       >
         {children}

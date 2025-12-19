@@ -1,10 +1,8 @@
 import { startReactApp } from "@/utils/ui";
 
-import { registerInitDataEvents } from "@@/fileSystem/events/data";
-import { registerMessageEvents } from "@@/fileSystem/events/message";
-import { registerClipboardEvents } from "@@/fileSystem/events/clipboard";
-import { registerNavigateShortcuts, registerSelectionShortcuts } from "@@/fileSystem/events/shortcuts";
+import { readInitData } from "@@/fileSystem/store/init";
 import { setupDependencyChain } from "@@/fileSystem/store/dependency";
+import { registerAllShortcuts } from "@@/fileSystem/action/shortcuts";
 
 import { Box } from "@mui/material";
 import { LoadingDisplay } from "@@/fileSystem/layout/LoadingDisplay";
@@ -37,10 +35,16 @@ startReactApp({
   App,
   beforeRender: () => {
     setupDependencyChain();
-    registerInitDataEvents();
-    registerSelectionShortcuts();
-    registerNavigateShortcuts();
-    registerMessageEvents();
-    registerClipboardEvents();
+    readInitData();
+    registerAllShortcuts();
+
+    window.addEventListener(
+      "contextmenu",
+      (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      },
+      true
+    );
   },
 });

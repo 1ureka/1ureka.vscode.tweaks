@@ -28,13 +28,17 @@ type ViewDataState = {
 };
 
 type SelectionState = {
-  isBoxSelecting: boolean;
   selected: (0 | 1)[];
   lastSelectedIndex: number | null;
 };
 
 type ClipboardState = {
   entries: { [filePath: string]: InspectDirectoryEntry };
+};
+
+type RenameState = {
+  srcName: string;
+  destName: string;
 };
 
 // ----------------------------------------------------------------------------
@@ -57,14 +61,19 @@ const viewDataStore = create<ViewDataState>(() => ({ entries: [] }));
 /**
  * 建立用於儲存選取狀態的容器
  */
-const selectionStore = create<SelectionState>(() => ({ isBoxSelecting: false, selected: [], lastSelectedIndex: null }));
+const selectionStore = create<SelectionState>(() => ({ selected: [], lastSelectedIndex: null }));
 
 /**
  * 建立用於儲存剪貼簿資料的容器
  */
 const clipboardStore = create<ClipboardState>(() => ({ entries: {} }));
 
+/**
+ * 建立用於儲存重新命名狀態的容器，包含來源名稱與使用者輸入的目標名稱
+ */
+const renameStore = create<RenameState>(() => ({ srcName: "", destName: "" }));
+
 // ----------------------------------------------------------------------------
 
-export { dataStore, viewStateStore, viewDataStore, selectionStore, clipboardStore };
+export { dataStore, viewStateStore, viewDataStore, selectionStore, clipboardStore, renameStore };
 export type { ViewState };
