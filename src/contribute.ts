@@ -7,11 +7,7 @@ import type { OneOf } from "@/utils";
 type CommandId =
   | "1ureka.main.openNavigation"
   // External App Commands
-  | "1ureka.external.openBlender"
-  | "1ureka.external.openWithBlender"
-  | "1ureka.external.openPainter"
-  | "1ureka.external.openWithPainter"
-  | "1ureka.external.openWithBrowser"
+  | "1ureka.external.openWithSystemDefaultApp"
   // Image Wall Commands
   | "1ureka.imageWall.openFromPath"
   | "1ureka.imageWall.openFromDialog"
@@ -37,7 +33,7 @@ type WebviewId = "1ureka.imageViewer" | "1ureka.imageWall" | "1ureka.fileSystem"
 
 type ConfigPrefix = "1ureka";
 
-type ConfigKey = "vscodeResourcePath" | "blenderPath" | "painterPath";
+type ConfigKey = "vscodeResourcePath";
 
 type ConfigId = `${ConfigPrefix}.${ConfigKey}`;
 
@@ -87,8 +83,6 @@ type CustomEditor = {
 // ============================================================================
 
 const commandPaletteEntries: CommandPaletteEntries = [
-  { id: "1ureka.external.openBlender", title: "開啟 Blender", when: "isWindows" },
-  { id: "1ureka.external.openPainter", title: "開啟 Painter", when: "isWindows" },
   { id: "1ureka.imageWall.openFromDialog", title: "開啟圖片牆", icon: "$(repo)" },
   { id: "1ureka.fileSystem.openFromDialog", title: "開啟系統瀏覽器", icon: "$(folder-library)" },
   { id: "1ureka.injectStyles", title: "注入自訂樣式" },
@@ -118,21 +112,9 @@ const editorTitleMenuEntries: ContextMenuEntries = [
 
 const explorerContextMenuEntries: ContextMenuEntries = [
   {
-    id: "1ureka.external.openWithBlender",
-    title: "以 Blender 開啟",
-    when: "resourceExtname == .blend",
-    group: "navigation@100",
-  },
-  {
-    id: "1ureka.external.openWithPainter",
-    title: "以 Painter 開啟",
-    when: "resourceExtname == .spp",
-    group: "navigation@100",
-  },
-  {
-    id: "1ureka.external.openWithBrowser",
-    title: "以網頁瀏覽器開啟",
-    when: "resourceExtname == .html",
+    id: "1ureka.external.openWithSystemDefaultApp",
+    title: "*以系統預設應用程式開啟",
+    when: "explorerResourceIsFile",
     group: "navigation@100",
   },
   {
@@ -151,21 +133,9 @@ const explorerContextMenuEntries: ContextMenuEntries = [
 
 const editorTitleContextMenuEntries: ContextMenuEntries = [
   {
-    id: "1ureka.external.openWithBlender",
-    title: "以 Blender 開啟",
-    when: "resourceExtname == .blend",
-    group: "navigation@100",
-  },
-  {
-    id: "1ureka.external.openWithPainter",
-    title: "以 Painter 開啟",
-    when: "resourceExtname == .spp",
-    group: "navigation@100",
-  },
-  {
-    id: "1ureka.external.openWithBrowser",
-    title: "以網頁瀏覽器開啟",
-    when: "resourceExtname == .html",
+    id: "1ureka.external.openWithSystemDefaultApp",
+    title: "以系統預設應用程式開啟",
+    when: "resourceScheme == file",
     group: "navigation@100",
   },
 ];
@@ -226,20 +196,6 @@ const configuration: { title: string; properties: Record<ConfigId, any> } = {
       default: "",
       markdownDescription:
         "設定 VSCode 資源目錄路徑,用於自訂樣式注入功能。\n\n範例：`C:/Users/YourName/AppData/Local/Programs/Microsoft VS Code/resources/app/out/vs`",
-    },
-    "1ureka.blenderPath": {
-      type: "string",
-      scope: "machine",
-      default: "",
-      markdownDescription:
-        "設定 Blender 執行檔路徑。若未設定,將自動搜尋常見安裝位置。\n\n範例：`C:/Program Files/Blender Foundation/Blender 4.0/blender.exe`",
-    },
-    "1ureka.painterPath": {
-      type: "string",
-      scope: "machine",
-      default: "",
-      markdownDescription:
-        "設定 Adobe Substance 3D Painter 執行檔路徑。若未設定,將自動搜尋常見安裝位置。\n\n範例：`C:/Program Files/Adobe/Adobe Substance 3D Painter/Adobe Substance 3D Painter.exe`",
     },
   },
 };

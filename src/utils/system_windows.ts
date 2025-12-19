@@ -1,38 +1,6 @@
 import iconv from "iconv-lite";
-import * as path from "path";
 import fs from "fs-extra";
-import { exec, spawn } from "child_process";
-
-/** 允許開啟的副檔名白名單 */
-const ALLOWED_EXTENSIONS = [".blend", ".spp", ".html"];
-
-/** 使用系統預設應用打開指定檔案 */
-function openWithDefaultApp(filePath: string, showError: (message: string) => void) {
-  const fileExt = path.extname(filePath).toLowerCase();
-
-  if (!ALLOWED_EXTENSIONS.includes(fileExt)) {
-    showError(`此功能只支援開啟 [${ALLOWED_EXTENSIONS.join(", ")}]，檔案類型不符，操作已取消。`);
-    return; // 阻止執行惡意或不相關的檔案
-  }
-
-  // 使用 start "" 讓 Windows 用預設應用程式開啟檔案
-  exec(`start "" "${filePath}"`, (error) => {
-    if (error) showError("無法開啟檔案，請確認檔案存在且有對應的應用程式");
-  });
-}
-
-/** 啟動指定應用程式 */
-function openApplication(appName: string, appPath: string, showError: (message: string) => void) {
-  const displayName = appName.charAt(0).toUpperCase() + appName.slice(1).toLowerCase();
-
-  try {
-    const child = spawn(appPath, { detached: true, stdio: "ignore", windowsHide: true });
-    child.on("error", () => showError(`無法啟動 ${displayName}，請確認是否有安裝該應用程式與有足夠的權限`));
-    child.unref();
-  } catch (e) {
-    showError(`無法啟動 ${displayName}: ${e instanceof Error ? e.message : String(e)}`);
-  }
-}
+import { spawn } from "child_process";
 
 // -------------------------------------------------------------------------------------------
 
@@ -169,5 +137,5 @@ async function getFileStatus(filePath: string): Promise<FileStatus | null> {
   }
 }
 
-export { openWithDefaultApp, openApplication, copyImageBinaryToSystem, getFileStatus, listSpecialFolders };
+export { copyImageBinaryToSystem, getFileStatus, listSpecialFolders };
 export type { FileStatus as WindowsFileStatus };
