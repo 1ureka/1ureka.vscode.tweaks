@@ -34,12 +34,6 @@ type CommandId =
   | "1ureka.fileSystem.openInWorkspace"
   | "1ureka.fileSystem.openInTerminal"
   | "1ureka.fileSystem.openInImageWall"
-  | "1ureka.fileSystem.filterAll"
-  | "1ureka.fileSystem.filterFolders"
-  | "1ureka.fileSystem.filterFiles"
-  | "1ureka.fileSystem.copyPaths"
-  | "1ureka.fileSystem.copyNames"
-  | "1ureka.fileSystem.rename"
   | "1ureka.fileSystem.delete"
   // Inject Styles Commands
   | "1ureka.injectStyles"
@@ -255,36 +249,6 @@ const webviewContextMenuEntries: WebviewContextMenuEntries = [
       { id: "1ureka.fileSystem.createFolder", title: "資料夾", group: "1_create@1" },
       { id: "1ureka.fileSystem.createFile", title: "檔案", group: "1_create@2" },
     ],
-  },
-  {
-    submenuId: "fileSystem.filter",
-    label: "篩選",
-    webviewId: "1ureka.fileSystem",
-    group: "view@100",
-    commandEntries: [
-      { id: "1ureka.fileSystem.filterAll", title: "顯示全部", group: "1_filter@1" },
-      { id: "1ureka.fileSystem.filterFolders", title: "僅顯示資料夾", group: "1_filter@2" },
-      { id: "1ureka.fileSystem.filterFiles", title: "僅顯示檔案", group: "1_filter@3" },
-    ],
-  },
-  {
-    id: "1ureka.fileSystem.copyPaths",
-    title: "複製路徑",
-    webviewId: "1ureka.fileSystem",
-    // group: "5_cutcopypaste@1", 這是預設的位置
-    group: "6_cutcopypaste@1",
-  },
-  {
-    id: "1ureka.fileSystem.copyNames",
-    title: "複製名稱",
-    webviewId: "1ureka.fileSystem",
-    group: "6_cutcopypaste@1",
-  },
-  {
-    id: "1ureka.fileSystem.rename",
-    title: "重新命名",
-    webviewId: "1ureka.fileSystem",
-    group: "7_modification@1",
   },
   {
     id: "1ureka.fileSystem.delete",

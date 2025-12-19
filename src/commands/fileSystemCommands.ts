@@ -1,8 +1,6 @@
 import * as vscode from "vscode";
-import type { CreateFileAPI, CreateDirAPI, ReadDirAPI, RenameAPI, DeleteAPI } from "@/providers/fileSystemProvider";
+import type { CreateFileAPI, CreateDirAPI, ReadDirAPI, DeleteAPI } from "@/providers/fileSystemProvider";
 import type { OpenInWorkspaceAPI, OpenInTerminalAPI, OpenInImageWallAPI } from "@@/fileSystem/events/message";
-import type { FilterAllAPI, FilterFoldersAPI, FilterFilesAPI } from "@@/fileSystem/events/message";
-import type { CopyNameAPI, CopyPathAPI } from "@@/fileSystem/events/message";
 import { FileSystemPanelProvider } from "@/providers/fileSystemProvider";
 import { forwardCommandToWebview } from "@/utils/message_host";
 import { createCommandManager } from "@/utils/command";
@@ -63,30 +61,6 @@ export function registerFileSystemCommands(context: vscode.ExtensionContext) {
 
   commandManager.register("1ureka.fileSystem.openInImageWall", () => {
     forwardCommandToWebview<OpenInImageWallAPI>(fileSystemProvider.getCurrentPanel(), "openInImageWall");
-  });
-
-  commandManager.register("1ureka.fileSystem.filterAll", () => {
-    forwardCommandToWebview<FilterAllAPI>(fileSystemProvider.getCurrentPanel(), "filterAll");
-  });
-
-  commandManager.register("1ureka.fileSystem.filterFolders", () => {
-    forwardCommandToWebview<FilterFoldersAPI>(fileSystemProvider.getCurrentPanel(), "filterFolders");
-  });
-
-  commandManager.register("1ureka.fileSystem.filterFiles", () => {
-    forwardCommandToWebview<FilterFilesAPI>(fileSystemProvider.getCurrentPanel(), "filterFiles");
-  });
-
-  commandManager.register("1ureka.fileSystem.copyNames", () => {
-    forwardCommandToWebview<CopyNameAPI>(fileSystemProvider.getCurrentPanel(), "copyNamesToSystemClipboard");
-  });
-
-  commandManager.register("1ureka.fileSystem.copyPaths", () => {
-    forwardCommandToWebview<CopyPathAPI>(fileSystemProvider.getCurrentPanel(), "copyPathsToSystemClipboard");
-  });
-
-  commandManager.register("1ureka.fileSystem.rename", () => {
-    forwardCommandToWebview<RenameAPI>(fileSystemProvider.getCurrentPanel(), "rename");
   });
 
   commandManager.register("1ureka.fileSystem.delete", () => {
