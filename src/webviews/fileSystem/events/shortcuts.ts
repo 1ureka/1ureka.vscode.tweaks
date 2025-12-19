@@ -1,7 +1,6 @@
 import { refresh } from "@@/fileSystem/action/navigation";
-import { selectAll, selectInvert, selectNone, toggleBoxSelectionMode } from "@@/fileSystem/action/selection";
+import { selectAll, selectInvert, selectNone } from "@@/fileSystem/action/selection";
 import { actionInputClassName } from "@@/fileSystem/components/Action";
-import { selectionStore } from "@@/fileSystem/store/data";
 
 /**
  * 註冊有關導航的快捷鍵
@@ -48,20 +47,6 @@ const registerSelectionShortcuts = () => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "i") {
         e.preventDefault();
         selectInvert();
-      }
-
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "b") {
-        e.preventDefault();
-        e.stopPropagation();
-        toggleBoxSelectionMode();
-      }
-
-      const { isBoxSelecting } = selectionStore.getState();
-
-      if (e.key === "Escape" && isBoxSelecting) {
-        e.preventDefault();
-        e.stopPropagation();
-        toggleBoxSelectionMode(false);
       }
     },
     true

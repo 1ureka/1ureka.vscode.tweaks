@@ -28,7 +28,6 @@ type ViewDataState = {
 };
 
 type SelectionState = {
-  isBoxSelecting: boolean;
   selected: (0 | 1)[];
   lastSelectedIndex: number | null;
 };
@@ -57,7 +56,7 @@ const viewDataStore = create<ViewDataState>(() => ({ entries: [] }));
 /**
  * 建立用於儲存選取狀態的容器
  */
-const selectionStore = create<SelectionState>(() => ({ isBoxSelecting: false, selected: [], lastSelectedIndex: null }));
+const selectionStore = create<SelectionState>(() => ({ selected: [], lastSelectedIndex: null }));
 
 /**
  * 建立用於儲存剪貼簿資料的容器

@@ -72,7 +72,7 @@ const handleSelectionUpdate = () => {
 
   const selected = Array<0 | 1>(entries.length).fill(0);
 
-  selectionStore.setState({ isBoxSelecting: false, selected, lastSelectedIndex: null });
+  selectionStore.setState({ selected, lastSelectedIndex: null });
 };
 
 // ----------------------------------------------------------------------------
