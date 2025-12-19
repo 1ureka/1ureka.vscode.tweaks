@@ -101,7 +101,7 @@ const theme = createTheme({
         info: {
           main: getVarValue("editor-selectionBackground"),
         },
-        divider: getVarValue("panel-border"),
+        divider: getVarValue("disabledForeground"),
       },
     },
   },

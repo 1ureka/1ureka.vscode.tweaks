@@ -102,14 +102,14 @@ const NavigationBar = () => {
           actionDetail="用 Grid 顯示 (即將推出)"
           disabled
         />
-        <ActionDropdown>
+        <ActionDropdown actionName="顯示設定">
           <Box sx={{ p: 2, px: 5 }} />
         </ActionDropdown>
       </ActionGroup>
 
       <ActionGroup>
         <ActionButton actionIcon="codicon codicon-filter" actionName="過濾器" actionDetail="啟用/停用過濾功能" active />
-        <ActionDropdown>
+        <ActionDropdown actionName="過濾設定">
           <Box sx={{ p: 2, px: 5 }} />
         </ActionDropdown>
       </ActionGroup>
