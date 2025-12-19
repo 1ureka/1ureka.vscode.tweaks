@@ -95,6 +95,7 @@ const handleRenameReset = () => {
 
 /**
  * 定義更新鏈/依賴鏈，由於 handler 都是同步的，因此鏈上任意一點產生的反應都會是原子化的
+ * 具體來說，在 JavaScript 的 單執行緒（Single-threaded） 模型下，這條「訂閱鏈」本質上就是一個連續執行的執行棧（Call Stack）
  *
  * ```
  * 來源資料 ──┐
