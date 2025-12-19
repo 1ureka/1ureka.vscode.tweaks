@@ -5,6 +5,14 @@ import type { SxProps } from "@mui/system";
 import { Tooltip } from "@@/fileSystem/components/Tooltip";
 
 /**
+ * 操作元件的 className
+ */
+const actionGroupClassName = "action-group";
+const actionButtonClassName = "action-button";
+const actionDropdownButtonClassName = "action-dropdown-button";
+const actionInputClassName = "action-input";
+
+/**
  * 操作元件的大小（高度或寬度，取決於方向）
  */
 const actionSize = { small: 26, medium: 30 };
@@ -33,7 +41,7 @@ const ActionGroup = ({ children, orientation = "horizontal", size = "medium" }: 
 
   return (
     <Box
-      className="action-group"
+      className={actionGroupClassName}
       sx={{
         display: "flex",
         alignItems: "stretch",
@@ -45,17 +53,17 @@ const ActionGroup = ({ children, orientation = "horizontal", size = "medium" }: 
         borderRadius: 1,
         border: "2px solid",
         borderColor: "action.border",
-        "&.action-group > *": { border: "none", borderLeft, borderTop, borderColor: "action.border" },
-        "&.action-group > *:first-child": { borderLeft: "none", borderTop: "none" },
+        [`&.${actionGroupClassName} > *`]: { border: "none", borderLeft, borderTop, borderColor: "action.border" },
+        [`&.${actionGroupClassName} > *:first-child`]: { borderLeft: "none", borderTop: "none" },
 
-        "&.action-group > .action-button > button": {
+        [`&.${actionGroupClassName} > .${actionButtonClassName} > button`]: {
           height: orientation === "horizontal" ? 1 : "auto",
           width: orientation === "vertical" ? 1 : "auto",
           aspectRatio: "1 / 1",
           "& i": { fontSize: actionSize[size] - 10 },
         },
 
-        "&.action-group input": {
+        [`&.${actionGroupClassName} input`]: {
           fontSize: actionSize.small - 12,
         },
       }}
@@ -116,7 +124,7 @@ const ActionButton = (props: ActionButtonProps) => {
 
   return (
     <Tooltip {...{ actionName, actionDetail, actionShortcut }} placement={tooltipPlacement}>
-      <Box className="action-button">
+      <Box className={actionButtonClassName}>
         <ButtonBase disableRipple onClick={onClick} sx={sx} disabled={disabled}>
           <i className={actionIcon} style={{ display: "block" }} />
         </ButtonBase>
@@ -161,6 +169,7 @@ const ActionInput = (props: ActionInputProps) => {
   return (
     <Tooltip {...{ actionName, actionDetail, actionShortcut }} placement={tooltipPlacement}>
       <InputBase
+        className={actionInputClassName}
         startAdornment={actionIcon ? <i className={actionIcon} style={{ display: "block" }} /> : undefined}
         placeholder={placeholder}
         value={value}
@@ -216,7 +225,7 @@ const ActionDropdown = ({ children, actionName, actionDetail, tooltipPlacement }
   return (
     <>
       <Tooltip actionName={actionName} actionDetail={actionDetail} placement={tooltipPlacement}>
-        <Box className="action-button">
+        <Box className={actionButtonClassName}>
           <ButtonBase disableRipple onClick={(e) => setAnchorRef(e.currentTarget)} sx={buttonSx}>
             <i className="codicon codicon-chevron-down" style={{ display: "block" }} />
           </ButtonBase>
@@ -269,7 +278,7 @@ const ActionDropdownButton = (props: Omit<ActionButtonProps, "actionShortcut">) 
 
   return (
     <Tooltip actionName={actionName} actionDetail={actionDetail} placement={tooltipPlacement}>
-      <Box className="action-dropdown-button">
+      <Box className={actionDropdownButtonClassName}>
         <ButtonBase
           disableRipple
           className={className}
@@ -287,4 +296,5 @@ const ActionDropdownButton = (props: Omit<ActionButtonProps, "actionShortcut">) 
   );
 };
 
+export { actionGroupClassName, actionButtonClassName, actionDropdownButtonClassName, actionInputClassName };
 export { actionSize, ActionGroup, ActionButton, ActionInput, ActionDropdown, ActionDropdownButton };

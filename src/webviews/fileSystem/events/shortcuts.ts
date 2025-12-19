@@ -1,5 +1,6 @@
 import { refresh } from "@@/fileSystem/action/navigation";
 import { selectAll, selectInvert, selectNone, toggleBoxSelectionMode } from "@@/fileSystem/action/selection";
+import { actionInputClassName } from "@@/fileSystem/components/Action";
 import { selectionStore } from "@@/fileSystem/store/data";
 
 /**
@@ -34,6 +35,9 @@ const registerSelectionShortcuts = () => {
   window.addEventListener(
     "keydown",
     (e) => {
+      const target = e.target as HTMLElement;
+      if (target.closest(`.${actionInputClassName}`)) return; // 在輸入框中不觸發快捷鍵
+
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "a") {
         e.preventDefault();
         e.stopPropagation();
