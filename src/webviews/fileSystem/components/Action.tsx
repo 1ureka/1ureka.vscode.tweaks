@@ -154,6 +154,7 @@ type ActionInputProps = {
   placeholder?: string;
   readOnly?: boolean;
   value?: string;
+  displayValue?: string;
   onChange?: (value: string) => void;
   tooltipPlacement?: TooltipPlacement;
 };
@@ -164,7 +165,9 @@ type ActionInputProps = {
  */
 const ActionInput = (props: ActionInputProps) => {
   const { actionIcon, actionName, actionDetail, actionShortcut, placeholder, value, onChange, readOnly } = props;
-  const { tooltipPlacement } = props;
+  const { tooltipPlacement, displayValue } = props;
+
+  const [focus, setFocus] = useState(false);
 
   return (
     <Tooltip {...{ actionName, actionDetail, actionShortcut }} placement={tooltipPlacement}>
@@ -172,10 +175,12 @@ const ActionInput = (props: ActionInputProps) => {
         className={actionInputClassName}
         startAdornment={actionIcon ? <i className={actionIcon} style={{ display: "block" }} /> : undefined}
         placeholder={placeholder}
-        value={value}
+        value={focus ? value : displayValue ?? value}
         onChange={(e) => onChange?.(e.target.value)}
         sx={actionInputSx}
         readOnly={readOnly}
+        onFocus={() => setFocus(true)}
+        onBlur={() => setFocus(false)}
       />
     </Tooltip>
   );

@@ -41,9 +41,10 @@ const ActionButtonRefresh = () => {
 
 const NavigationBar = () => {
   const currentPath = dataStore((state) => state.currentPath);
+  const shortenedPath = dataStore((state) => state.shortenedPath);
 
   return (
-    <Box sx={{ display: "grid", gridTemplateColumns: "auto auto 2fr 1fr auto auto", gap: 1, pb: 1 }}>
+    <Box sx={{ display: "grid", gridTemplateColumns: "auto auto 3fr 1fr auto auto", gap: 1, pb: 1 }}>
       <ActionGroup>
         <ActionButton
           actionIcon="codicon codicon-arrow-left"
@@ -77,7 +78,7 @@ const NavigationBar = () => {
       </ActionGroup>
 
       <ActionGroup>
-        <ActionInput actionName="目錄" actionDetail="目前所在的路徑" value={currentPath} />
+        <ActionInput actionName={currentPath} value={currentPath} displayValue={shortenedPath} />
       </ActionGroup>
 
       <ActionGroup>
