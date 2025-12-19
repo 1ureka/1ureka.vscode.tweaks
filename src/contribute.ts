@@ -113,8 +113,8 @@ const editorTitleMenuEntries: ContextMenuEntries = [
 const explorerContextMenuEntries: ContextMenuEntries = [
   {
     id: "1ureka.external.openWithSystemDefaultApp",
-    title: "*以系統預設應用程式開啟",
-    when: "explorerResourceIsFile",
+    title: "以預設應用程式開啟",
+    when: "!explorerResourceIsFolder",
     group: "navigation@100",
   },
   {
@@ -134,7 +134,7 @@ const explorerContextMenuEntries: ContextMenuEntries = [
 const editorTitleContextMenuEntries: ContextMenuEntries = [
   {
     id: "1ureka.external.openWithSystemDefaultApp",
-    title: "以系統預設應用程式開啟",
+    title: "以預設應用程式開啟",
     when: "resourceScheme == file",
     group: "navigation@100",
   },

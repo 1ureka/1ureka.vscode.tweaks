@@ -202,9 +202,16 @@ async function openWithDefaultApp(params: {
   }
 }
 
+/**
+ * 獲取當前系統的所有磁碟機資訊
+ */
+function getSystemVolumes() {
+  // TODO: 引入 drivelist 套件並在這裡呼叫 drivelist.list() 並返回其 promise
+}
+
 // -------------------------------------------------------------------------------------------
 
 export type { ReadDirectoryEntry, InspectDirectoryEntry };
 export { readDirectory, inspectDirectory };
 export { isRootDirectory, pathToArray, shortenPath, toParentPath };
-export { openWithDefaultApp };
+export { openWithDefaultApp, getSystemVolumes };
