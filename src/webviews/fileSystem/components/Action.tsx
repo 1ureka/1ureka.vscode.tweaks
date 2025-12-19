@@ -1,13 +1,26 @@
 import { useState } from "react";
-import { colorMix } from "@/utils/ui";
-import { Box, ButtonBase, InputBase, Popover } from "@mui/material";
+import { centerTextSx, colorMix } from "@/utils/ui";
+import { Box, ButtonBase, InputBase, Popover, Typography } from "@mui/material";
 import type { SxProps } from "@mui/system";
 import { Tooltip } from "@@/fileSystem/components/Tooltip";
+
+/**
+ * 操作元件的 className
+ */
+const actionGroupClassName = "action-group";
+const actionButtonClassName = "action-button";
+const actionDropdownButtonClassName = "action-dropdown-button";
+const actionInputClassName = "action-input";
 
 /**
  * 操作元件的大小（高度或寬度，取決於方向）
  */
 const actionSize = { small: 26, medium: 30 };
+
+/**
+ * tooltip 放置位置類型
+ */
+type TooltipPlacement = React.ComponentProps<typeof Tooltip>["placement"];
 
 type ActionGroupProps = {
   children: React.ReactNode;
@@ -28,7 +41,7 @@ const ActionGroup = ({ children, orientation = "horizontal", size = "medium" }: 
 
   return (
     <Box
-      className="action-group"
+      className={actionGroupClassName}
       sx={{
         display: "flex",
         alignItems: "stretch",
@@ -40,17 +53,17 @@ const ActionGroup = ({ children, orientation = "horizontal", size = "medium" }: 
         borderRadius: 1,
         border: "2px solid",
         borderColor: "action.border",
-        "&.action-group > *": { border: "none", borderLeft, borderTop, borderColor: "action.border" },
-        "&.action-group > *:first-child": { borderLeft: "none", borderTop: "none" },
+        [`&.${actionGroupClassName} > *`]: { border: "none", borderLeft, borderTop, borderColor: "action.border" },
+        [`&.${actionGroupClassName} > *:first-child`]: { borderLeft: "none", borderTop: "none" },
 
-        "&.action-group > .action-button > button": {
+        [`&.${actionGroupClassName} > .${actionButtonClassName} > button`]: {
           height: orientation === "horizontal" ? 1 : "auto",
           width: orientation === "vertical" ? 1 : "auto",
           aspectRatio: "1 / 1",
           "& i": { fontSize: actionSize[size] - 10 },
         },
 
-        "&.action-group input": {
+        [`&.${actionGroupClassName} input`]: {
           fontSize: actionSize.small - 12,
         },
       }}
@@ -91,6 +104,7 @@ type ActionButtonProps = {
   onClick?: () => void;
   active?: boolean;
   disabled?: boolean;
+  tooltipPlacement?: TooltipPlacement;
 };
 
 /**
@@ -99,6 +113,7 @@ type ActionButtonProps = {
  */
 const ActionButton = (props: ActionButtonProps) => {
   const { actionIcon, actionName, actionDetail, actionShortcut, onClick, active, disabled } = props;
+  const { tooltipPlacement } = props;
 
   let sx: SxProps = actionButtonSx;
   if (disabled) {
@@ -108,8 +123,8 @@ const ActionButton = (props: ActionButtonProps) => {
   }
 
   return (
-    <Tooltip actionName={actionName} actionDetail={actionDetail} actionShortcut={actionShortcut}>
-      <Box className="action-button">
+    <Tooltip {...{ actionName, actionDetail, actionShortcut }} placement={tooltipPlacement}>
+      <Box className={actionButtonClassName}>
         <ButtonBase disableRipple onClick={onClick} sx={sx} disabled={disabled}>
           <i className={actionIcon} style={{ display: "block" }} />
         </ButtonBase>
@@ -139,7 +154,9 @@ type ActionInputProps = {
   placeholder?: string;
   readOnly?: boolean;
   value?: string;
+  displayValue?: string;
   onChange?: (value: string) => void;
+  tooltipPlacement?: TooltipPlacement;
 };
 
 /**
@@ -148,15 +165,22 @@ type ActionInputProps = {
  */
 const ActionInput = (props: ActionInputProps) => {
   const { actionIcon, actionName, actionDetail, actionShortcut, placeholder, value, onChange, readOnly } = props;
+  const { tooltipPlacement, displayValue } = props;
+
+  const [focus, setFocus] = useState(false);
+
   return (
-    <Tooltip actionName={actionName} actionDetail={actionDetail} actionShortcut={actionShortcut}>
+    <Tooltip {...{ actionName, actionDetail, actionShortcut }} placement={tooltipPlacement}>
       <InputBase
+        className={actionInputClassName}
         startAdornment={actionIcon ? <i className={actionIcon} style={{ display: "block" }} /> : undefined}
         placeholder={placeholder}
-        value={value}
+        value={focus ? value : displayValue ?? value}
         onChange={(e) => onChange?.(e.target.value)}
         sx={actionInputSx}
         readOnly={readOnly}
+        onFocus={() => setFocus(true)}
+        onBlur={() => setFocus(false)}
       />
     </Tooltip>
   );
@@ -164,7 +188,7 @@ const ActionInput = (props: ActionInputProps) => {
 
 // -------------------------------------------------------------------------------------
 
-const actionDropdownButtonSx: SxProps = {
+const actionDropdownSx: SxProps = {
   display: "grid",
   placeItems: "center",
   bgcolor: "action.dropdown",
@@ -172,13 +196,13 @@ const actionDropdownButtonSx: SxProps = {
   "&:active": { bgcolor: "action.active" },
 };
 
-const actionDropdownButtonActiveSx: SxProps = {
+const actionDropdownActiveSx: SxProps = {
   display: "grid",
   placeItems: "center",
   bgcolor: "action.active",
 };
 
-const actionDropdownSx: SxProps = {
+const actionDropdownMenuSx: SxProps = {
   mt: 0.5,
   p: 1,
   bgcolor: "tooltip.background",
@@ -188,21 +212,30 @@ const actionDropdownSx: SxProps = {
   boxShadow: "0 2px 8px var(--vscode-widget-shadow)",
 };
 
+type ActionDropdownProps = {
+  children: React.ReactNode;
+  actionName: string;
+  actionDetail?: string;
+  tooltipPlacement?: TooltipPlacement;
+};
+
 /**
  * 下拉選單元件，單獨使用仍需要包在 ActionGroup 中
  */
-const ActionDropdown = ({ children }: { children: React.ReactNode }) => {
+const ActionDropdown = ({ children, actionName, actionDetail, tooltipPlacement }: ActionDropdownProps) => {
   const [anchorRef, setAnchorRef] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorRef);
-  const buttonSx = open ? actionDropdownButtonActiveSx : actionDropdownButtonSx;
+  const buttonSx = open ? actionDropdownActiveSx : actionDropdownSx;
 
   return (
     <>
-      <Box className="action-button">
-        <ButtonBase disableRipple onClick={(e) => setAnchorRef(e.currentTarget)} sx={buttonSx}>
-          <i className="codicon codicon-chevron-down" style={{ display: "block" }} />
-        </ButtonBase>
-      </Box>
+      <Tooltip actionName={actionName} actionDetail={actionDetail} placement={tooltipPlacement}>
+        <Box className={actionButtonClassName}>
+          <ButtonBase disableRipple onClick={(e) => setAnchorRef(e.currentTarget)} sx={buttonSx}>
+            <i className="codicon codicon-chevron-down" style={{ display: "block" }} />
+          </ButtonBase>
+        </Box>
+      </Tooltip>
 
       <Popover
         anchorEl={anchorRef}
@@ -210,7 +243,7 @@ const ActionDropdown = ({ children }: { children: React.ReactNode }) => {
         onClose={() => setAnchorRef(null)}
         anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
         transformOrigin={{ vertical: "top", horizontal: "center" }}
-        slotProps={{ paper: { elevation: 0, sx: actionDropdownSx } }}
+        slotProps={{ paper: { elevation: 0, sx: actionDropdownMenuSx } }}
       >
         {children}
       </Popover>
@@ -220,4 +253,53 @@ const ActionDropdown = ({ children }: { children: React.ReactNode }) => {
 
 // -------------------------------------------------------------------------------------
 
-export { actionSize, ActionGroup, ActionButton, ActionInput, ActionDropdown };
+const actionDropdownButtonSx: SxProps = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "flex-start",
+  width: 1,
+  height: actionSize.small - 4,
+  gap: 1.5,
+  pr: 1.5,
+  pl: 0.5,
+  borderRadius: 0.5,
+  bgcolor: "tooltip.background",
+  "&:hover": { bgcolor: colorMix("tooltip.background", "text.primary", 0.95) },
+  "&:active": { bgcolor: "action.active" },
+  "&.active": { bgcolor: "action.active", "&:hover": { bgcolor: "action.active" } },
+  "&.disabled": { color: "text.disabled" },
+};
+
+/**
+ * 下拉選單內的按鈕元件
+ */
+const ActionDropdownButton = (props: Omit<ActionButtonProps, "actionShortcut">) => {
+  const { actionIcon, actionName, actionDetail, onClick, active, disabled } = props;
+  const { tooltipPlacement = "right" } = props;
+
+  let className = "";
+  if (active) className += "active ";
+  if (disabled) className += "disabled ";
+
+  return (
+    <Tooltip actionName={actionName} actionDetail={actionDetail} placement={tooltipPlacement}>
+      <Box className={actionDropdownButtonClassName}>
+        <ButtonBase
+          disableRipple
+          className={className}
+          onClick={onClick}
+          disabled={disabled}
+          sx={actionDropdownButtonSx}
+        >
+          <i className={actionIcon} style={{ display: "block" }} />
+          <Typography variant="caption" sx={{ color: "inherit", ...centerTextSx }}>
+            {actionName}
+          </Typography>
+        </ButtonBase>
+      </Box>
+    </Tooltip>
+  );
+};
+
+export { actionGroupClassName, actionButtonClassName, actionDropdownButtonClassName, actionInputClassName };
+export { actionSize, ActionGroup, ActionButton, ActionInput, ActionDropdown, ActionDropdownButton };

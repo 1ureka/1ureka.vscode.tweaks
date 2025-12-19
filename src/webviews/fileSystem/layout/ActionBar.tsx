@@ -23,7 +23,12 @@ const ActionBar = () => {
           actionDetail="重新命名最後選取的項目"
           value={lastSelectedIndex !== null ? rows[lastSelectedIndex]?.fileName : ""}
         />
-        <ActionButton actionIcon="codicon codicon-rename" actionName="重新命名" actionDetail="重新命名最後選取的項目" />
+        <ActionButton
+          actionIcon="codicon codicon-rename"
+          actionName="重新命名"
+          actionDetail="重新命名最後選取的項目"
+          disabled={lastSelectedIndex === null}
+        />
       </ActionGroup>
 
       <ActionGroup>

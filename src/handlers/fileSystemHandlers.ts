@@ -3,13 +3,15 @@ import * as path from "path";
 
 import { tryCatch } from "@/utils";
 import { generateErrorMessage } from "@/utils/formatter";
-import { readDirectory, inspectDirectory, isRootDirectory, pathToArray, toParentPath } from "@/utils/system";
+import { readDirectory, inspectDirectory } from "@/utils/system";
+import { isRootDirectory, pathToArray, toParentPath, shortenPath } from "@/utils/system";
 import type { InspectDirectoryEntry } from "@/utils/system";
 import type { WithProgress } from "@/utils";
 
 type ReadDirectoryResult = {
   // 有關當前目錄的資訊
   currentPath: string;
+  shortenedPath: string;
   currentPathParts: string[];
   isCurrentRoot: boolean;
   fileCount: number;
@@ -25,10 +27,11 @@ type ReadDirectoryResult = {
  */
 const handleInitialData = (params: { dirPath: string }): ReadDirectoryResult => {
   const currentPath = path.resolve(params.dirPath);
+  const shortenedPath = shortenPath(currentPath, 40);
   const currentPathParts = pathToArray(currentPath);
   const isCurrentRoot = isRootDirectory(currentPath);
 
-  const baseInfo = { currentPath, currentPathParts, isCurrentRoot };
+  const baseInfo = { currentPath, shortenedPath, currentPathParts, isCurrentRoot };
 
   return { ...baseInfo, entries: [], folderCount: 0, fileCount: 0, timestamp: Date.now() };
 };
@@ -41,10 +44,11 @@ const handleReadDirectory = async (params: { dirPath: string; depthOffset?: numb
   const { dirPath, depthOffset = 0 } = params;
 
   const currentPath = path.resolve(toParentPath(dirPath, depthOffset));
+  const shortenedPath = shortenPath(currentPath, 40);
   const currentPathParts = pathToArray(currentPath);
   const isCurrentRoot = isRootDirectory(currentPath);
 
-  const baseInfo = { currentPath, currentPathParts, isCurrentRoot };
+  const baseInfo = { currentPath, shortenedPath, currentPathParts, isCurrentRoot };
   const counts = { folderCount: 0, fileCount: 0 };
 
   const entries = await readDirectory(currentPath);

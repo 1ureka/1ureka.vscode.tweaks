@@ -49,7 +49,7 @@ const ListRow = (props: ListItem) => {
           <Box sx={{ color: "text.primary" }}>
             <i className={icon} style={{ display: "block", fontSize: listRowHeight - 2 }} />
           </Box>
-          <Typography variant="caption" sx={centerTextSx}>
+          <Typography variant="caption" sx={{ ...centerTextSx, textWrap: "nowrap" }}>
             {text}
           </Typography>
         </Box>
