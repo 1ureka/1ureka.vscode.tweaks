@@ -1,8 +1,5 @@
 import * as vscode from "vscode";
-import type { CreateFileAPI, CreateDirAPI, ReadDirAPI, DeleteAPI } from "@/providers/fileSystemProvider";
-import type { OpenInWorkspaceAPI, OpenInTerminalAPI, OpenInImageWallAPI } from "@@/fileSystem/events/message";
 import { FileSystemPanelProvider } from "@/providers/fileSystemProvider";
-import { forwardCommandToWebview } from "@/utils/message_host";
 import { createCommandManager } from "@/utils/command";
 
 /**
@@ -37,33 +34,5 @@ export function registerFileSystemCommands(context: vscode.ExtensionContext) {
 
     if (!folders || folders.length === 0) return;
     else fileSystemProvider.createPanel(folders[0].fsPath);
-  });
-
-  commandManager.register("1ureka.fileSystem.refresh", () => {
-    forwardCommandToWebview<ReadDirAPI>(fileSystemProvider.getCurrentPanel(), "readDirectory");
-  });
-
-  commandManager.register("1ureka.fileSystem.createFolder", () => {
-    forwardCommandToWebview<CreateDirAPI>(fileSystemProvider.getCurrentPanel(), "createDir");
-  });
-
-  commandManager.register("1ureka.fileSystem.createFile", () => {
-    forwardCommandToWebview<CreateFileAPI>(fileSystemProvider.getCurrentPanel(), "createFile");
-  });
-
-  commandManager.register("1ureka.fileSystem.openInWorkspace", () => {
-    forwardCommandToWebview<OpenInWorkspaceAPI>(fileSystemProvider.getCurrentPanel(), "openInWorkspace");
-  });
-
-  commandManager.register("1ureka.fileSystem.openInTerminal", () => {
-    forwardCommandToWebview<OpenInTerminalAPI>(fileSystemProvider.getCurrentPanel(), "openInTerminal");
-  });
-
-  commandManager.register("1ureka.fileSystem.openInImageWall", () => {
-    forwardCommandToWebview<OpenInImageWallAPI>(fileSystemProvider.getCurrentPanel(), "openInImageWall");
-  });
-
-  commandManager.register("1ureka.fileSystem.delete", () => {
-    forwardCommandToWebview<DeleteAPI>(fileSystemProvider.getCurrentPanel(), "delete");
   });
 }
