@@ -109,6 +109,49 @@ function pathToArray(inputPath: string): string[] {
 }
 
 /**
+ * 將路徑縮減至符合最大長度限制
+ * @param inputPath 原始路徑
+ * @param maxLength 最大允許字元數
+ * @returns 縮減後的路徑字串
+ */
+function shortenPath(inputPath: string, maxLength: number): string {
+  if (inputPath.length <= maxLength) {
+    return inputPath;
+  }
+
+  const parts = pathToArray(inputPath);
+  if (parts.length <= 2) {
+    return inputPath.slice(0, maxLength - 3) + "...";
+  }
+
+  const root = parts[0];
+  const lastPart = parts[parts.length - 1];
+  const ellipsis = "...";
+
+  let result = path.join(root, ellipsis, lastPart);
+  if (result.length > maxLength) {
+    // 因為這代表 result 已經超過最大長度了，所以只能 fallback 到單純截斷字串
+    return inputPath.slice(0, maxLength - 3) + "...";
+  }
+
+  let currentIndex = parts.length - 2;
+  while (currentIndex > 0) {
+    const nextPart = parts[currentIndex];
+    const testPath = path.join(root, ellipsis, nextPart, ...parts.slice(currentIndex + 1));
+
+    if (testPath.length <= maxLength) {
+      result = testPath;
+      currentIndex--;
+    } else {
+      // 一旦超過長度，停止增加並回傳上一次成功的結果
+      break;
+    }
+  }
+
+  return result;
+}
+
+/**
  * 根據負數的深度偏移量 (depthOffset) 計算新的路徑。
  * 其中，depthOffset 可以是正數、零或負數，但都視作向上移動目錄層級來處理。
  */
@@ -126,5 +169,5 @@ function isSystemError(error: unknown): error is Error & { code: string } {
   return typeof error === "object" && error !== null && "code" in error && typeof error.code === "string";
 }
 
-export { readDirectory, inspectDirectory, isRootDirectory, pathToArray, toParentPath, isSystemError };
+export { readDirectory, inspectDirectory, isRootDirectory, pathToArray, shortenPath, toParentPath, isSystemError };
 export type { ReadDirectoryEntry, InspectDirectoryEntry };
