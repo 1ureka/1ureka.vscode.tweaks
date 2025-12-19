@@ -1,6 +1,9 @@
 import fs from "fs-extra";
+import open from "open";
 import * as path from "path";
 import { tryCatch, type Prettify } from "@/utils";
+
+// -------------------------------------------------------------------------------------------
 
 type ReadDirectoryEntry = {
   fileName: string;
@@ -16,6 +19,8 @@ type InspectDirectoryEntry = Prettify<
     ctime: number;
   }
 >;
+
+// -------------------------------------------------------------------------------------------
 
 /**
  * 讀取指定目錄的內容，並回傳包含檔案名稱、路徑與型別的陣列。如果讀取失敗則回傳 null。
@@ -91,6 +96,8 @@ async function inspectDirectory(entries: ReadDirectoryEntry[]): Promise<InspectD
   return (await Promise.all(promises)).filter((entry) => entry !== null);
 }
 
+// -------------------------------------------------------------------------------------------
+
 /**
  *檢查一個路徑是否已到達檔案系統的根目錄。如果已到達根目錄（沒有上一層目錄），則返回 true。
  */
@@ -162,12 +169,42 @@ function toParentPath(currentPath: string, depthOffset: number): string {
   return path.normalize(newPath);
 }
 
+// -------------------------------------------------------------------------------------------
+
 /**
- * 檢查錯誤物件是否為 Node.js 環境中常見的系統級錯誤 (帶有 string code 屬性)
+ * 允許開啟的副檔名白名單
  */
-function isSystemError(error: unknown): error is Error & { code: string } {
-  return typeof error === "object" && error !== null && "code" in error && typeof error.code === "string";
+const AllowedFiles = [".blend", ".spp", ".html"];
+
+/**
+ * 使用系統預設應用打開指定檔案
+ */
+async function openWithDefaultApp(params: {
+  filePath: string;
+  askForConfirmation: (message: string) => Promise<boolean>;
+  showError: (message: string) => void;
+}) {
+  const { filePath, askForConfirmation, showError } = params;
+  const fileExt = path.extname(filePath).toLowerCase();
+
+  let proceed = false;
+  if (!AllowedFiles.includes(fileExt)) {
+    proceed = await askForConfirmation(`此功能只支援開啟 [${AllowedFiles.join(", ")}]，檔案類型不符，是否仍要繼續？`);
+  } else {
+    proceed = true;
+  }
+
+  if (!proceed) return;
+
+  const result = await tryCatch(() => open(filePath, { wait: false }));
+  if (result.error) {
+    showError(`無法使用系統預設應用程式開啟檔案：${result.error.message}`);
+  }
 }
 
-export { readDirectory, inspectDirectory, isRootDirectory, pathToArray, shortenPath, toParentPath, isSystemError };
+// -------------------------------------------------------------------------------------------
+
 export type { ReadDirectoryEntry, InspectDirectoryEntry };
+export { readDirectory, inspectDirectory };
+export { isRootDirectory, pathToArray, shortenPath, toParentPath };
+export { openWithDefaultApp };
