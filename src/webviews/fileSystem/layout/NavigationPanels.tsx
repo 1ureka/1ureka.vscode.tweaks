@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { Box, Typography } from "@mui/material";
+import { Box, Divider } from "@mui/material";
 import { Panel } from "@@/fileSystem/components/Panel";
 import { List, type ListItem } from "@@/fileSystem/components/List";
-import { ActionButton, ActionDropdown, ActionGroup } from "@@/fileSystem/components/Action";
+import { ActionButton, ActionDropdown, ActionDropdownButton, ActionGroup } from "@@/fileSystem/components/Action";
 
 const fakeBookmarkItems: ListItem[] = [
   {
@@ -157,15 +157,35 @@ const NavigationPanels = () => {
                 actionIcon="codicon codicon-add"
                 actionName="添加書籤"
                 actionDetail="為選取的/作用中的資料夾添加書籤"
+                tooltipPlacement="right"
               />
               <ActionButton
                 actionIcon="codicon codicon-chrome-minimize"
                 actionName="刪除書籤"
                 actionDetail="刪除所選的書籤"
+                tooltipPlacement="right"
               />
-              <ActionDropdown>
-                <Typography sx={{ fontSize: 12 }}>12 Nov 2025 01:46</Typography>
-                <Typography sx={{ fontSize: 12 }}>DD MMM YYYY HH:SS</Typography>
+              <ActionDropdown actionName="更多操作" actionDetail="更多書籤相關操作" tooltipPlacement="right">
+                <ActionDropdownButton
+                  actionIcon="codicon codicon-close"
+                  actionName="清空"
+                  actionDetail="刪除所有書籤"
+                />
+
+                <Divider sx={{ my: 0.5 }} />
+
+                <ActionDropdownButton
+                  actionIcon="codicon codicon-fold-up"
+                  actionName="移至頂部"
+                  actionDetail="將所選書籤移動到列表頂部"
+                  disabled
+                />
+                <ActionDropdownButton
+                  actionIcon="codicon codicon-fold-down"
+                  actionName="移至底部"
+                  actionDetail="將所選書籤移動到列表底部"
+                  disabled
+                />
               </ActionDropdown>
             </ActionGroup>
 
@@ -175,12 +195,14 @@ const NavigationPanels = () => {
                 disabled
                 actionName="移動書籤"
                 actionDetail="將目前所在的書籤向上移動"
+                tooltipPlacement="right"
               />
               <ActionButton
                 actionIcon="codicon codicon-triangle-down"
                 disabled
                 actionName="移動書籤"
                 actionDetail="將目前所在的書籤向下移動"
+                tooltipPlacement="right"
               />
             </ActionGroup>
           </Box>
