@@ -76,7 +76,7 @@ const handleSelectionUpdate = () => {
 };
 
 /**
- * 當最後選取的項目更改時，捨棄重新命名狀態，改為新項目的名稱
+ * 當最後選取的項目更改時，捨棄暫存的重新命名狀態，改為新項目的名稱
  */
 const handleRenameReset = () => {
   const { lastSelectedIndex } = selectionStore.getState();
@@ -98,7 +98,7 @@ const handleRenameReset = () => {
  *
  * ```
  * 來源資料 ──┐
- *            ├──> 檢視資料 ────> 選取狀態
+ *            ├──> 檢視資料 ────> 選取狀態 ───> 重新命名狀態
  * 檢視條件 ──┘
  * ```
  */
