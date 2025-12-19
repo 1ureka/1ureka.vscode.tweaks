@@ -42,6 +42,7 @@ const ActionButtonRefresh = () => {
 const NavigationBar = () => {
   const currentPath = dataStore((state) => state.currentPath);
   const shortenedPath = dataStore((state) => state.shortenedPath);
+  const isCurrentRoot = dataStore((state) => state.isCurrentRoot);
 
   return (
     <Box sx={{ display: "grid", gridTemplateColumns: "auto auto 3fr 1fr auto auto", gap: 1, pb: 1 }}>
@@ -64,6 +65,7 @@ const NavigationBar = () => {
           actionDetail="移動到親代資料夾"
           actionShortcut={["Alt", "Up Arrow"]}
           onClick={navigateUp}
+          disabled={isCurrentRoot}
         />
         <ActionButtonRefresh />
       </ActionGroup>

@@ -37,5 +37,14 @@ startReactApp({
     setupDependencyChain();
     readInitData();
     registerAllShortcuts();
+
+    window.addEventListener(
+      "contextmenu",
+      (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      },
+      true
+    );
   },
 });
