@@ -36,6 +36,11 @@ type ClipboardState = {
   entries: { [filePath: string]: InspectDirectoryEntry };
 };
 
+type RenameState = {
+  srcName: string;
+  destName: string;
+};
+
 // ----------------------------------------------------------------------------
 
 /**
@@ -63,7 +68,12 @@ const selectionStore = create<SelectionState>(() => ({ selected: [], lastSelecte
  */
 const clipboardStore = create<ClipboardState>(() => ({ entries: {} }));
 
+/**
+ * 建立用於儲存重新命名狀態的容器，包含來源名稱與使用者輸入的目標名稱
+ */
+const renameStore = create<RenameState>(() => ({ srcName: "", destName: "" }));
+
 // ----------------------------------------------------------------------------
 
-export { dataStore, viewStateStore, viewDataStore, selectionStore, clipboardStore };
+export { dataStore, viewStateStore, viewDataStore, selectionStore, clipboardStore, renameStore };
 export type { ViewState };

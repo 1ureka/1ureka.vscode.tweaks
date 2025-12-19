@@ -3,7 +3,7 @@
  * @description 該文件負責定義更新鏈/依賴鏈，可參考 README.md 中的說明
  */
 
-import { dataStore, viewDataStore, viewStateStore, selectionStore } from "@@/fileSystem/store/data";
+import { dataStore, viewDataStore, viewStateStore, selectionStore, renameStore } from "@@/fileSystem/store/data";
 import type { InspectDirectoryEntry } from "@/utils/system";
 
 /**
@@ -75,6 +75,22 @@ const handleSelectionUpdate = () => {
   selectionStore.setState({ selected, lastSelectedIndex: null });
 };
 
+/**
+ * 當最後選取的項目更改時，捨棄重新命名狀態，改為新項目的名稱
+ */
+const handleRenameReset = () => {
+  const { lastSelectedIndex } = selectionStore.getState();
+  const { entries } = viewDataStore.getState();
+
+  if (lastSelectedIndex === null) {
+    renameStore.setState({ srcName: "", destName: "" });
+    return;
+  }
+
+  const srcName = entries[lastSelectedIndex]?.fileName || "";
+  renameStore.setState({ srcName, destName: srcName });
+};
+
 // ----------------------------------------------------------------------------
 
 /**
@@ -90,6 +106,7 @@ const setupDependencyChain = () => {
   dataStore.subscribe(handleViewDataUpdate);
   viewStateStore.subscribe(handleViewDataUpdate);
   viewDataStore.subscribe(handleSelectionUpdate);
+  selectionStore.subscribe(handleRenameReset);
 };
 
 export { setupDependencyChain };

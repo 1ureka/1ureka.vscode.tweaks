@@ -1,14 +1,16 @@
 import { Box } from "@mui/material";
 import { ActionButton, ActionGroup, ActionInput } from "@@/fileSystem/components/Action";
-import { clipboardStore, selectionStore, viewDataStore } from "@@/fileSystem/store/data";
+import { ActionDropdown, ActionDropdownButton } from "@@/fileSystem/components/Action";
+import { clipboardStore, renameStore, selectionStore, viewDataStore } from "@@/fileSystem/store/data";
 
-import { deleteItems } from "@@/fileSystem/action/operation";
-import { invokeClipboardPaste, setClipboard } from "@@/fileSystem/action/clipboard";
+import { deleteItems, renameItem, renameItemTemp } from "@@/fileSystem/action/operation";
+import { readClipboard, writeClipboard, writeSystemClipboard } from "@@/fileSystem/action/clipboard";
 import { selectAll, selectInvert, selectNone } from "@@/fileSystem/action/selection";
 
 const ActionBar = () => {
   const rows = viewDataStore((state) => state.entries);
   const lastSelectedIndex = selectionStore((state) => state.lastSelectedIndex);
+  const destName = renameStore((state) => state.destName);
   const selected = selectionStore((state) => state.selected);
   const clipboardEntries = clipboardStore((state) => state.entries);
 
@@ -21,14 +23,32 @@ const ActionBar = () => {
         <ActionInput
           actionName="重新命名"
           actionDetail="重新命名最後選取的項目"
-          value={lastSelectedIndex !== null ? rows[lastSelectedIndex]?.fileName : ""}
+          value={destName}
+          onChange={renameItemTemp}
         />
         <ActionButton
           actionIcon="codicon codicon-rename"
           actionName="重新命名"
           actionDetail="重新命名最後選取的項目"
-          disabled={lastSelectedIndex === null}
+          disabled={destName === "" || lastSelectedIndex === null}
+          onClick={renameItem}
         />
+        <ActionDropdown actionName="更多操作" actionDetail="更多對於最後選取項目的操作" menuPlacement="top">
+          <ActionDropdownButton
+            actionIcon="codicon codicon-copy"
+            actionName="複製項目名稱"
+            actionDetail="複製該檔案或資料夾的名稱到系統剪貼簿"
+            disabled={lastSelectedIndex === null}
+            onClick={() => writeSystemClipboard("name")}
+          />
+          <ActionDropdownButton
+            actionIcon="codicon codicon-copy"
+            actionName="複製項目路徑"
+            actionDetail="複製該檔案或資料夾的完整路徑到系統剪貼簿"
+            disabled={lastSelectedIndex === null}
+            onClick={() => writeSystemClipboard("path")}
+          />
+        </ActionDropdown>
       </ActionGroup>
 
       <ActionGroup>
@@ -78,7 +98,7 @@ const ActionBar = () => {
           actionName="寫入剪貼簿"
           actionDetail="將目前選取的項目路徑暫存至剪貼簿"
           actionShortcut={["Ctrl", "C"]}
-          onClick={setClipboard}
+          onClick={writeClipboard}
           disabled={selectionCount === 0}
         />
       </ActionGroup>
@@ -97,7 +117,7 @@ const ActionBar = () => {
           actionName="放置"
           actionDetail="將目前剪貼簿內的項目放置到目前目錄"
           actionShortcut={["Ctrl", "V"]}
-          onClick={invokeClipboardPaste}
+          onClick={readClipboard}
           disabled={clipboardCount === 0}
         />
       </ActionGroup>

@@ -1,6 +1,6 @@
-import type { OpenFileAPI, CreateDirAPI, CreateFileAPI, DeleteAPI } from "@/providers/fileSystemProvider";
+import type { OpenFileAPI, CreateDirAPI, CreateFileAPI, DeleteAPI, RenameAPI } from "@/providers/fileSystemProvider";
 import { invoke } from "@/utils/message_client";
-import { dataStore, selectionStore, viewDataStore } from "@@/fileSystem/store/data";
+import { dataStore, renameStore, selectionStore, viewDataStore } from "@@/fileSystem/store/data";
 import { requestQueue } from "@@/fileSystem/store/queue";
 
 /**
@@ -66,4 +66,30 @@ const startFileDrag = ({ e, filePath, fileName }: { e: DragEvent; filePath: stri
   e.dataTransfer.effectAllowed = "copy";
 };
 
+/**
+ * 當使用者更改檔案或資料夾名稱時，更新暫存的目標名稱
+ */
+const renameItemTemp = (destName: string) => {
+  renameStore.setState({ destName });
+};
+
+/**
+ * 當使用者確認重新命名時，發送請求至後端進行重新命名操作
+ */
+const renameItem = async () => {
+  const { srcName, destName } = renameStore.getState();
+  const { currentPath } = dataStore.getState();
+
+  if (srcName === "" || destName === "" || srcName === destName) {
+    return;
+  }
+
+  const result = await requestQueue.add(() =>
+    invoke<RenameAPI>("rename", { dirPath: currentPath, name: srcName, newName: destName })
+  );
+
+  dataStore.setState({ ...result });
+};
+
 export { openFile, createNewFolder, createNewFile, deleteItems, startFileDrag };
+export { renameItemTemp, renameItem };
