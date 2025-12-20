@@ -347,7 +347,7 @@ const List = (props: ListProps) => {
 
   // TODO: 自動虛擬化
   return (
-    <Box sx={{ p: 0.75, bgcolor: "background.content", borderRadius: 1 }}>
+    <Box sx={{ p: 0.75, bgcolor: "background.content", borderRadius: 1, minWidth: 0 }}>
       <Box ref={scrollContainerRef} sx={scrollContainerSx} onClick={handleClick}>
         {sortedItems.map((item) => {
           return <ListRow key={item.id} {...item} active={item.id === activeItemId} />;
