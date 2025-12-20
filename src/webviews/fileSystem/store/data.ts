@@ -24,7 +24,7 @@ const initialNavigationState = {
   currentPath: initialPath,
   destPath: initialPath,
   pathHeatmap: initialPathHeatmap,
-  resentlyVisitedPaths: [initialPath],
+  recentlyVisitedPaths: [initialPath],
   mostFrequentPaths: [initialPath],
 };
 
@@ -34,7 +34,7 @@ type NavigationState = {
   currentPath: string;
   destPath: string;
   pathHeatmap: Map<string, number>;
-  resentlyVisitedPaths: string[];
+  recentlyVisitedPaths: string[];
   mostFrequentPaths: string[];
 };
 

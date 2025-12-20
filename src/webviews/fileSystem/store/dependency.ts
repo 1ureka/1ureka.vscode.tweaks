@@ -71,7 +71,7 @@ const handleNavigationUpdate = () => {
     if (oldestKey) nextMap.delete(oldestKey);
   }
 
-  const resentlyVisitedPaths = Array.from(nextMap.keys()).reverse();
+  const recentlyVisitedPaths = Array.from(nextMap.keys()).reverse();
   const mostFrequentPaths = Array.from(nextMap.entries())
     .sort((a, b) => b[1] - a[1])
     .map(([path]) => path);
@@ -80,7 +80,7 @@ const handleNavigationUpdate = () => {
     currentPath,
     destPath: currentPath, // 覆蓋使用者輸入的暫存目標路徑
     pathHeatmap: nextMap,
-    resentlyVisitedPaths,
+    recentlyVisitedPaths,
     mostFrequentPaths,
   });
 };
