@@ -90,6 +90,7 @@ const ActionBar = () => {
           actionIcon="codicon codicon-trash"
           actionName="刪除"
           actionDetail="刪除目前選取的項目"
+          actionShortcut={["Delete"]}
           onClick={deleteItems}
           disabled={selectionCount === 0}
         />
