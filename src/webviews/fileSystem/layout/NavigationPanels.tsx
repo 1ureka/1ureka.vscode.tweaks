@@ -214,6 +214,7 @@ const HistoryPanel = () => {
           activeItemId={activeItemId}
           defaultRows={6}
           onClickItem={({ detail }) => detail && navigateToFolder({ dirPath: detail })}
+          scrollToTopOnItemsChange={mode === "recent"}
         />
 
         <ActionGroup orientation="vertical" size="small">
