@@ -58,10 +58,31 @@ const sortEntries = (entries: InspectDirectoryEntry[]) => {
  */
 const handleNavigationUpdate = () => {
   const { currentPath } = dataStore.getState();
+  const { pathHeatmap: oldMap } = navigationStore.getState();
 
-  const destPath = currentPath; // 覆蓋使用者輸入的暫存目標路徑
+  const nextMap = new Map(oldMap);
 
-  navigationStore.setState({ currentPath, destPath });
+  const count = nextMap.get(currentPath) || 0;
+  nextMap.delete(currentPath); // 刪除舊位置
+  nextMap.set(currentPath, count + 1); // 插入到最末尾（最新）位置
+
+  if (nextMap.size > 50) {
+    const oldestKey = nextMap.keys().next().value; // 拿取頭部（最舊）鍵
+    if (oldestKey) nextMap.delete(oldestKey);
+  }
+
+  const resentlyVisitedPaths = Array.from(nextMap.keys()).reverse();
+  const mostFrequentPaths = Array.from(nextMap.entries())
+    .sort((a, b) => b[1] - a[1])
+    .map(([path]) => path);
+
+  navigationStore.setState({
+    currentPath,
+    destPath: currentPath, // 覆蓋使用者輸入的暫存目標路徑
+    pathHeatmap: nextMap,
+    resentlyVisitedPaths,
+    mostFrequentPaths,
+  });
 };
 
 /**

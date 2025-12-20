@@ -15,9 +15,17 @@ if (!initialData) {
   throw new Error("無法取得檔案系統初始資料");
 }
 
+const initialPath = initialData.currentPath;
+
+const initialPathHeatmap = new Map<string, number>();
+initialPathHeatmap.set(initialPath, 1);
+
 const initialNavigationState = {
-  currentPath: initialData.currentPath,
-  destPath: initialData.currentPath,
+  currentPath: initialPath,
+  destPath: initialPath,
+  pathHeatmap: initialPathHeatmap,
+  resentlyVisitedPaths: [initialPath],
+  mostFrequentPaths: [initialPath],
 };
 
 // ----------------------------------------------------------------------------
@@ -25,6 +33,9 @@ const initialNavigationState = {
 type NavigationState = {
   currentPath: string;
   destPath: string;
+  pathHeatmap: Map<string, number>;
+  resentlyVisitedPaths: string[];
+  mostFrequentPaths: string[];
 };
 
 type ViewState = {
