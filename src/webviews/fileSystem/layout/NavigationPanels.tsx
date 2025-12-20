@@ -4,6 +4,7 @@ import { Panel } from "@@/fileSystem/components/Panel";
 import { List, type ListItem } from "@@/fileSystem/components/List";
 import { ActionButton, ActionDropdown, ActionDropdownButton, ActionGroup } from "@@/fileSystem/components/Action";
 import { navigateHistoryStore, navigationStore } from "@@/fileSystem/store/data";
+import { navigateToFolder } from "@@/fileSystem/action/navigation";
 
 const fakeBookmarkItems: ListItem[] = [
   {
@@ -164,7 +165,7 @@ const BookmarkPanel = () => {
  * 用於顯示路徑導航面板的記錄面板元件，包括歷史紀錄、最近瀏覽、最常瀏覽等功能。
  */
 const HistoryPanel = () => {
-  const [mode, setMode] = useState<"history" | "recent" | "frequent">("history");
+  const [mode, setMode] = useState<"history" | "recent" | "frequent">("recent");
 
   const recentlyVisitedPaths = navigationStore((state) => state.recentlyVisitedPaths);
   const mostFrequentPaths = navigationStore((state) => state.mostFrequentPaths);
@@ -208,27 +209,33 @@ const HistoryPanel = () => {
   return (
     <Panel title="瀏覽記錄">
       <Box sx={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 1, alignItems: "start" }}>
-        <List items={listItems} activeItemId={activeItemId} defaultRows={6} />
+        <List
+          items={listItems}
+          activeItemId={activeItemId}
+          defaultRows={6}
+          onClickItem={({ detail }) => detail && navigateToFolder({ dirPath: detail })}
+        />
 
         <ActionGroup orientation="vertical" size="small">
           <ActionButton
-            actionIcon="codicon codicon-history"
-            actionName="歷史紀錄"
-            actionDetail="以歷史順序顯示最近瀏覽的資料夾"
-            tooltipPlacement="right"
-            active={mode === "history"}
-            onClick={() => setMode("history")}
+            actionIcon="codicon codicon-issue-reopened"
+            actionName="最近瀏覽"
+            actionDetail="以時間順序顯示最近瀏覽的資料夾"
+            active={mode === "recent"}
+            onClick={() => setMode("recent")}
           />
+
           <ActionDropdown actionName="更多模式" actionDetail="選擇其他瀏覽方式" tooltipPlacement="right">
             <ActionDropdownButton
-              actionIcon="codicon codicon-clock"
-              actionName="最近瀏覽"
-              actionDetail="以時間順序顯示最近瀏覽的資料夾"
-              active={mode === "recent"}
-              onClick={() => setMode("recent")}
+              actionIcon="codicon codicon-history"
+              actionName="歷史紀錄"
+              actionDetail="以歷史順序顯示最近瀏覽的資料夾"
+              tooltipPlacement="right"
+              active={mode === "history"}
+              onClick={() => setMode("history")}
             />
             <ActionDropdownButton
-              actionIcon="codicon codicon-symbol-numeric"
+              actionIcon="codicon codicon-graph-left"
               actionName="最常瀏覽"
               actionDetail="以瀏覽次數排序顯示最常瀏覽的資料夾"
               active={mode === "frequent"}
