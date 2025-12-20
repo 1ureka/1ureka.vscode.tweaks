@@ -4,6 +4,7 @@ import { onDidReceiveInvoke } from "@/utils/message_host";
 import { createWebviewPanelManager } from "@/utils/webview";
 import { handleDelete, handleInitialData, handlePaste, handleRename } from "@/handlers/fileSystemHandlers";
 import { handleCreateFile, handleCreateDir, handleReadDirectory } from "@/handlers/fileSystemHandlers";
+import type { ReadDirectoryResult } from "@/handlers/fileSystemHandlers";
 import type { WithProgress } from "@/utils";
 
 import fileSystemLight from "@/assets/file-system-light.svg";
@@ -14,7 +15,6 @@ import fileSystemDark from "@/assets/file-system-dark.svg";
 // ---------------------------------------------------------------------------------
 
 type OpenInTarget = "workspace" | "terminal" | "imageWall";
-type FileSystemInitialData = Awaited<ReturnType<typeof handleReadDirectory>>;
 
 type ShowInfoAPI = {
   id: "showInformationMessage";
@@ -57,7 +57,6 @@ type DeleteAPI = {
   handler: (params: { itemList: string[]; dirPath: string }) => ReturnType<typeof handleDelete>;
 };
 
-export type { FileSystemInitialData };
 export type { ShowInfoAPI, SetSystemClipboardAPI, ReadDirAPI, CreateFileAPI, CreateDirAPI, PasteAPI };
 export type { OpenFileAPI, OpenInTargetAPI, RenameAPI, DeleteAPI };
 
@@ -166,7 +165,7 @@ function FileSystemPanelProvider(context: vscode.ExtensionContext) {
 
   const createPanel = (dirPath: string) => {
     const initialData = handleInitialData({ dirPath });
-    const panel = panelManager.create<FileSystemInitialData>({
+    const panel = panelManager.create<ReadDirectoryResult>({
       panelId: "1ureka.fileSystem",
       panelTitle: "系統瀏覽器",
       webviewType: "fileSystem",

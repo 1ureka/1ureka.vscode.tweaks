@@ -262,5 +262,6 @@ const handleDelete = async (params: {
   return handleReadDirectory({ dirPath });
 };
 
+export type { ReadDirectoryResult };
 export { handleInitialData, handleCreateFile, handleCreateDir, handlePaste, handleRename, handleDelete };
 export { handleReadDirectory };
