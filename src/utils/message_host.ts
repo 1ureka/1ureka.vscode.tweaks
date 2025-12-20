@@ -3,12 +3,17 @@
 import * as vscode from "vscode";
 import type { InvokeMessage } from "@/utils/message_client";
 
-/**
- * 假設一個任意的處理函式，其環境可以是擴展主機也可以是 webview 前端
- */
-type API = {
+/** @deprecated */
+type APILegacy = {
   id: string;
   handler: (params: any) => any | Promise<any>;
+};
+
+/**
+ * 一組可供 webview 調用的擴展主機處理函式型別定義
+ */
+type API = {
+  [id: string]: (params: any) => Promise<any> | any;
 };
 
 /**
@@ -22,20 +27,32 @@ type InvokeResponseMessage = {
 };
 
 /**
- * 處理來自前端的調用請求，並使用指定的處理函式回應結果
- * @example
- * // 假設在擴展主機中有一個處理函式
- * async function myHandler(params: { id: string }): Promise<{ name: string; age: number }>
- * type MyAPI = { id: "myHandler"; handler: typeof myHandler };
- *
- * // 那麼可以這樣設置消息處理
- * onDidReceiveInvoke<MyAPI>(panel, "myHandler", myHandler);
- *
- * // 這時前端可以調用
- * const result = await invoke<typeof myHandler>({ id: "123" });
- * // result 的類型會自動推斷為 { name: string; age: number }
+ * 註冊多個處理函式來處理來自 webview 的調用請求
  */
-function onDidReceiveInvoke<T extends API = never>(panel: vscode.WebviewPanel, id: T["id"], handler: T["handler"]) {
+function registerInvokeEvents(panel: vscode.WebviewPanel, handlers: API) {
+  const disposable = panel.webview.onDidReceiveMessage(async (message) => {
+    const { type, requestId, handlerId, params } = message as InvokeMessage;
+
+    if (type === "1ureka.invoke" && handlerId in handlers) {
+      const result = await handlers[handlerId](params);
+      const responseMessage: InvokeResponseMessage = { type: "1ureka.invoke.response", requestId, handlerId, result };
+
+      panel.webview.postMessage(responseMessage);
+    }
+  });
+
+  panel.onDidDispose(() => disposable.dispose());
+}
+
+/**
+ * 處理來自前端的調用請求，並使用指定的處理函式回應結果
+ * @deprecated
+ */
+function onDidReceiveInvoke<T extends APILegacy = never>(
+  panel: vscode.WebviewPanel,
+  id: T["id"],
+  handler: T["handler"]
+) {
   const disposable = panel.webview.onDidReceiveMessage(async (message) => {
     const { type, requestId, handlerId, params } = message as InvokeMessage;
 
@@ -86,11 +103,11 @@ type ForwardCommandMessage = {
  * onReceiveCommand<ResetViewAPI>("resetView", handleResetView);
  * onReceiveCommand<OpenFileAPI>("openFile", () => invoke<OpenFileAPI>("openFile", { filePath: store.getState() }));
  */
-function forwardCommandToWebview<T extends API = never>(panel: vscode.WebviewPanel | null, action: T["id"]) {
+function forwardCommandToWebview<T extends APILegacy = never>(panel: vscode.WebviewPanel | null, action: T["id"]) {
   const message: ForwardCommandMessage = { type: "1ureka.command", action };
   if (!panel) return;
   panel.webview.postMessage(message);
 }
 
-export { onDidReceiveInvoke, forwardCommandToWebview };
-export type { API, InvokeResponseMessage, ForwardCommandMessage };
+export { registerInvokeEvents, onDidReceiveInvoke, forwardCommandToWebview };
+export type { APILegacy, API, InvokeResponseMessage, ForwardCommandMessage };

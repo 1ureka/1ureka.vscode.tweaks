@@ -4,14 +4,14 @@
  */
 
 import { create } from "zustand";
-import { getInitialData, invoke } from "@/utils/message_client";
-import type { ShowInfoAPI } from "@/providers/fileSystemProvider";
+import { invoke } from "@@/fileSystem/store/init";
+import { getInitialData } from "@/utils/message_client";
 import type { InspectDirectoryEntry } from "@/utils/system";
 import type { ReadDirectoryResult } from "@/handlers/fileSystemHandlers";
 
 const initialData = getInitialData<ReadDirectoryResult>();
 if (!initialData) {
-  invoke<ShowInfoAPI>("showInformationMessage", { message: "無法取得檔案系統初始資料" });
+  invoke("show.error", "無法取得檔案系統初始資料");
   throw new Error("無法取得檔案系統初始資料");
 }
 

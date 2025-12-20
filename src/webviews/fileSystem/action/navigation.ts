@@ -1,5 +1,4 @@
-import type { OpenInTargetAPI, ReadDirAPI } from "@/providers/fileSystemProvider";
-import { invoke } from "@/utils/message_client";
+import { invoke } from "@@/fileSystem/store/init";
 import { dataStore } from "@@/fileSystem/store/data";
 import { requestQueue } from "@@/fileSystem/store/queue";
 
@@ -7,7 +6,7 @@ import { requestQueue } from "@@/fileSystem/store/queue";
  * 請求切換資料夾
  */
 const navigateToFolder = async ({ dirPath }: { dirPath: string }) => {
-  const result = await requestQueue.add(() => invoke<ReadDirAPI>("readDirectory", { dirPath }));
+  const result = await requestQueue.add(() => invoke("system.read.dir", { dirPath }));
   dataStore.setState({ ...result });
 };
 
@@ -16,7 +15,7 @@ const navigateToFolder = async ({ dirPath }: { dirPath: string }) => {
  */
 const refresh = async () => {
   const { currentPath } = dataStore.getState();
-  const result = await requestQueue.add(() => invoke<ReadDirAPI>("readDirectory", { dirPath: currentPath }));
+  const result = await requestQueue.add(() => invoke("system.read.dir", { dirPath: currentPath }));
   dataStore.setState({ ...result });
 };
 
@@ -26,35 +25,16 @@ const refresh = async () => {
 const navigateUp = async () => {
   const { isCurrentRoot, currentPath } = dataStore.getState();
   if (isCurrentRoot) return; // 已經在根目錄
-  const result = await requestQueue.add(() =>
-    invoke<ReadDirAPI>("readDirectory", { dirPath: currentPath, depthOffset: 1 })
-  );
+  const result = await requestQueue.add(() => invoke("system.read.dir", { dirPath: currentPath, depthOffset: 1 }));
   dataStore.setState({ ...result });
 };
 
 /**
- * 以該資料夾開啟工作區
+ * 以該資料夾開啟新的環境 (比如工作區、終端機等)
  */
-const openInWorkspace = () => {
+const openInEnvironment = (target: "workspace" | "terminal" | "imageWall") => {
   const { currentPath } = dataStore.getState();
-  invoke<OpenInTargetAPI>("openInTarget", { target: "workspace", dirPath: currentPath });
+  invoke("system.open.dir", { target, dirPath: currentPath });
 };
 
-/**
- * 以該資料夾開啟終端機
- */
-const openInTerminal = () => {
-  const { currentPath } = dataStore.getState();
-  invoke<OpenInTargetAPI>("openInTarget", { target: "terminal", dirPath: currentPath });
-};
-
-/**
- * 以該資料夾開啟圖片牆
- */
-const openInImageWall = () => {
-  const { currentPath } = dataStore.getState();
-  invoke<OpenInTargetAPI>("openInTarget", { target: "imageWall", dirPath: currentPath });
-};
-
-export { navigateToFolder, refresh, navigateUp };
-export { openInWorkspace, openInTerminal, openInImageWall };
+export { navigateToFolder, refresh, navigateUp, openInEnvironment };
