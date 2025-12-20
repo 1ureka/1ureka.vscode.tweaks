@@ -109,7 +109,6 @@ type ActionButtonProps = {
 
 /**
  * 按鈕元件，單獨使用仍需要包在 ActionGroup 中
- * TODO: 自動註冊快捷鍵與 onClick 的關聯
  */
 const ActionButton = (props: ActionButtonProps) => {
   const { actionIcon, actionName, actionDetail, actionShortcut, onClick, active, disabled } = props;
@@ -156,18 +155,34 @@ type ActionInputProps = {
   value?: string;
   displayValue?: string;
   onChange?: (value: string) => void;
+  onBlur?: () => void;
+  blurOnEnter?: boolean;
   tooltipPlacement?: TooltipPlacement;
 };
 
 /**
  * 輸入框元件，單獨使用仍需要包在 ActionGroup 中
- * TODO: 自動註冊快捷鍵與 onFocus 的關聯
  */
 const ActionInput = (props: ActionInputProps) => {
-  const { actionIcon, actionName, actionDetail, actionShortcut, placeholder, value, onChange, readOnly } = props;
-  const { tooltipPlacement, displayValue } = props;
+  const { actionIcon, actionName, actionDetail, actionShortcut, placeholder, value, readOnly } = props;
+  const { tooltipPlacement, displayValue, onChange, onBlur, blurOnEnter } = props;
 
   const [focus, setFocus] = useState(false);
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && blurOnEnter && !e.nativeEvent.isComposing) {
+      e.currentTarget.blur();
+    }
+  };
+
+  const handleFocus = () => {
+    setFocus(true);
+  };
+
+  const handleBlur = () => {
+    setFocus(false);
+    onBlur?.();
+  };
 
   return (
     <Tooltip {...{ actionName, actionDetail, actionShortcut }} placement={tooltipPlacement}>
@@ -179,8 +194,9 @@ const ActionInput = (props: ActionInputProps) => {
         onChange={(e) => onChange?.(e.target.value)}
         sx={actionInputSx}
         readOnly={readOnly}
-        onFocus={() => setFocus(true)}
-        onBlur={() => setFocus(false)}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
+        onKeyDown={handleKeyDown}
       />
     </Tooltip>
   );
