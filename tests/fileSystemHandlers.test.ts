@@ -3,7 +3,7 @@
 import * as path from "path";
 import fs from "fs-extra";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { cleanupFixtures, getFixturesPath, setupFixtures } from "./fixtures.helpers";
+import { cleanupFixtures, getFixturesPath, setupFixtures } from "@tests/fixtures.helpers";
 
 import { handleInitialData, handleReadDirectory } from "@/handlers/fileSystemHandlers";
 import { handleCreateDir, handleCreateFile, handlePaste } from "@/handlers/fileSystemHandlers";
