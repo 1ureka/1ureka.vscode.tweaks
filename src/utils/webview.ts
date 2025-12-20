@@ -10,7 +10,6 @@ import type { WebviewId } from "@/contribute";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function serializeForHtml(data: any): string {
   return JSON.stringify(data)
-    .replace(/\\/g, "\\\\")
     .replace(/</g, "\\u003c")
     .replace(/>/g, "\\u003e")
     .replace(/&/g, "\\u0026")
