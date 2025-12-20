@@ -38,6 +38,11 @@ type NavigationState = {
   mostFrequentPaths: string[];
 };
 
+type NavigateHistoryState = {
+  history: string[];
+  currentIndex: number;
+};
+
 type ViewState = {
   sortField: keyof Pick<InspectDirectoryEntry, "fileName" | "mtime" | "ctime" | "size">;
   sortOrder: "asc" | "desc";
@@ -75,6 +80,11 @@ const dataStore = create<ReadDirectoryResult>(() => ({ ...initialData }));
 const navigationStore = create<NavigationState>(() => ({ ...initialNavigationState }));
 
 /**
+ * 建立用於儲存導航歷史狀態的容器
+ */
+const navigateHistoryStore = create<NavigateHistoryState>(() => ({ history: [initialPath], currentIndex: 0 }));
+
+/**
  * 建立用於檢視系統瀏覽器的狀態容器
  */
 const viewStateStore = create<ViewState>(() => ({ sortField: "fileName", sortOrder: "asc", filter: "all" }));
@@ -101,5 +111,6 @@ const renameStore = create<RenameState>(() => ({ srcName: "", destName: "" }));
 
 // ----------------------------------------------------------------------------
 
-export { dataStore, navigationStore, viewStateStore, viewDataStore, selectionStore, clipboardStore, renameStore };
+export { dataStore, viewStateStore, viewDataStore };
+export { navigationStore, navigateHistoryStore, selectionStore, clipboardStore, renameStore };
 export type { ViewState };
