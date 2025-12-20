@@ -1,75 +1,75 @@
 import iconv from "iconv-lite";
-import * as path from "path";
-import fs from "fs-extra";
-import { exec, spawn } from "child_process";
+import { spawn } from "child_process";
 
-/** 允許開啟的副檔名白名單 */
-const ALLOWED_EXTENSIONS = [".blend", ".spp", ".html"];
+// --- 型別定義 (Types) -----------------------------------------------------------------------
 
-/** 使用系統預設應用打開指定檔案 */
-function openWithDefaultApp(filePath: string, showError: (message: string) => void) {
-  const fileExt = path.extname(filePath).toLowerCase();
-
-  if (!ALLOWED_EXTENSIONS.includes(fileExt)) {
-    showError(`此功能只支援開啟 [${ALLOWED_EXTENSIONS.join(", ")}]，檔案類型不符，操作已取消。`);
-    return; // 阻止執行惡意或不相關的檔案
-  }
-
-  // 使用 start "" 讓 Windows 用預設應用程式開啟檔案
-  exec(`start "" "${filePath}"`, (error) => {
-    if (error) showError("無法開啟檔案，請確認檔案存在且有對應的應用程式");
-  });
+/** 磁碟類型枚舉 */
+export enum DriveType {
+  Unknown = 0,
+  NoRootDirectory = 1,
+  RemovableDisk = 2, // 隨身碟
+  LocalDisk = 3, // 硬碟/SSD
+  NetworkDrive = 4, // 網路磁碟
+  CompactDisk = 5, // CD/DVD
+  RAMDisk = 6,
 }
 
-/** 啟動指定應用程式 */
-function openApplication(appName: string, appPath: string, showError: (message: string) => void) {
-  const displayName = appName.charAt(0).toUpperCase() + appName.slice(1).toLowerCase();
-
-  try {
-    const child = spawn(appPath, { detached: true, stdio: "ignore", windowsHide: true });
-    child.on("error", () => showError(`無法啟動 ${displayName}，請確認是否有安裝該應用程式與有足夠的權限`));
-    child.unref();
-  } catch (e) {
-    showError(`無法啟動 ${displayName}: ${e instanceof Error ? e.message : String(e)}`);
-  }
+/** 系統資料夾資訊（包含實體硬碟入口與 OneDrive） */
+export interface SystemFolder {
+  Name: string;
+  Path: string;
 }
 
-// -------------------------------------------------------------------------------------------
+/** 磁碟詳細硬體資訊 */
+export interface VolumeInfo {
+  /** 磁碟代號，例如 "C:" */
+  DeviceID: string;
+  /** 磁碟名稱，例如 "Windows" 或 "Data" */
+  VolumeName: string | null;
+  /** 剩餘空間 (Bytes) */
+  FreeSpace: number | null;
+  /** 總容量 (Bytes) */
+  Size: number | null;
+  /** 檔案系統，例如 "NTFS", "FAT32" */
+  FileSystem: string | null;
+  /** 磁碟類型 */
+  DriveType: DriveType;
+}
+
+// --- 核心邏輯 (Core) ------------------------------------------------------------------------
 
 /** 執行 PowerShell 指令並回傳 stdout（字串），假設 windows 系統是繁體中文環境 (使用 big5 編碼輸出) */
 function runPowerShell(command: string, stdinData?: string): Promise<string> {
   return new Promise<string>((resolve, reject) => {
-    const args = ["-NoProfile", "-Command", command];
+    const inputEncodingSetup = `[Console]::InputEncoding = [System.Text.Encoding]::UTF8; `;
+    const args = ["-NoProfile", "-NonInteractive", "-Command", `${inputEncodingSetup}${command}`];
     const ps = spawn("powershell.exe", args, { windowsHide: true });
 
-    if (stdinData) {
-      ps.stdin.write(stdinData);
-      ps.stdin.end();
-    }
+    let stdout: Buffer[] = [];
+    let stderr: Buffer[] = [];
 
-    let stdout = "";
-    let stderr = "";
+    ps.stdout.on("data", (chunk) => stdout.push(chunk));
+    ps.stderr.on("data", (data) => stderr.push(data));
 
-    ps.stdout.on("data", (data) => {
-      stdout += iconv.decode(data, "big5");
-    });
+    ps.on("close", (code) => {
+      const stdoutStr = iconv.decode(Buffer.concat(stdout), "big5");
+      const stderrStr = iconv.decode(Buffer.concat(stderr), "big5");
 
-    ps.stderr.on("data", (data) => {
-      stderr += iconv.decode(data, "big5");
-    });
-
-    ps.on("exit", (code) => {
-      if (code === 0) resolve(stdout);
-      else reject(new Error(`PowerShell exited with code ${code}. Stderr: ${stderr.trim()}`));
+      if (code === 0) resolve(stdoutStr);
+      else reject(new Error(`PowerShell exited with code ${code}. Stderr: ${stderrStr.trim()}`));
     });
 
     ps.on("error", (err) => {
       reject(err);
     });
+
+    if (stdinData) {
+      ps.stdin.end(stdinData, "utf-8");
+    }
   });
 }
 
-// -------------------------------------------------------------------------------------------
+// --- 腳本定義 (Scripts) ---------------------------------------------------------------------
 
 const copyImagePowerShellScript = `
 Add-Type -AssemblyName System.Convert
@@ -85,89 +85,49 @@ $img.Dispose()
 $ms.Dispose()
 `;
 
-/** 將圖片複製到剪貼簿，可以直接貼在比如瀏覽器的 google keep, chatGPT 或是 Word 等 */
-async function copyImageBinaryToSystem(base64: string) {
-  return runPowerShell(copyImagePowerShellScript, base64);
-}
-
-const listSpecialFoldersScript = `
+const listSystemFoldersScript = `
 $shell = New-Object -ComObject Shell.Application
-# 0x11 = "My Computer" / "This PC"
-$root = $shell.Namespace(0x11)
-$result = @()
-
-foreach ($item in $root.Items()) {
-    $path = $item.Path
-    if ([string]::IsNullOrWhiteSpace($path)) { continue }
-    $obj = [PSCustomObject]@{
-        Name = $item.Name
-        Path = $path
-    }
-    $result += $obj
-}
-
-$result | ConvertTo-Json -Depth 3
+$res = @()
+$res += $shell.Namespace(0x11).Items() | Where-Object { $_.Path }
+$res += $shell.Namespace(0x00).Items() | Where-Object { $_.Name -like "*OneDrive*" -and $_.Path -match '^[A-Z]:\\\\' }
+@($res | ForEach-Object { [PSCustomObject]@{ Name = $_.Name; Path = $_.Path } }) | ConvertTo-Json
 `;
 
-/** 列出 Windows 特殊資料夾 */
-async function listSpecialFolders() {
-  const stdout = await runPowerShell(listSpecialFoldersScript);
-  return JSON.parse(stdout);
+const listVolumesScript = `
+$data = Get-CimInstance Win32_LogicalDisk | ForEach-Object {
+    [PSCustomObject]@{
+        DeviceID = $_.DeviceID
+        VolumeName = $_.VolumeName
+        FreeSpace = [double]$_.FreeSpace
+        Size = [double]$_.Size
+        FileSystem = $_.FileSystem
+        DriveType = [int]$_.DriveType
+    }
+}
+@($data) | ConvertTo-Json
+`;
+
+// --- 導出的 API (Exported APIs) ------------------------------------------------------------
+
+/** * 將圖片 Base64 字串複製到系統剪貼簿
+ * @param base64 純 Base64 字串 (不含 data:image/... 前綴)
+ */
+export async function copyImageBinaryToSystem(base64: string): Promise<void> {
+  await runPowerShell(copyImagePowerShellScript, base64);
 }
 
-/** Windows 檔案的屬性狀態，只針對對使用者有意義的回傳描述，比如 A 就不需要，因為無意義 */
-const fileStatusDescription = {
-  O: "離線 (僅線上)",
-  P: "永遠保留在本機",
-  R: "唯讀",
-  H: "隱藏檔案",
-  S: "系統檔案",
-};
-
-type FileStatusDescription = typeof fileStatusDescription;
-type FileStatus = {
-  code: string;
-  description: FileStatusDescription[keyof FileStatusDescription] | null;
-}[];
-
-/** 透過 attrib 指令判斷檔案屬性 */
-async function getFileStatus(filePath: string): Promise<FileStatus | null> {
-  if (process.platform !== "win32") {
-    return null;
-  }
-
-  if (!fs.existsSync(filePath)) {
-    return null;
-  }
-
-  try {
-    // attrib 輸出範例:
-    // "A      O             C:\Users\...\OneDrive\Documents\example.txt"
-    // "A                    C:\Users\...\Documents\example.txt"
-
-    const cmd = `attrib "${filePath}"`;
-    const stdout = await runPowerShell(cmd);
-    const output = stdout.trim();
-
-    // 屬性字母出現在最前方 (或接續空白)
-    const match = output.match(/^((?:[A-Z])(?!:)\s*)+/);
-    if (!match) return null;
-
-    const attributes = match[0].replace(/\s+/g, "").split("");
-    const status: FileStatus = attributes.map((attr) => {
-      if (attr in fileStatusDescription) {
-        return { code: attr, description: fileStatusDescription[attr as keyof FileStatusDescription] };
-      } else {
-        return { code: attr, description: null };
-      }
-    });
-
-    return status;
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  } catch (err) {
-    return null;
-  }
+/** 列出系統關鍵資料夾（包含本機硬碟與 OneDrive） */
+export async function listSystemFolders(): Promise<SystemFolder[]> {
+  const stdout = await runPowerShell(listSystemFoldersScript);
+  if (!stdout || stdout.trim() === "") return [];
+  const result = JSON.parse(stdout);
+  return Array.isArray(result) ? result : [result];
 }
 
-export { openWithDefaultApp, openApplication, copyImageBinaryToSystem, getFileStatus, listSpecialFolders };
-export type { FileStatus as WindowsFileStatus };
+/** 列出所有邏輯磁碟機的詳細硬體資訊（容量單位為 Bytes） */
+export async function listVolumes(): Promise<VolumeInfo[]> {
+  const stdout = await runPowerShell(listVolumesScript);
+  if (!stdout || stdout.trim() === "") return [];
+  const result = JSON.parse(stdout);
+  return Array.isArray(result) ? result : [result];
+}

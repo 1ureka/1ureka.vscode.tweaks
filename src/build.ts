@@ -43,7 +43,7 @@ async function buildExtension() {
     bundle: true,
     platform: "node",
     format: "esm",
-    external: ["vscode", "sharp", "fs-extra", "iconv-lite"],
+    external: ["vscode", "sharp", "fs-extra", "iconv-lite", "open"],
     outfile: "dist/extension.js",
     loader: { ".svg": "dataurl", ".css": "text" },
     alias: { "@": "./src" },

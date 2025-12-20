@@ -22,6 +22,7 @@
     "@vscode/codicons": "^0.0.43",
     "fs-extra": "^11.3.2",
     "iconv-lite": "^0.7.0",
+    "open": "^11.0.0",
     "sharp": "^0.34.5"
   },
   "devDependencies": {
