@@ -4,8 +4,9 @@ import { ActionButton, ActionDropdown, ActionGroup, ActionInput } from "@@/fileS
 import { formatRelativeTime } from "@/utils/formatter";
 import { setSchedule } from "@/utils";
 
-import { dataStore, navigationStore } from "@@/fileSystem/store/data";
+import { dataStore, navigateHistoryStore, navigationStore } from "@@/fileSystem/store/data";
 import { stageDestinationPath, navigateGotoFolder, navigateUp, refresh } from "@@/fileSystem/action/navigation";
+import { navigateToNextFolder, navigateToPreviousFolder } from "@@/fileSystem/action/navigation";
 import { createNewFolder } from "@@/fileSystem/action/operation";
 
 const ActionButtonRefresh = () => {
@@ -46,6 +47,9 @@ const NavigationBar = () => {
   const shortenedPath = dataStore((state) => state.shortenedPath);
   const isCurrentRoot = dataStore((state) => state.isCurrentRoot);
 
+  const history = navigateHistoryStore((state) => state.history);
+  const currentIndex = navigateHistoryStore((state) => state.currentIndex);
+
   return (
     <Box sx={{ display: "grid", gridTemplateColumns: "auto auto 3fr 1fr auto auto", gap: 1, pb: 1 }}>
       <ActionGroup>
@@ -54,12 +58,16 @@ const NavigationBar = () => {
           actionName="上個資料夾"
           actionDetail="移動到上個資料夾"
           actionShortcut={["Alt", "Left Arrow"]}
+          onClick={navigateToPreviousFolder}
+          disabled={currentIndex === 0}
         />
         <ActionButton
           actionIcon="codicon codicon-arrow-right"
           actionName="下個資料夾"
           actionDetail="移動到下個資料夾"
           actionShortcut={["Alt", "Right Arrow"]}
+          onClick={navigateToNextFolder}
+          disabled={currentIndex >= history.length - 1}
         />
         <ActionButton
           actionIcon="codicon codicon-merge-into"
