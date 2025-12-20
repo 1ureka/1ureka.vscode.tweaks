@@ -1,6 +1,21 @@
 import { invoke } from "@@/fileSystem/store/init";
-import { dataStore } from "@@/fileSystem/store/data";
+import { dataStore, navigationStore } from "@@/fileSystem/store/data";
 import { requestQueue } from "@@/fileSystem/store/queue";
+
+/**
+ * 暫存使用者輸入的目標路徑
+ */
+const stageDestinationPath = (dirPath: string) => {
+  navigationStore.setState({ destPath: dirPath });
+};
+
+/**
+ * 正式根據使用者暫存的目標路徑切換資料夾
+ */
+const navigateGotoFolder = () => {
+  const { destPath } = navigationStore.getState();
+  return navigateToFolder({ dirPath: destPath });
+};
 
 /**
  * 請求切換資料夾
@@ -37,4 +52,4 @@ const openInEnvironment = (target: "workspace" | "terminal" | "imageWall") => {
   invoke("system.open.dir", { target, dirPath: currentPath });
 };
 
-export { navigateToFolder, refresh, navigateUp, openInEnvironment };
+export { stageDestinationPath, navigateGotoFolder, navigateToFolder, refresh, navigateUp, openInEnvironment };

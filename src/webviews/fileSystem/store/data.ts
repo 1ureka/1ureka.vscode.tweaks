@@ -15,7 +15,17 @@ if (!initialData) {
   throw new Error("無法取得檔案系統初始資料");
 }
 
+const initialNavigationState = {
+  currentPath: initialData.currentPath,
+  destPath: initialData.currentPath,
+};
+
 // ----------------------------------------------------------------------------
+
+type NavigationState = {
+  currentPath: string;
+  destPath: string;
+};
 
 type ViewState = {
   sortField: keyof Pick<InspectDirectoryEntry, "fileName" | "mtime" | "ctime" | "size">;
@@ -49,6 +59,11 @@ type RenameState = {
 const dataStore = create<ReadDirectoryResult>(() => ({ ...initialData }));
 
 /**
+ * 建立用於儲存導航狀態的容器
+ */
+const navigationStore = create<NavigationState>(() => ({ ...initialNavigationState }));
+
+/**
  * 建立用於檢視系統瀏覽器的狀態容器
  */
 const viewStateStore = create<ViewState>(() => ({ sortField: "fileName", sortOrder: "asc", filter: "all" }));
@@ -75,5 +90,5 @@ const renameStore = create<RenameState>(() => ({ srcName: "", destName: "" }));
 
 // ----------------------------------------------------------------------------
 
-export { dataStore, viewStateStore, viewDataStore, selectionStore, clipboardStore, renameStore };
+export { dataStore, navigationStore, viewStateStore, viewDataStore, selectionStore, clipboardStore, renameStore };
 export type { ViewState };

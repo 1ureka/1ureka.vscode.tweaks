@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import { ActionButton, ActionDropdown, ActionGroup, ActionInput } from "@@/fileSystem/components/Action";
 import { Box } from "@mui/material";
+import { ActionButton, ActionDropdown, ActionGroup, ActionInput } from "@@/fileSystem/components/Action";
 import { formatRelativeTime } from "@/utils/formatter";
 import { setSchedule } from "@/utils";
 
-import { dataStore } from "@@/fileSystem/store/data";
-import { navigateUp, refresh } from "@@/fileSystem/action/navigation";
+import { dataStore, navigationStore } from "@@/fileSystem/store/data";
+import { stageDestinationPath, navigateGotoFolder, navigateUp, refresh } from "@@/fileSystem/action/navigation";
 import { createNewFolder } from "@@/fileSystem/action/operation";
 
 const ActionButtonRefresh = () => {
@@ -40,7 +40,9 @@ const ActionButtonRefresh = () => {
 };
 
 const NavigationBar = () => {
-  const currentPath = dataStore((state) => state.currentPath);
+  const currentPath = navigationStore((state) => state.currentPath);
+  const destPath = navigationStore((state) => state.destPath);
+
   const shortenedPath = dataStore((state) => state.shortenedPath);
   const isCurrentRoot = dataStore((state) => state.isCurrentRoot);
 
@@ -80,7 +82,14 @@ const NavigationBar = () => {
       </ActionGroup>
 
       <ActionGroup>
-        <ActionInput actionName={currentPath} value={currentPath} displayValue={shortenedPath} />
+        <ActionInput
+          actionName={currentPath}
+          value={destPath}
+          displayValue={shortenedPath}
+          onChange={stageDestinationPath}
+          blurOnEnter
+          onBlur={navigateGotoFolder}
+        />
       </ActionGroup>
 
       <ActionGroup>

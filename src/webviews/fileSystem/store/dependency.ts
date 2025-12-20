@@ -3,7 +3,8 @@
  * @description 該文件負責定義更新鏈/依賴鏈，可參考 README.md 中的說明
  */
 
-import { dataStore, viewDataStore, viewStateStore, selectionStore, renameStore } from "@@/fileSystem/store/data";
+import { dataStore, navigationStore, viewDataStore, viewStateStore } from "@@/fileSystem/store/data";
+import { selectionStore, renameStore } from "@@/fileSystem/store/data";
 import type { InspectDirectoryEntry } from "@/utils/system";
 
 /**
@@ -53,6 +54,17 @@ const sortEntries = (entries: InspectDirectoryEntry[]) => {
 // ----------------------------------------------------------------------------
 
 /**
+ * 當來源資料更新時，更新導航資料
+ */
+const handleNavigationUpdate = () => {
+  const { currentPath } = dataStore.getState();
+
+  const destPath = currentPath; // 覆蓋使用者輸入的暫存目標路徑
+
+  navigationStore.setState({ currentPath, destPath });
+};
+
+/**
  * 當檢視條件或來源資料任一更新時，重新計算檢視資料
  */
 const handleViewDataUpdate = () => {
@@ -94,17 +106,21 @@ const handleRenameReset = () => {
 // ----------------------------------------------------------------------------
 
 /**
- * 定義更新鏈/依賴鏈，由於 handler 都是同步的，因此鏈上任意一點產生的反應都會是原子化的
+ * 定義更新鏈/依賴鏈，由於 handler 都是同步的，因此鏈上任意一節點產生的後續反應都會是原子化的
  * 具體來說，在 JavaScript 的 單執行緒（Single-threaded） 模型下，這條「訂閱鏈」本質上就是一個連續執行的執行棧（Call Stack）
  *
  * ```
  * 來源資料 ──┐
  *            ├──> 檢視資料 ────> 選取狀態 ───> 重新命名狀態
  * 檢視條件 ──┘
+ *
+ *
+ * 來源資料 ───> 導航資料
  * ```
  */
 const setupDependencyChain = () => {
   dataStore.subscribe(handleViewDataUpdate);
+  dataStore.subscribe(handleNavigationUpdate);
   viewStateStore.subscribe(handleViewDataUpdate);
   viewDataStore.subscribe(handleSelectionUpdate);
   selectionStore.subscribe(handleRenameReset);
