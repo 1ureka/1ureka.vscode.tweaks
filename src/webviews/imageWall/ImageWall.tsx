@@ -6,7 +6,7 @@ import { ImageWallItem } from "@@/imageWall/item/ImageWallItem";
 import { imageWallPreferenceStore } from "@@/imageWall/data/preference";
 import { imageWallDataStore } from "@@/imageWall/data/data";
 import { imageWallViewData } from "@@/imageWall/data/view";
-import type { ExtendedMetadata } from "@/utils/image";
+import type { ImageMetadata } from "@/utils/image";
 
 const columnCountsMap = {
   s: { xl: 7, lg: 6, md: 5, sm: 4, xs: 3 },
@@ -33,7 +33,7 @@ const useColumnCounts = () => {
 };
 
 /** 顯示圖片列表 */
-const ImageWallList = ({ images }: { images: ExtendedMetadata[] }) => {
+const ImageWallList = ({ images }: { images: ImageMetadata[] }) => {
   const variant = imageWallPreferenceStore((state) => state.mode);
   const columnCounts = useColumnCounts();
 

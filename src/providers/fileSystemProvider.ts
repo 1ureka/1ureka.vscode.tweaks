@@ -5,7 +5,7 @@ import { createWebviewPanelManager } from "@/utils/webview";
 import { handleDelete, handleInitialData, handlePaste, handleRename } from "@/handlers/fileSystemHandlers";
 import { handleCreateFile, handleCreateDir, handleReadDirectory } from "@/handlers/fileSystemHandlers";
 import type { InspectDirectoryEntry } from "@/utils/system";
-import type { ExtendedMetadata as ImageMetadata } from "@/utils/image";
+import type { ImageMetadata } from "@/utils/image";
 import type { OneOf, Prettify, WithProgress } from "@/utils/type";
 
 import fileSystemLight from "@/assets/file-system-light.svg";

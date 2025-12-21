@@ -1,5 +1,5 @@
 import * as path from "path";
-import { generateBase64, generateThumbnail, openImages, type ExtendedMetadata } from "@/utils/image";
+import { generateBase64, generateThumbnail, openImages, type ImageMetadata } from "@/utils/image";
 import { copyImageBinaryToSystem } from "@/utils/system_windows";
 import { pathToArray } from "@/utils/system";
 
@@ -9,7 +9,7 @@ import { pathToArray } from "@/utils/system";
 type ImageWallInitialData = {
   folderPath: string;
   folderPathParts: string[];
-  images: ExtendedMetadata[];
+  images: ImageMetadata[];
 };
 
 /**

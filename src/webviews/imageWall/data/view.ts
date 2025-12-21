@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { ExtendedMetadata } from "@/utils/image";
+import type { ImageMetadata } from "@/utils/image";
 import { imageWallDataStore } from "@@/imageWall/data/data";
 
 type ImageWallViewState = {
@@ -10,7 +10,7 @@ type ImageWallViewState = {
 };
 
 type ImageWallViewData = {
-  images: ExtendedMetadata[];
+  images: ImageMetadata[];
 };
 
 const defaultViewState: ImageWallViewState = {
