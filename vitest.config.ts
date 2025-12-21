@@ -8,5 +8,10 @@ export default defineConfig({
     exclude: ["node_modules", "dist"],
     testTimeout: 10000, // 測試超時時間（檔案系統操作可能較慢）
   },
-  resolve: { alias: { "@": path.resolve(__dirname, "./src") } },
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "./src"),
+      "@tests": path.resolve(__dirname, "./tests"),
+    },
+  },
 });

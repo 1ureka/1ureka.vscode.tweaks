@@ -1,6 +1,5 @@
-import type { PasteAPI, SetSystemClipboardAPI } from "@/providers/fileSystemProvider";
 import type { InspectDirectoryEntry } from "@/utils/system";
-import { invoke } from "@/utils/message_client";
+import { invoke } from "@@/fileSystem/store/init";
 import { clipboardStore, dataStore, selectionStore, viewDataStore } from "@@/fileSystem/store/data";
 import { requestQueue } from "@@/fileSystem/store/queue";
 
@@ -36,7 +35,7 @@ const readClipboard = async () => {
   const srcList = clipboardList.map((entry) => entry.filePath);
   const { currentPath } = dataStore.getState();
 
-  const result = await requestQueue.add(() => invoke<PasteAPI>("paste", { srcList, destDir: currentPath }));
+  const result = await requestQueue.add(() => invoke("system.create.paste", { srcList, destDir: currentPath }));
   if (!result) return;
 
   clipboardStore.setState({ entries: {} });
@@ -55,7 +54,7 @@ const writeSystemClipboard = (type: "path" | "name") => {
   if (!item) return;
 
   const text = type === "name" ? item.fileName : item.filePath;
-  return invoke<SetSystemClipboardAPI>("setSystemClipboard", { text });
+  return invoke("clipboard.write", text);
 };
 
 export { writeClipboard, readClipboard, writeSystemClipboard };

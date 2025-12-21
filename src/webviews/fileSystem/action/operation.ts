@@ -1,5 +1,4 @@
-import type { OpenFileAPI, CreateDirAPI, CreateFileAPI, DeleteAPI, RenameAPI } from "@/providers/fileSystemProvider";
-import { invoke } from "@/utils/message_client";
+import { invoke } from "@@/fileSystem/store/init";
 import { dataStore, renameStore, selectionStore, viewDataStore } from "@@/fileSystem/store/data";
 import { requestQueue } from "@@/fileSystem/store/queue";
 
@@ -13,7 +12,7 @@ const deleteItems = async () => {
 
   const itemList = entries.filter((_, index) => Boolean(selected[index])).map((entry) => entry.fileName);
 
-  const result = await requestQueue.add(() => invoke<DeleteAPI>("delete", { itemList, dirPath: currentPath }));
+  const result = await requestQueue.add(() => invoke("system.delete", { itemList, dirPath: currentPath }));
   dataStore.setState({ ...result });
 };
 
@@ -21,7 +20,7 @@ const deleteItems = async () => {
  * 開啟檔案
  */
 const openFile = (filePath: string) => {
-  invoke<OpenFileAPI>("openFile", { filePath });
+  invoke("system.open.file", filePath);
 };
 
 /**
@@ -30,7 +29,7 @@ const openFile = (filePath: string) => {
 const createNewFolder = async () => {
   const { currentPath } = dataStore.getState();
 
-  const result = await requestQueue.add(() => invoke<CreateDirAPI>("createDir", { dirPath: currentPath }));
+  const result = await requestQueue.add(() => invoke("system.create.dir", { dirPath: currentPath }));
   if (!result) return;
 
   dataStore.setState({ ...result });
@@ -42,7 +41,7 @@ const createNewFolder = async () => {
 const createNewFile = async () => {
   const { currentPath } = dataStore.getState();
 
-  const result = await requestQueue.add(() => invoke<CreateFileAPI>("createFile", { dirPath: currentPath }));
+  const result = await requestQueue.add(() => invoke("system.create.file", { dirPath: currentPath }));
   if (!result) return;
 
   dataStore.setState({ ...result });
@@ -85,7 +84,7 @@ const renameItem = async () => {
   }
 
   const result = await requestQueue.add(() =>
-    invoke<RenameAPI>("rename", { dirPath: currentPath, name: srcName, newName: destName })
+    invoke("system.update.rename", { dirPath: currentPath, name: srcName, newName: destName })
   );
 
   dataStore.setState({ ...result });

@@ -2,6 +2,7 @@ import { refresh } from "@@/fileSystem/action/navigation";
 import { selectAll, selectInvert, selectNone } from "@@/fileSystem/action/selection";
 import { readClipboard, writeClipboard } from "@@/fileSystem/action/clipboard";
 import { actionInputClassName } from "@@/fileSystem/components/Action";
+import { deleteItems } from "@@/fileSystem/action/operation";
 
 /**
  * 註冊所有快捷鍵
@@ -11,18 +12,18 @@ const registerAllShortcuts = () => {
     const target = e.target as HTMLElement;
     if (target.closest(`.${actionInputClassName}`)) return; // 在輸入框中不觸發快捷鍵
 
+    // Delete: 刪除選取項目
+    if (e.key === "Delete") {
+      e.preventDefault();
+      e.stopPropagation();
+      deleteItems();
+    }
+
     // Ctrl + R: 重新整理
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "r") {
       e.preventDefault();
       e.stopPropagation();
       refresh();
-    }
-
-    // Ctrl + G: 前往指定目錄
-    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "g") {
-      e.preventDefault();
-      e.stopPropagation();
-      // TODO
     }
 
     // Ctrl + C: 將選取內容寫入剪貼簿

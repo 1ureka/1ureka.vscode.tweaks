@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
-import { ActionButton, ActionDropdown, ActionGroup, ActionInput } from "@@/fileSystem/components/Action";
 import { Box } from "@mui/material";
+import { ActionButton, ActionDropdown, ActionGroup, ActionInput } from "@@/fileSystem/components/Action";
 import { formatRelativeTime } from "@/utils/formatter";
 import { setSchedule } from "@/utils";
 
-import { dataStore } from "@@/fileSystem/store/data";
-import { navigateUp, refresh } from "@@/fileSystem/action/navigation";
+import { dataStore, navigateHistoryStore, navigationStore } from "@@/fileSystem/store/data";
+import { stageDestinationPath, navigateGotoFolder, navigateUp, refresh } from "@@/fileSystem/action/navigation";
+import { navigateToNextFolder, navigateToPreviousFolder } from "@@/fileSystem/action/navigation";
 import { createNewFolder } from "@@/fileSystem/action/operation";
 
 const ActionButtonRefresh = () => {
@@ -40,9 +41,14 @@ const ActionButtonRefresh = () => {
 };
 
 const NavigationBar = () => {
-  const currentPath = dataStore((state) => state.currentPath);
+  const currentPath = navigationStore((state) => state.currentPath);
+  const destPath = navigationStore((state) => state.destPath);
+
   const shortenedPath = dataStore((state) => state.shortenedPath);
   const isCurrentRoot = dataStore((state) => state.isCurrentRoot);
+
+  const history = navigateHistoryStore((state) => state.history);
+  const currentIndex = navigateHistoryStore((state) => state.currentIndex);
 
   return (
     <Box sx={{ display: "grid", gridTemplateColumns: "auto auto 3fr 1fr auto auto", gap: 1, pb: 1 }}>
@@ -52,12 +58,16 @@ const NavigationBar = () => {
           actionName="上個資料夾"
           actionDetail="移動到上個資料夾"
           actionShortcut={["Alt", "Left Arrow"]}
+          onClick={navigateToPreviousFolder}
+          disabled={currentIndex === 0}
         />
         <ActionButton
           actionIcon="codicon codicon-arrow-right"
           actionName="下個資料夾"
           actionDetail="移動到下個資料夾"
           actionShortcut={["Alt", "Right Arrow"]}
+          onClick={navigateToNextFolder}
+          disabled={currentIndex >= history.length - 1}
         />
         <ActionButton
           actionIcon="codicon codicon-merge-into"
@@ -80,7 +90,14 @@ const NavigationBar = () => {
       </ActionGroup>
 
       <ActionGroup>
-        <ActionInput actionName={currentPath} value={currentPath} displayValue={shortenedPath} />
+        <ActionInput
+          actionName={currentPath}
+          value={destPath}
+          displayValue={shortenedPath}
+          onChange={stageDestinationPath}
+          blurOnEnter
+          onBlur={navigateGotoFolder}
+        />
       </ActionGroup>
 
       <ActionGroup>

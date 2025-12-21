@@ -4,18 +4,44 @@
  */
 
 import { create } from "zustand";
-import { getInitialData, invoke } from "@/utils/message_client";
-import type { ShowInfoAPI } from "@/providers/fileSystemProvider";
+import { invoke } from "@@/fileSystem/store/init";
+import { getInitialData } from "@/utils/message_client";
 import type { InspectDirectoryEntry } from "@/utils/system";
 import type { ReadDirectoryResult } from "@/handlers/fileSystemHandlers";
 
 const initialData = getInitialData<ReadDirectoryResult>();
 if (!initialData) {
-  invoke<ShowInfoAPI>("showInformationMessage", { message: "無法取得檔案系統初始資料" });
+  invoke("show.error", "無法取得檔案系統初始資料");
   throw new Error("無法取得檔案系統初始資料");
 }
 
+const initialPath = initialData.currentPath;
+
+const initialPathHeatmap = new Map<string, number>();
+initialPathHeatmap.set(initialPath, 1);
+
+const initialNavigationState = {
+  currentPath: initialPath,
+  destPath: initialPath,
+  pathHeatmap: initialPathHeatmap,
+  recentlyVisitedPaths: [initialPath],
+  mostFrequentPaths: [initialPath],
+};
+
 // ----------------------------------------------------------------------------
+
+type NavigationState = {
+  currentPath: string;
+  destPath: string;
+  pathHeatmap: Map<string, number>;
+  recentlyVisitedPaths: string[];
+  mostFrequentPaths: string[];
+};
+
+type NavigateHistoryState = {
+  history: string[];
+  currentIndex: number;
+};
 
 type ViewState = {
   sortField: keyof Pick<InspectDirectoryEntry, "fileName" | "mtime" | "ctime" | "size">;
@@ -49,6 +75,16 @@ type RenameState = {
 const dataStore = create<ReadDirectoryResult>(() => ({ ...initialData }));
 
 /**
+ * 建立用於儲存導航狀態的容器
+ */
+const navigationStore = create<NavigationState>(() => ({ ...initialNavigationState }));
+
+/**
+ * 建立用於儲存導航歷史狀態的容器
+ */
+const navigateHistoryStore = create<NavigateHistoryState>(() => ({ history: [initialPath], currentIndex: 0 }));
+
+/**
  * 建立用於檢視系統瀏覽器的狀態容器
  */
 const viewStateStore = create<ViewState>(() => ({ sortField: "fileName", sortOrder: "asc", filter: "all" }));
@@ -75,5 +111,6 @@ const renameStore = create<RenameState>(() => ({ srcName: "", destName: "" }));
 
 // ----------------------------------------------------------------------------
 
-export { dataStore, viewStateStore, viewDataStore, selectionStore, clipboardStore, renameStore };
+export { dataStore, viewStateStore, viewDataStore };
+export { navigationStore, navigateHistoryStore, selectionStore, clipboardStore, renameStore };
 export type { ViewState };
