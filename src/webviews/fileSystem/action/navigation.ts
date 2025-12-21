@@ -96,7 +96,7 @@ const navigateToNextFolder = async () => {
  */
 const navigateToImageGridView = async () => {
   const { currentPath } = dataStore.getState();
-  const result = await invoke("system.read.images", { dirPath: currentPath });
+  const result = await requestQueue.add(() => invoke("system.read.images", { dirPath: currentPath }));
 
   dataStore.setState({ ...result });
 };
