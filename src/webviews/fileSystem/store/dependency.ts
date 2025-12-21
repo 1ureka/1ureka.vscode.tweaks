@@ -89,12 +89,13 @@ const handleNavigationUpdate = () => {
  * 當檢視條件或來源資料任一更新時，重新計算檢視資料
  */
 const handleViewDataUpdate = () => {
+  const mode = dataStore.getState().mode;
   const entries = dataStore.getState().entries;
 
   const entriesFiltered = filterEntries(entries);
   const entriesSorted = sortEntries(entriesFiltered);
 
-  viewDataStore.setState({ entries: entriesSorted });
+  viewDataStore.setState({ viewMode: mode, entries: entriesSorted });
 };
 
 /**

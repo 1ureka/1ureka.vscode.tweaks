@@ -4,7 +4,7 @@ import { ActionButton, ActionDropdown, ActionGroup, ActionInput } from "@@/fileS
 import { formatRelativeTime } from "@/utils/formatter";
 import { setSchedule } from "@/utils";
 
-import { dataStore, navigateHistoryStore, navigationStore } from "@@/fileSystem/store/data";
+import { dataStore, viewDataStore, navigateHistoryStore, navigationStore } from "@@/fileSystem/store/data";
 import { stageDestinationPath, navigateGotoFolder, navigateUp, refresh } from "@@/fileSystem/action/navigation";
 import { navigateToFolder, navigateToNextFolder, navigateToPreviousFolder } from "@@/fileSystem/action/navigation";
 import { navigateToImageGridView } from "@@/fileSystem/action/navigation";
@@ -45,7 +45,7 @@ const NavigationBar = () => {
   const currentPath = navigationStore((state) => state.currentPath);
   const destPath = navigationStore((state) => state.destPath);
 
-  const viewMode = dataStore((state) => state.mode);
+  const viewMode = viewDataStore((state) => state.viewMode);
   const shortenedPath = dataStore((state) => state.shortenedPath);
   const isCurrentRoot = dataStore((state) => state.isCurrentRoot);
 

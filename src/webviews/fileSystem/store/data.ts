@@ -51,6 +51,7 @@ type ViewState = {
 };
 
 type ViewDataState = {
+  viewMode: typeof initialData.mode;
   entries: InspectDirectoryEntry[];
   imageEntries: ImageMetadata[];
 };
@@ -94,7 +95,7 @@ const viewStateStore = create<ViewState>(() => ({ sortField: "fileName", sortOrd
 /**
  * 建立用於儲存根據檢視條件計算後，要顯示的資料狀態的容器
  */
-const viewDataStore = create<ViewDataState>(() => ({ entries: [], imageEntries: [] }));
+const viewDataStore = create<ViewDataState>(() => ({ viewMode: initialData.mode, entries: [], imageEntries: [] }));
 
 /**
  * 建立用於儲存選取狀態的容器

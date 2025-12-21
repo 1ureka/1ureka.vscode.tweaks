@@ -1,4 +1,4 @@
-import { memo } from "react";
+import { memo, useEffect } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { Box, Typography, type SxProps } from "@mui/material";
 
@@ -8,7 +8,7 @@ import { TableRow } from "@@/fileSystem/layout/TableRow";
 
 import { loadingStore } from "@@/fileSystem/store/queue";
 import { viewDataStore, viewStateStore } from "@@/fileSystem/store/data";
-import { useTableBodyEventHandlers } from "@@/fileSystem/action/table";
+import { registerTableBodyEventHandlers } from "@@/fileSystem/action/table";
 
 /**
  * 用於標識表格主體容器的唯一 ID，補充 1. 已經保證每次只會有一個存在 2. 這是寫在模組層，因此不會有重渲染導致 ID 變化的問題
@@ -158,7 +158,19 @@ const TableBodyVirtualRows = () => {
  * 表格主體組件
  */
 const TableBody = memo(() => {
-  useTableBodyEventHandlers();
+  const viewMode = viewDataStore((state) => state.viewMode);
+
+  useEffect(() => {
+    if (viewMode !== "directory") return;
+    const dispose = registerTableBodyEventHandlers();
+    return () => {
+      dispose?.();
+    };
+  }, [viewMode]);
+
+  if (viewMode !== "directory") {
+    return null;
+  }
 
   return (
     <TableBodyContainer>
