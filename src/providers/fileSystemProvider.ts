@@ -3,7 +3,9 @@ import * as vscode from "vscode";
 import { registerInvokeEvents } from "@/utils/message_host";
 import { createWebviewPanelManager } from "@/utils/webview";
 import { handleDelete, handleInitialData, handlePaste, handleRename } from "@/handlers/fileSystemHandlers";
-import { handleCreateFile, handleCreateDir, handleReadDirectory } from "@/handlers/fileSystemHandlers";
+import { handleCreateFile, handleCreateDir } from "@/handlers/fileSystemHandlers";
+import { handleReadDirectory, handleReadImages } from "@/handlers/fileSystemHandlers";
+
 import type { InspectDirectoryEntry } from "@/utils/system";
 import type { ImageMetadata } from "@/utils/image";
 import type { OneOf, Prettify, WithProgress } from "@/utils/type";
@@ -90,7 +92,7 @@ const withProgress: WithProgress = async (taskName, taskFn) => {
   };
 
   return await vscode.window.withProgress(progressOptions, async (progress) => {
-    const report = (increment: number) => progress.report({ increment });
+    const report = (params: { increment: number; message?: string }) => progress.report(params);
     return await taskFn(report);
   });
 };
@@ -170,6 +172,10 @@ const fileSystemAPI = {
   "clipboard.write": writeClipboard,
 
   "system.read.dir": handleReadDirectory,
+  "system.read.images": ({ dirPath }: { dirPath: string }) => {
+    return handleReadImages(dirPath, withProgress);
+  },
+
   "system.open.file": openFile,
   "system.open.dir": openTarget,
 

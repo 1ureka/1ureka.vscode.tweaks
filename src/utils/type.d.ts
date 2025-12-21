@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unnecessary-type-constraint */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import type {} from "@mui/material/styles";
 

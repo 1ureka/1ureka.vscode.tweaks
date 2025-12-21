@@ -3,8 +3,11 @@ import * as path from "path";
 
 import { tryCatch } from "@/utils";
 import { generateErrorMessage } from "@/utils/formatter";
+
 import { readDirectory, inspectDirectory } from "@/utils/system";
 import { isRootDirectory, pathToArray, toParentPath, shortenPath } from "@/utils/system";
+import { openImages } from "@/utils/image";
+
 import type { ReadResourceResult } from "@/providers/fileSystemProvider";
 import type { WithProgress } from "@/utils/type";
 
@@ -52,6 +55,35 @@ const handleReadDirectory = async (params: { dirPath: string; depthOffset?: numb
 };
 
 /**
+ * 根據指定目錄讀取並回傳所有其中直接子層且是圖片的元資料
+ */
+async function handleReadImages(dirPath: string, withProgress: WithProgress): Promise<ReadResourceResult> {
+  const currentPath = path.resolve(toParentPath(dirPath, 0));
+  const shortenedPath = shortenPath(currentPath, 40);
+  const currentPathParts = pathToArray(currentPath);
+  const isCurrentRoot = isRootDirectory(currentPath);
+
+  const baseInfo = { mode: "images", currentPath, shortenedPath, currentPathParts, isCurrentRoot } as const;
+  const counts = { folderCount: 0, fileCount: 0 };
+
+  let lastProgress = 0;
+
+  const images = await withProgress("正在讀取圖片...", async (report) => {
+    return await openImages(currentPath, (message, percent) => {
+      const increment = percent - lastProgress;
+      report({ increment, message });
+      lastProgress = percent;
+    });
+  });
+
+  counts.fileCount = images.length;
+
+  return { ...baseInfo, entries: [], imageEntries: images, ...counts, timestamp: Date.now() };
+}
+
+// ----------------------------------------------------------------------------
+
+/**
  * 建立新檔案並在成功後回傳該檔案的路徑
  */
 async function handleCreateFile(params: {
@@ -89,6 +121,8 @@ const handleCreateDir = async (params: { dirPath: string; folderName: string; sh
 
   return handleReadDirectory({ dirPath });
 };
+
+// ----------------------------------------------------------------------------
 
 /**
  * 錯誤發生時的副作用說明對照表
@@ -155,7 +189,7 @@ const handlePaste = async (params: {
       } catch (error) {
         itemFailures[src] = error instanceof Error ? error.message : "未知錯誤";
       } finally {
-        report(progressPerItem);
+        report({ increment: progressPerItem });
       }
     }
   });
@@ -174,6 +208,8 @@ const handlePaste = async (params: {
   showErrorReport(errorContent);
   return handleReadDirectory({ dirPath: destDir });
 };
+
+// ----------------------------------------------------------------------------
 
 /**
  * 處理重新命名檔案/資料夾
@@ -230,7 +266,7 @@ const handleDelete = async (params: {
       } catch (error) {
         itemFailures[targetPath] = error instanceof Error ? error.message : "未知錯誤";
       } finally {
-        report(progressPerItem);
+        report({ increment: progressPerItem });
       }
     }
   });
@@ -248,5 +284,7 @@ const handleDelete = async (params: {
   return handleReadDirectory({ dirPath });
 };
 
+// ----------------------------------------------------------------------------
+
 export { handleInitialData, handleCreateFile, handleCreateDir, handlePaste, handleRename, handleDelete };
-export { handleReadDirectory };
+export { handleReadDirectory, handleReadImages };
