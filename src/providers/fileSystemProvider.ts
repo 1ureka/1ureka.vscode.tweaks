@@ -5,7 +5,7 @@ import { createWebviewPanelManager } from "@/utils/webview";
 import { handleDelete, handleInitialData, handlePaste, handleRename } from "@/handlers/fileSystemHandlers";
 import { handleCreateFile, handleCreateDir, handleReadDirectory } from "@/handlers/fileSystemHandlers";
 import type { ReadDirectoryResult } from "@/handlers/fileSystemHandlers";
-import type { WithProgress } from "@/utils";
+import type { WithProgress } from "@/utils/type";
 
 import fileSystemLight from "@/assets/file-system-light.svg";
 import fileSystemDark from "@/assets/file-system-dark.svg";

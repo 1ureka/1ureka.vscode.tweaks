@@ -6,7 +6,7 @@ import { generateErrorMessage } from "@/utils/formatter";
 import { readDirectory, inspectDirectory } from "@/utils/system";
 import { isRootDirectory, pathToArray, toParentPath, shortenPath } from "@/utils/system";
 import type { InspectDirectoryEntry } from "@/utils/system";
-import type { WithProgress } from "@/utils";
+import type { WithProgress } from "@/utils/type";
 
 type ReadDirectoryResult = {
   // 有關當前目錄的資訊

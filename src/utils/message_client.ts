@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { defer, type Promised } from "@/utils";
+import { defer } from "@/utils";
+import type { Promised } from "@/utils/type";
 import type { API, APILegacy, InvokeResponseMessage, ForwardCommandMessage } from "@/utils/message_host";
 
 /**
