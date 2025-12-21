@@ -88,17 +88,9 @@ type Promised<T extends (...args: any) => any> = Promise<Awaited<ReturnType<T>>>
 /**
  * 一個可以執行需要報告進度的函數的函數
  */
-type WithProgress<T extends unknown = void> = (
+type WithProgress = <T>(
   taskName: string,
-  taskFn: (report: (increment: number) => void) => Promise<T>
+  taskFn: (report: (params: { increment: number; message?: string }) => void) => Promise<T>
 ) => Promise<T>;
 
-/**
- * 一個可以執行需要報告 進度 + 進度訊息 的函數的函數
- */
-type WithProgressMessage<T extends unknown = void> = (
-  taskName: string,
-  taskFn: (report: (params: { increment: number; message: string }) => void) => Promise<T>
-) => Promise<T>;
-
-export type { Prettify, OneOf, Promised, WithProgress, WithProgressMessage };
+export type { Prettify, OneOf, Promised, WithProgress };
