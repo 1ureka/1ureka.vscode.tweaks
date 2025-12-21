@@ -7,6 +7,7 @@ import { create } from "zustand";
 import { invoke } from "@@/fileSystem/store/init";
 import { getInitialData } from "@/utils/message_client";
 import type { InspectDirectoryEntry } from "@/utils/system";
+import type { ImageMetadata } from "@/utils/image";
 import type { ReadResourceResult } from "@/providers/fileSystemProvider";
 
 const initialData = getInitialData<ReadResourceResult>();
@@ -51,6 +52,7 @@ type ViewState = {
 
 type ViewDataState = {
   entries: InspectDirectoryEntry[];
+  imageEntries: ImageMetadata[];
 };
 
 type SelectionState = {
@@ -92,7 +94,7 @@ const viewStateStore = create<ViewState>(() => ({ sortField: "fileName", sortOrd
 /**
  * 建立用於儲存根據檢視條件計算後，要顯示的資料狀態的容器
  */
-const viewDataStore = create<ViewDataState>(() => ({ entries: [] }));
+const viewDataStore = create<ViewDataState>(() => ({ entries: [], imageEntries: [] }));
 
 /**
  * 建立用於儲存選取狀態的容器
