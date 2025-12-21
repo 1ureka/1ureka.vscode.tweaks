@@ -7,9 +7,9 @@ import { create } from "zustand";
 import { invoke } from "@@/fileSystem/store/init";
 import { getInitialData } from "@/utils/message_client";
 import type { InspectDirectoryEntry } from "@/utils/system";
-import type { ReadDirectoryResult } from "@/handlers/fileSystemHandlers";
+import type { ReadResourceResult } from "@/providers/fileSystemProvider";
 
-const initialData = getInitialData<ReadDirectoryResult>();
+const initialData = getInitialData<ReadResourceResult>();
 if (!initialData) {
   invoke("show.error", "無法取得檔案系統初始資料");
   throw new Error("無法取得檔案系統初始資料");
@@ -72,7 +72,7 @@ type RenameState = {
 /**
  * 建立前端用於儲存檔案系統資料的容器
  */
-const dataStore = create<ReadDirectoryResult>(() => ({ ...initialData }));
+const dataStore = create<ReadResourceResult>(() => ({ ...initialData }));
 
 /**
  * 建立用於儲存導航狀態的容器
