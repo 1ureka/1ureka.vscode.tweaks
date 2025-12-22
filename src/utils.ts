@@ -116,6 +116,7 @@ function setSchedule({ configs, task }: { configs: { timeout: number; count: num
 const clamp = (params: { value: number; interval: [number, number] }) => {
   const { value, interval } = params;
   const [bound1, bound2] = interval;
+  if (bound1 === bound2) return bound1;
   const min = Math.min(bound1, bound2);
   const max = Math.max(bound1, bound2);
   return Math.min(Math.max(value, min), max);
