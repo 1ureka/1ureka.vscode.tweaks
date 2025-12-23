@@ -2,7 +2,6 @@ import { memo } from "react";
 import { Box, ButtonBase, Typography, type SxProps } from "@mui/material";
 
 import { formatFileSize, formatFileType, formatFixedLengthDateTime } from "@/utils/formatter";
-import { ellipsisSx } from "@/utils/ui";
 import { extensionIconMap } from "@/assets/fileExtMap";
 import type { InspectDirectoryEntry } from "@/utils/system";
 
@@ -10,32 +9,31 @@ import { tableColumns, tableIconFontSize, tableIconWidth, tableRowHeight } from 
 import { clipboardStore, selectionStore, viewDataStore } from "@@/fileSystem/store/data";
 import type { TableColumn } from "@@/fileSystem/layout/tableConfig";
 
-/**
- * 用於標示表格列的 class 名稱
- */
+/** 用於標示表格列的 class 名稱 */
 const tableRowClassName = "table-row";
+/** 用於標示表格中某列的單元格的 class 名稱 */
+const tableRowCellClassName = "table-cell";
 
-/**
- * 表格列儲存在 html 中的指標屬性名稱
- */
+/** 表格列儲存在 html 中的指標屬性名稱 */
 const tableRowIndexAttr = "data-index";
 
 /**
- * 用於表格某 row 中的單元格的樣式
+ * 為項目指派對應的圖示
  */
-const tableRowCellSx: SxProps = {
-  minWidth: 0,
-  display: "flex",
-  alignItems: "center",
+const assignIcon = (entry: InspectDirectoryEntry) => {
+  let icon: `codicon codicon-${string}` = `codicon codicon-${entry.fileType}`;
 
-  "&.align-left": { justifyContent: "flex-start" },
-  "&.align-center": { justifyContent: "center" },
-  "&.align-right": { justifyContent: "flex-end" },
+  if (entry.fileType !== "file") return icon;
 
-  "& > span": { ...ellipsisSx, whiteSpace: "pre" },
-  "& > span.primary": { color: "text.primary" },
-  "& > span.secondary": { color: "text.secondary" },
-} as SxProps;
+  const fileName = entry.fileName.toLowerCase();
+  const extension = fileName.includes(".") ? fileName.split(".").pop() || "" : "";
+
+  if (extension in extensionIconMap) icon = extensionIconMap[extension];
+
+  return icon;
+};
+
+// ---------------------------------------------------------------------------------
 
 /**
  * 用於表格某 row 中的單元格
@@ -60,12 +58,12 @@ const TableCell = ({ column, row }: { column: TableColumn; row: InspectDirectory
     text = String(row[field]);
   }
 
+  const className = `${tableRowCellClassName} align-${align} ${variant}`;
+
   return (
-    <Box style={layoutStyle} sx={tableRowCellSx} className={`align-${align}`}>
-      <Typography component="span" variant="caption" className={variant}>
-        {text}
-      </Typography>
-    </Box>
+    <Typography className={className} style={layoutStyle} component="span" variant="caption">
+      {text}
+    </Typography>
   );
 };
 
@@ -103,41 +101,59 @@ const TableRowBorder = memo(() => (
 // ---------------------------------------------------------------------------------
 
 /**
- * 為項目指派對應的圖示
+ * 用於表格某一列中的單元格的樣式
  */
-const assignIcon = (entry: InspectDirectoryEntry) => {
-  let icon: `codicon codicon-${string}` = `codicon codicon-${entry.fileType}`;
+const tableRowCellSx: SxProps = {
+  minWidth: 0,
+  display: "block",
 
-  if (entry.fileType !== "file") return icon;
+  "&.align-left": { textAlign: "left" },
+  "&.align-center": { textAlign: "center" },
+  "&.align-right": { textAlign: "right" },
 
-  const fileName = entry.fileName.toLowerCase();
-  const extension = fileName.includes(".") ? fileName.split(".").pop() || "" : "";
+  textOverflow: "ellipsis",
+  overflow: "hidden",
+  whiteSpace: "pre",
+  lineHeight: `${tableRowHeight}px`,
 
-  if (extension in extensionIconMap) icon = extensionIconMap[extension];
-
-  return icon;
+  "&.primary": { color: "text.primary" },
+  "&.secondary": { color: "text.secondary" },
 };
 
 /**
- * 用於表格中每一列的樣式
+ * 用於表格列圖示的樣式
+ */
+const tableRowIconCellSx: SxProps = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  width: tableIconWidth,
+  fontSize: tableIconFontSize,
+};
+
+/**
+ * 用於表格中每一列的樣式，由 TableBody 來指派，增加效能
  */
 const tableRowSx: SxProps = {
   position: "relative",
   width: 1,
   height: tableRowHeight,
+  overflow: "visible",
+  px: 0.5,
+
   display: "flex",
   alignItems: "stretch",
   justifyContent: "stretch",
-  px: 0.5,
-  overflow: "visible",
+
   "&.selected": { bgcolor: "action.active" },
+  [`& .${tableRowCellClassName}`]: tableRowCellSx,
+  [`& .codicon[class*='codicon-']`]: tableRowIconCellSx,
 };
 
 /**
  * 用於呈現一個普通的資料列
  */
 const TableRow = memo(({ index }: { index: number }) => {
-  const indexDataProp = { [tableRowIndexAttr]: index };
   const viewEntries = viewDataStore((state) => state.entries);
   const row = viewEntries[index];
 
@@ -151,10 +167,8 @@ const TableRow = memo(({ index }: { index: number }) => {
   }
 
   return (
-    <ButtonBase sx={tableRowSx} className={className} {...indexDataProp} draggable>
-      <Box sx={{ width: tableIconWidth, display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <i className={assignIcon(row)} style={{ display: "flex", alignItems: "center", fontSize: tableIconFontSize }} />
-      </Box>
+    <ButtonBase className={className} draggable {...{ [tableRowIndexAttr]: index }}>
+      <i className={assignIcon(row)} />
 
       {tableColumns.map((column) => (
         <TableCell key={column.field} column={column} row={row} />
@@ -165,4 +179,4 @@ const TableRow = memo(({ index }: { index: number }) => {
   );
 });
 
-export { TableRow, tableRowClassName, tableRowIndexAttr };
+export { tableRowSx, TableRow, tableRowClassName, tableRowIndexAttr };
