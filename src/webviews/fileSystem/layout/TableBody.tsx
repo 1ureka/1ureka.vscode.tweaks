@@ -1,9 +1,8 @@
 import { memo, useEffect } from "react";
-// import { useVirtualizer } from "@tanstack/react-virtual";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import { Box, Typography, type SxProps } from "@mui/material";
 
 import { colorMix } from "@/utils/ui";
-import { useTableBodyVirtualizer } from "@@/fileSystem/layout/tableBodyUtils";
 import { tableRowHeight } from "@@/fileSystem/layout/tableConfig";
 import { tableRowSx, TableRow, tableRowClassName } from "@@/fileSystem/layout/TableRow";
 
@@ -105,9 +104,17 @@ const NoItemDisplay = () => {
 
 // ---------------------------------------------------------------------------------
 
-/**
- * 根據起始位置生成虛擬項目的內聯樣式
- */
+/** 獲取滾動容器 */
+const getScrollElement = () => {
+  return document.getElementById(tableBodyContainerId);
+};
+
+/** 獲取每個虛擬項目的高度 */
+const estimateSize = () => {
+  return tableRowHeight;
+};
+
+/** 根據起始位置生成虛擬項目的內聯樣式 */
 const getVirtualItemStyle = (start: number) => {
   return { height: `${tableRowHeight}px`, transform: `translateY(${start}px)` };
 };
@@ -117,7 +124,7 @@ const getVirtualItemStyle = (start: number) => {
  */
 const TableBodyVirtualRows = memo(() => {
   const viewEntries = viewDataStore((state) => state.entries);
-  const rowVirtualizer = useTableBodyVirtualizer({ count: viewEntries.length });
+  const rowVirtualizer = useVirtualizer({ getScrollElement, estimateSize, count: viewEntries.length, overscan: 1 });
   const virtualItemListWrapperStyle = { height: `${rowVirtualizer.getTotalSize()}px` };
 
   return (
