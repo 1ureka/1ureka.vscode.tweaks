@@ -8,10 +8,6 @@ type CommandId =
   | "1ureka.main.openNavigation"
   // External App Commands
   | "1ureka.external.openWithSystemDefaultApp"
-  // Image Viewer Commands
-  | "1ureka.imageViewer.resetTransform"
-  | "1ureka.imageViewer.eyeDropper"
-  | "1ureka.imageViewer.exportAs"
   // File System Commands
   | "1ureka.fileSystem.openFromPath"
   | "1ureka.fileSystem.openFromDialog"
@@ -50,17 +46,8 @@ type SubmenuEntry = {
   commandEntries: OneOf<[Omit<CommandEntry, "when">, SubmenuEntry]>[];
 };
 
-type WebviewCommandEntry = Omit<CommandEntry, "when"> & {
-  webviewId: WebviewId;
-};
-
-type WebviewSubmenuEntry = Omit<SubmenuEntry, "when"> & {
-  webviewId: WebviewId;
-};
-
 type CommandPaletteEntries = CommandEntry[];
 type ContextMenuEntries = OneOf<[CommandEntry, SubmenuEntry]>[];
-type WebviewContextMenuEntries = OneOf<[WebviewCommandEntry, WebviewSubmenuEntry]>[];
 
 type CustomEditor = {
   viewType: string;
@@ -121,28 +108,6 @@ const editorTitleContextMenuEntries: ContextMenuEntries = [
     title: "以預設應用程式開啟",
     when: "resourceScheme == file",
     group: "navigation@100",
-  },
-];
-
-const webviewContextMenuEntries: WebviewContextMenuEntries = [
-  // Image Viewer
-  {
-    id: "1ureka.imageViewer.resetTransform",
-    title: "重設圖片縮放與位置",
-    webviewId: "1ureka.imageViewer",
-    group: "navigation@100",
-  },
-  {
-    id: "1ureka.imageViewer.eyeDropper",
-    title: "吸取顏色並複製",
-    webviewId: "1ureka.imageViewer",
-    group: "navigation@100",
-  },
-  {
-    id: "1ureka.imageViewer.exportAs",
-    title: "導出為...",
-    webviewId: "1ureka.imageViewer",
-    group: "navigation@101",
   },
 ];
 
@@ -245,7 +210,6 @@ export function generateContribute() {
   extract(explorerContextMenuEntries);
   extract(editorTitleMenuEntries);
   extract(editorTitleContextMenuEntries);
-  extract(webviewContextMenuEntries);
 
   // ---------------------------------------------------------------------------
 
@@ -287,19 +251,6 @@ export function generateContribute() {
     });
   }
 
-  /**
-   * 生成 WebView 右鍵選單的註冊配置
-   * @param entries WebView 右鍵選單條目
-   * @returns 選單註冊陣列
-   */
-  function generateWebviewMenuRegistration(entries: WebviewContextMenuEntries) {
-    return entries.map((entry) => {
-      const when = `webviewId == '${entry.webviewId}'`;
-      if ("id" in entry) return { command: entry.id, when, group: entry.group };
-      else return { submenu: entry.submenuId, when, group: entry.group };
-    });
-  }
-
   // 建構 contribute 物件的各個部分
   const commands = generateCommandsRegistration();
   const commandPaletteMenu = generateCommandPaletteRegistration(commandPaletteEntries);
@@ -307,7 +258,6 @@ export function generateContribute() {
   const explorerTitleMenu = generateMenuRegistration(explorerTitleMenuEntries);
   const editorTitleMenu = generateMenuRegistration(editorTitleMenuEntries);
   const editorTitleContextMenu = generateMenuRegistration(editorTitleContextMenuEntries);
-  const webviewContextMenu = generateWebviewMenuRegistration(webviewContextMenuEntries);
 
   // ---------------------------------------------------------------------------
 
@@ -317,7 +267,6 @@ export function generateContribute() {
     commandPalette: commandPaletteMenu,
     "explorer/context": explorerContextMenu,
     "editor/title/context": editorTitleContextMenu,
-    "webview/context": webviewContextMenu,
     "view/title": explorerTitleMenu,
     "editor/title": editorTitleMenu,
     ...submenuMenus,
