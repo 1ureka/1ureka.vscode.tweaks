@@ -8,15 +8,6 @@ type CommandId =
   | "1ureka.main.openNavigation"
   // External App Commands
   | "1ureka.external.openWithSystemDefaultApp"
-  // Image Wall Commands
-  | "1ureka.imageWall.openFromPath"
-  | "1ureka.imageWall.openFromDialog"
-  | "1ureka.imageWall.setLayoutStandard"
-  | "1ureka.imageWall.setLayoutWoven"
-  | "1ureka.imageWall.setLayoutMasonry"
-  | "1ureka.imageWall.setSizeSmall"
-  | "1ureka.imageWall.setSizeMedium"
-  | "1ureka.imageWall.setSizeLarge"
   // Image Viewer Commands
   | "1ureka.imageViewer.resetTransform"
   | "1ureka.imageViewer.eyeDropper"
@@ -83,7 +74,6 @@ type CustomEditor = {
 // ============================================================================
 
 const commandPaletteEntries: CommandPaletteEntries = [
-  { id: "1ureka.imageWall.openFromDialog", title: "開啟圖片牆", icon: "$(repo)" },
   { id: "1ureka.fileSystem.openFromDialog", title: "開啟系統瀏覽器", icon: "$(folder-library)" },
   { id: "1ureka.injectStyles", title: "注入自訂樣式" },
   { id: "1ureka.restoreStyles", title: "還原樣式設定" },
@@ -123,12 +113,6 @@ const explorerContextMenuEntries: ContextMenuEntries = [
     when: "explorerResourceIsFolder",
     group: "extension@100",
   },
-  {
-    id: "1ureka.imageWall.openFromPath",
-    title: "在圖片牆中顯示",
-    when: "explorerResourceIsFolder",
-    group: "extension@101",
-  },
 ];
 
 const editorTitleContextMenuEntries: ContextMenuEntries = [
@@ -159,30 +143,6 @@ const webviewContextMenuEntries: WebviewContextMenuEntries = [
     title: "導出為...",
     webviewId: "1ureka.imageViewer",
     group: "navigation@101",
-  },
-
-  // Image Wall
-  {
-    submenuId: "imageWall.layout",
-    label: "圖片牆布局",
-    webviewId: "1ureka.imageWall",
-    group: "0_preferences",
-    commandEntries: [
-      { id: "1ureka.imageWall.setLayoutStandard", title: "標準布局", group: "1_modes@1" },
-      { id: "1ureka.imageWall.setLayoutWoven", title: "編織布局", group: "1_modes@2" },
-      { id: "1ureka.imageWall.setLayoutMasonry", title: "磚牆布局 (預設)", group: "1_modes@3" },
-    ],
-  },
-  {
-    submenuId: "imageWall.size",
-    label: "圖片牆尺寸",
-    webviewId: "1ureka.imageWall",
-    group: "0_preferences",
-    commandEntries: [
-      { id: "1ureka.imageWall.setSizeSmall", title: "小尺寸", group: "1_sizes@1" },
-      { id: "1ureka.imageWall.setSizeMedium", title: "中尺寸 (預設)", group: "1_sizes@2" },
-      { id: "1ureka.imageWall.setSizeLarge", title: "大尺寸", group: "1_sizes@3" },
-    ],
   },
 ];
 
