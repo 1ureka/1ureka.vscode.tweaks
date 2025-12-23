@@ -1,6 +1,6 @@
-import { tableRowClassName, tableRowIndexAttr } from "@@/fileSystem/layout/TableRow";
-import { tableBodyContainerId, tableBodyVirtualListContainerId } from "@@/fileSystem/layout/TableBody";
-import { tableRowHeight } from "@@/fileSystem/layout/tableConfig";
+import { tableRowClassName, tableRowIndexAttr } from "@@/fileSystem/layout_table/TableRow";
+import { tableBodyContainerId, tableBodyVirtualListContainerId } from "@@/fileSystem/layout_table/TableBody";
+import { tableRowHeight } from "@@/fileSystem/layout_table/tableConfig";
 
 import { navigateToFolder } from "@@/fileSystem/action/navigation";
 import { openFile, startFileDrag } from "@@/fileSystem/action/operation";

@@ -30,24 +30,6 @@ const navigationOptions: NavigationOption[] = [
     detail: "在預設的瀏覽器中選擇目錄後以系統瀏覽器開啟",
     commandId: "1ureka.fileSystem.openFromDialog",
   },
-  {
-    label: "圖片牆",
-    kind: vscode.QuickPickItemKind.Separator,
-  },
-  {
-    iconPath: new vscode.ThemeIcon("book"),
-    label: "圖片牆",
-    description: "$(root-folder) 當前目錄",
-    detail: "在圖片牆中瀏覽當前目錄的圖片檔案",
-    commandId: "1ureka.imageWall.openFromPath",
-  },
-  {
-    iconPath: new vscode.ThemeIcon("book"),
-    label: "圖片牆",
-    description: "$(link-external) 指定目錄",
-    detail: "在預設的瀏覽器中選擇目錄後以圖片牆開啟",
-    commandId: "1ureka.imageWall.openFromDialog",
-  },
 ];
 
 /**

@@ -2,7 +2,7 @@
 
 import { defer } from "@/utils";
 import type { Promised } from "@/utils/type";
-import type { API, APILegacy, InvokeResponseMessage, ForwardCommandMessage } from "@/utils/message_host";
+import type { API, InvokeResponseMessage } from "@/message/host";
 
 /**
  * 獲取初始數據（從 HTML 中的 script 標籤提取）
@@ -119,43 +119,5 @@ function createInvoke<T extends API>(options?: { timeoutMs?: number }) {
   return { invoke, close };
 }
 
-/**
- * 調用擴展主機處理函式並獲取結果，使用時須導入由擴展主機定義的處理函式型別就能讓前後端型別自動對齊
- * @deprecated
- */
-function invoke<T extends APILegacy = never>(id: T["id"], params: Parameters<T["handler"]>[0]): Promised<T["handler"]> {
-  const { promise, resolve } = defer<Awaited<ReturnType<T["handler"]>>>();
-  const requestId = crypto.randomUUID();
-
-  const message: InvokeMessage = { type: "1ureka.invoke", requestId, handlerId: id, params };
-  vscode.postMessage(message);
-
-  const handleMessage = (event: MessageEvent<InvokeResponseMessage>) => {
-    const message = event.data;
-    if (message.type === "1ureka.invoke.response" && message.requestId === requestId && message.handlerId === id) {
-      window.removeEventListener("message", handleMessage);
-      resolve(message.result);
-    }
-  };
-
-  window.addEventListener("message", handleMessage);
-  return promise;
-}
-
-/**
- * 處理來自擴展主機的命令消息
- * 詳情請參考 src/utils/message_host.ts 中的 forwardCommandMessage 相關說明
- */
-function onReceiveCommand<T extends APILegacy = never>(id: T["id"], handler: () => void) {
-  const handleMessage = (event: MessageEvent<ForwardCommandMessage>) => {
-    const message = event.data;
-    if (message.type === "1ureka.command" && message.action === id) {
-      handler();
-    }
-  };
-
-  window.addEventListener("message", handleMessage);
-}
-
-export { getInitialData, createInvoke, invoke, onReceiveCommand };
+export { getInitialData, createInvoke };
 export type { InvokeMessage };

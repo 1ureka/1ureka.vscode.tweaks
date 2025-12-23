@@ -1,10 +1,13 @@
 import { startReactApp } from "@/utils/ui";
-import { registerMessageEvents } from "@@/imageViewer/data/events";
+import { handleCopy } from "@@/imageViewer/action";
 import { ImageViewer } from "@@/imageViewer/ImageViewer";
 
 startReactApp({
   App: ImageViewer,
   beforeRender: () => {
-    registerMessageEvents();
+    window.addEventListener("copy", (e) => {
+      e.preventDefault();
+      handleCopy();
+    });
   },
 });

@@ -2,9 +2,9 @@ import { useEffect, useState } from "react";
 import { Box, Container, Skeleton, Typography } from "@mui/material";
 import { TransformWrapper, TransformComponent, useControls } from "react-zoom-pan-pinch";
 
-import { resetTransformRef } from "@@/imageViewer/data/events";
-import { useDecodeImage } from "@@/imageViewer/data/hooks";
-import { imageViewerInitialData } from "@@/imageViewer/data/data";
+import { resetTransformRef } from "@@/imageViewer/action";
+import { useDecodeImage } from "@@/imageViewer/hooks";
+import { dataStore } from "@@/imageViewer/store";
 
 const Controls = () => {
   const { resetTransform } = useControls();
@@ -67,7 +67,7 @@ const ImageDisplay = ({ src: initialSrc, alt, width, height }: ImageDisplayProps
 };
 
 export const ImageViewer: React.FC = () => {
-  const data = imageViewerInitialData;
+  const data = dataStore((state) => state);
 
   if (data && data.metadata) {
     const { fileName, width, height } = data.metadata;

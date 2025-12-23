@@ -5,7 +5,7 @@
 
 import { create } from "zustand";
 import { invoke } from "@@/fileSystem/store/init";
-import { getInitialData } from "@/utils/message_client";
+import { getInitialData } from "@/message/client";
 import type { InspectDirectoryEntry } from "@/utils/system";
 import type { ImageMetadata } from "@/utils/image";
 import type { ReadResourceResult } from "@/providers/fileSystemProvider";
