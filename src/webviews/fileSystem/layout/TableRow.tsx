@@ -28,9 +28,7 @@ const assignIcon = (entry: InspectDirectoryEntry) => {
   const fileName = entry.fileName.toLowerCase();
   const extension = fileName.includes(".") ? fileName.split(".").pop() || "" : "";
 
-  if (extension in extensionIconMap) icon = extensionIconMap[extension];
-
-  return icon;
+  return extensionIconMap[extension] ?? icon;
 };
 
 // ---------------------------------------------------------------------------------
