@@ -98,11 +98,11 @@ async function sharpToBase64(image: sharp.Sharp, format: "png" | "jpeg" | "webp"
   return buffer.toString("base64");
 }
 
-// 根據 1920x1080 (Full HD/1080p) 的總像素點數來定義「1K」的門檻。
-const PIXELS_THRESHOLD_1K: number = 1920 * 1080; // 2073600
+// 根據 720x480 (SD) 的總像素點數來定義縮圖的門檻。
+const PIXELS_THRESHOLD_1K: number = 720 * 480; // 345600
 
 /**
- * 給定一個檔案路徑(假設已經確認是圖片)，若其解析度超過 1K，則壓縮後回傳 base64 字串，否則原圖轉 base64 回傳
+ * 給定一個檔案路徑(假設已經確認是圖片)，若其解析度超過 720x480 (SD)，則壓縮後回傳 base64 字串，否則原圖轉 base64 回傳
  */
 async function generateThumbnail(filePath: string): Promise<string | null> {
   const metadata = await openImage(filePath);
