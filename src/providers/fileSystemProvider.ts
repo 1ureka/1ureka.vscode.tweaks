@@ -6,8 +6,8 @@ import { handleDelete, handleInitialData, handlePaste, handleRename } from "@/ha
 import { handleCreateFile, handleCreateDir } from "@/handlers/fileSystemHandlers";
 import { handleReadDirectory, handleReadImages } from "@/handlers/fileSystemHandlers";
 
+import { generateThumbnail, type ImageMetadata } from "@/utils/image";
 import type { InspectDirectoryEntry } from "@/utils/system";
-import type { ImageMetadata } from "@/utils/image";
 import type { OneOf, Prettify, WithProgress } from "@/utils/type";
 
 import fileSystemLight from "@/assets/file-system-light.svg";
@@ -174,6 +174,10 @@ const fileSystemAPI = {
   "system.read.dir": handleReadDirectory,
   "system.read.images": ({ dirPath }: { dirPath: string }) => {
     return handleReadImages(dirPath, withProgress);
+  },
+
+  "system.generate.thumbnail": (params: { filePath: string }) => {
+    return generateThumbnail(params.filePath);
   },
 
   "system.open.file": openFile,
