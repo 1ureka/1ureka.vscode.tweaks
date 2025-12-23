@@ -8,7 +8,7 @@ import { readClipboard, writeClipboard, writeSystemClipboard } from "@@/fileSyst
 import { selectAll, selectInvert, selectNone } from "@@/fileSystem/action/selection";
 
 const ActionBar = () => {
-  const rows = viewDataStore((state) => state.entries);
+  const rows = viewDataStore((state) => state.entries.length);
   const lastSelectedIndex = selectionStore((state) => state.lastSelectedIndex);
   const destName = renameStore((state) => state.destName);
   const selected = selectionStore((state) => state.selected);
@@ -63,7 +63,7 @@ const ActionBar = () => {
           actionDetail="選取目前顯示在表格中的所有項目"
           actionShortcut={["Ctrl", "A"]}
           onClick={selectAll}
-          disabled={selectionCount === rows.length}
+          disabled={selectionCount === rows}
         />
         <ActionButton
           actionIcon="codicon codicon-clear-all"
