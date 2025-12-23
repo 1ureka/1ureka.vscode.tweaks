@@ -4,9 +4,10 @@ import { ActionButton, ActionDropdown, ActionGroup, ActionInput } from "@@/fileS
 import { formatRelativeTime } from "@/utils/formatter";
 import { setSchedule } from "@/utils";
 
-import { dataStore, navigateHistoryStore, navigationStore } from "@@/fileSystem/store/data";
+import { dataStore, viewDataStore, navigateHistoryStore, navigationStore } from "@@/fileSystem/store/data";
 import { stageDestinationPath, navigateGotoFolder, navigateUp, refresh } from "@@/fileSystem/action/navigation";
-import { navigateToNextFolder, navigateToPreviousFolder } from "@@/fileSystem/action/navigation";
+import { navigateToFolder, navigateToNextFolder, navigateToPreviousFolder } from "@@/fileSystem/action/navigation";
+import { navigateToImageGridView } from "@@/fileSystem/action/navigation";
 import { createNewFolder } from "@@/fileSystem/action/operation";
 
 const ActionButtonRefresh = () => {
@@ -44,6 +45,7 @@ const NavigationBar = () => {
   const currentPath = navigationStore((state) => state.currentPath);
   const destPath = navigationStore((state) => state.destPath);
 
+  const viewMode = viewDataStore((state) => state.viewMode);
   const shortenedPath = dataStore((state) => state.shortenedPath);
   const isCurrentRoot = dataStore((state) => state.isCurrentRoot);
 
@@ -86,6 +88,7 @@ const NavigationBar = () => {
           actionName="建立資料夾"
           actionDetail="建立一個新的資料夾"
           onClick={createNewFolder}
+          disabled={viewMode === "images"}
         />
       </ActionGroup>
 
@@ -114,13 +117,15 @@ const NavigationBar = () => {
           actionIcon="codicon codicon-list-ordered"
           actionName="顯示模式"
           actionDetail="用垂直表格顯示"
-          active
+          onClick={() => navigateToFolder({ dirPath: currentPath })}
+          active={viewMode === "directory"}
         />
         <ActionButton
           actionIcon="codicon codicon-table"
           actionName="顯示模式"
-          actionDetail="用 Grid 顯示 (即將推出)"
-          disabled
+          actionDetail="用 Grid 顯示所有圖片"
+          onClick={navigateToImageGridView}
+          active={viewMode === "images"}
         />
         <ActionDropdown actionName="顯示設定">
           <Box sx={{ p: 2, px: 5 }} />
@@ -128,7 +133,13 @@ const NavigationBar = () => {
       </ActionGroup>
 
       <ActionGroup>
-        <ActionButton actionIcon="codicon codicon-filter" actionName="過濾器" actionDetail="啟用/停用過濾功能" active />
+        <ActionButton
+          actionIcon="codicon codicon-filter"
+          actionName="過濾器"
+          actionDetail="啟用/停用過濾功能"
+          active
+          disabled={viewMode === "images"}
+        />
         <ActionDropdown actionName="過濾設定">
           <Box sx={{ p: 2, px: 5 }} />
         </ActionDropdown>

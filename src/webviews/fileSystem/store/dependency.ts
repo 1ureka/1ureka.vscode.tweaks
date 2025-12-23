@@ -51,6 +51,40 @@ const sortEntries = (entries: InspectDirectoryEntry[]) => {
   return sortedEntries;
 };
 
+/**
+ * 計算各項目的相對高度權重，並透過貪婪演算法（Greedy）實現多欄位的平衡佈局。
+ * 返回值包含每個欄位的軌道資料與整體的最大權重高度。
+ */
+function createWeightBasedLayout<T extends { width: number; height: number }>(params: { items: T[]; columns: number }) {
+  const { items, columns } = params;
+
+  // 初始化 columns 個軌道
+  const columnHeights: number[] = new Array(columns).fill(0);
+  const tracks: { item: T; yStart: number; yEnd: number }[][] = Array.from({ length: columns }, () => []);
+  let yMax = 0;
+
+  items.forEach((item) => {
+    // 權重高度計算: h = H / W (假設寬度單位是 1)
+    const heightRatio = item.height / item.width;
+
+    // 找到目前最短的軌道
+    const columnIndex = columnHeights.reduce(
+      (minIdx, currentY, currentIdx, arr) => (currentY < arr[minIdx] ? currentIdx : minIdx),
+      0
+    );
+
+    const yStart = columnHeights[columnIndex]; // 權重起點
+    const yEnd = yStart + heightRatio; // 權重終點
+
+    // 將項目加入到對應的軌道並更新該軌道的總高度
+    tracks[columnIndex].push({ item, yStart, yEnd });
+    columnHeights[columnIndex] = yEnd;
+    if (yEnd > yMax) yMax = yEnd;
+  });
+
+  return { tracks, yMax };
+}
+
 // ----------------------------------------------------------------------------
 
 /**
@@ -89,12 +123,18 @@ const handleNavigationUpdate = () => {
  * 當檢視條件或來源資料任一更新時，重新計算檢視資料
  */
 const handleViewDataUpdate = () => {
+  const mode = dataStore.getState().mode;
   const entries = dataStore.getState().entries;
 
   const entriesFiltered = filterEntries(entries);
   const entriesSorted = sortEntries(entriesFiltered);
 
-  viewDataStore.setState({ entries: entriesSorted });
+  const imageEntries = dataStore.getState().imageEntries;
+
+  const columns = 3;
+  const layout = createWeightBasedLayout({ items: imageEntries, columns });
+
+  viewDataStore.setState({ viewMode: mode, entries: entriesSorted, imageEntries: { ...layout } });
 };
 
 /**

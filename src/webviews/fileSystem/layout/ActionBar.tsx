@@ -14,6 +14,11 @@ const ActionBar = () => {
   const selected = selectionStore((state) => state.selected);
   const clipboardEntries = clipboardStore((state) => state.entries);
 
+  const viewMode = viewDataStore((state) => state.viewMode);
+  if (viewMode !== "directory") {
+    return null;
+  }
+
   const selectionCount = selected.filter((v) => v).length;
   const clipboardCount = Object.keys(clipboardEntries).length;
 

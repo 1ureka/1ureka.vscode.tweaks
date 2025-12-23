@@ -11,6 +11,7 @@ import { NavigationBar } from "@@/fileSystem/layout/NavigationBar";
 import { TableHead } from "@@/fileSystem/layout/TableHead";
 import { TableBody } from "@@/fileSystem/layout/TableBody";
 import { ActionBar } from "@@/fileSystem/layout/ActionBar";
+import { ImageGrid } from "@@/fileSystem/layout/ImageGrid";
 
 const Container = ({ children }: { children: React.ReactNode }) => (
   <Box sx={{ position: "relative", height: "100dvh", width: "100dvw", overflow: "hidden", overflowX: "auto" }}>
@@ -27,6 +28,7 @@ const App = () => (
       <TableHead />
       <TableBody />
       <ActionBar />
+      <ImageGrid />
     </Box>
   </Container>
 );

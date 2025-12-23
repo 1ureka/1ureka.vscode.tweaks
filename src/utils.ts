@@ -1,60 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unnecessary-type-constraint */
-
-/**
- * 將型別展開成較易閱讀的形式
- */
-type Prettify<T> = { [K in keyof T]: T[K] } & {};
-
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-type MergeTypes<TypesArray extends any[], Res = {}> = TypesArray extends [infer Head, ...infer Rem]
-  ? MergeTypes<Rem, Res | Head>
-  : Res;
-
-type OnlyFirst<F, S> = F & { [Key in keyof Omit<S, keyof F>]?: never };
-
-/**
- * 給定一組型別陣列，回傳一個聯合型別，自動將任一型別中未出現的屬性設為 never
- */
-type OneOf<TypesArray extends any[], Res = never, AllProps = MergeTypes<TypesArray>> = TypesArray extends [
-  infer Head,
-  ...infer Rem
-]
-  ? OneOf<Rem, Res | OnlyFirst<Head, AllProps>, AllProps>
-  : Prettify<Res>;
-
-/**
- * 將可能同步或非同步的函式回傳型別統一轉換為單層的 Promise 型別
- * @example
- * type SyncFn = () => number;
- * type AsyncFn = () => Promise<string>;
- *
- * type Result1 = Promised<SyncFn>; // Result1 的類型是 Promise<number>
- * type Result2 = Promised<AsyncFn>; // Result2 的類型是 Promise<string>
- */
-type Promised<T extends (...args: any) => any> = Promise<Awaited<ReturnType<T>>>;
-
-/**
- * Promise<T | undefined> 的語法糖
- */
-type PromiseOpt<T extends any> = Promise<T | undefined>;
-
-/**
- * 一個可以執行需要報告進度的函數的函數
- */
-type WithProgress<T extends unknown = void> = (
-  taskName: string,
-  taskFn: (report: (increment: number) => void) => Promise<T>
-) => Promise<T>;
-
-/**
- * 一個可以執行需要報告 進度 + 進度訊息 的函數的函數
- */
-type WithProgressMessage<T extends unknown = void> = (
-  taskName: string,
-  taskFn: (report: (params: { increment: number; message: string }) => void) => Promise<T>
-) => Promise<T>;
-
-// ------------------------------------------------------------------------------
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 type Success<T> = { data: T; error: null };
 type Failure = { data: null; error: Error };
@@ -172,10 +116,10 @@ function setSchedule({ configs, task }: { configs: { timeout: number; count: num
 const clamp = (params: { value: number; interval: [number, number] }) => {
   const { value, interval } = params;
   const [bound1, bound2] = interval;
+  if (bound1 === bound2) return bound1;
   const min = Math.min(bound1, bound2);
   const max = Math.max(bound1, bound2);
   return Math.min(Math.max(value, min), max);
 };
 
-export type { Prettify, OneOf, Promised, PromiseOpt, WithProgress, WithProgressMessage };
 export { tryCatch, defer, setSchedule, clamp };

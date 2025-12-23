@@ -5,7 +5,7 @@ import * as path from "path";
 const supportedExtensions = [".jpg", ".jpeg", ".png", ".bmp", ".gif", ".webp", ".tiff", ".tif"];
 
 // 修復 icc, exif 等資料可能導致序列化錯誤的問題，改為只保留必要的欄位
-type ExtendedMetadata = { filePath: string; fileName: string } & Pick<
+type ImageMetadata = { filePath: string; fileName: string } & Pick<
   sharp.Metadata,
   "width" | "height" | "format" | "space" | "channels" | "hasAlpha"
 >;
@@ -13,7 +13,7 @@ type ExtendedMetadata = { filePath: string; fileName: string } & Pick<
 /**
  * 打開單一圖片檔案，並回傳其 metadata，若非圖片或無法讀取則回傳 null
  */
-async function openImage(filePath: string): Promise<ExtendedMetadata | null> {
+async function openImage(filePath: string): Promise<ImageMetadata | null> {
   if (!fs.existsSync(filePath)) return null;
 
   const ext = path.extname(filePath).toLowerCase();
@@ -43,12 +43,12 @@ type ProgressCallback = (message: string, percent: number) => void;
 /**
  * 打開多個圖片檔案,並回傳其 metadata 陣列,非圖片或無法讀取的檔案會被忽略
  */
-async function openImages(filePaths: string[], onProgress?: ProgressCallback): Promise<ExtendedMetadata[]>;
+async function openImages(filePaths: string[], onProgress?: ProgressCallback): Promise<ImageMetadata[]>;
 /**
  * 打開資料夾中的所有圖片檔案,並回傳其 metadata 陣列
  */
-async function openImages(fileFolder: string, onProgress?: ProgressCallback): Promise<ExtendedMetadata[]>;
-async function openImages(input: string | string[], onProgress?: ProgressCallback): Promise<ExtendedMetadata[]> {
+async function openImages(fileFolder: string, onProgress?: ProgressCallback): Promise<ImageMetadata[]>;
+async function openImages(input: string | string[], onProgress?: ProgressCallback): Promise<ImageMetadata[]> {
   let filePaths: string[];
   onProgress?.("正在讀取圖片...", 0);
 
@@ -169,4 +169,4 @@ async function exportImage(params: {
 }
 
 export { openImage, openImages, generateThumbnail, generateBase64, exportImage };
-export type { ExtendedMetadata, ExportFormat };
+export type { ImageMetadata, ExportFormat };

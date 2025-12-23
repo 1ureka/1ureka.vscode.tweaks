@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import webviewCSS from "@/assets/webview.css";
 import { randomUUID } from "crypto";
-import type { OneOf } from "@/utils";
+import type { OneOf } from "@/utils/type";
 import type { WebviewId } from "@/contribute";
 
 /**

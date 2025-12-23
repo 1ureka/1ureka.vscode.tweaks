@@ -2,7 +2,7 @@ import { memo } from "react";
 import { Box, SxProps, Typography } from "@mui/material";
 import { ellipsisSx } from "@/utils/ui";
 
-import { viewStateStore } from "@@/fileSystem/store/data";
+import { viewDataStore, viewStateStore } from "@@/fileSystem/store/data";
 import { setSorting } from "@@/fileSystem/action/view";
 import { type TableColumn, tableColumns, tableHeadHeight, tableIconWidth } from "@@/fileSystem/layout/tableConfig";
 
@@ -112,13 +112,20 @@ const tableHeadSx: SxProps = {
 /**
  * 用於系統瀏覽器的表格標題列元件
  */
-const TableHead = memo(() => (
-  <Box sx={tableHeadSx}>
-    <Box sx={{ width: tableIconWidth }} />
-    {tableColumns.map((column) => (
-      <TableHeadCell key={column.field} column={column} />
-    ))}
-  </Box>
-));
+const TableHead = memo(() => {
+  const viewMode = viewDataStore((state) => state.viewMode);
+  if (viewMode !== "directory") {
+    return null;
+  }
+
+  return (
+    <Box sx={tableHeadSx}>
+      <Box sx={{ width: tableIconWidth }} />
+      {tableColumns.map((column) => (
+        <TableHeadCell key={column.field} column={column} />
+      ))}
+    </Box>
+  );
+});
 
 export { TableHead };

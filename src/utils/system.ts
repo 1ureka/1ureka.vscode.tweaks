@@ -1,7 +1,8 @@
 import fs from "fs-extra";
 import open from "open";
 import * as path from "path";
-import { tryCatch, type Prettify } from "@/utils";
+import { tryCatch } from "@/utils";
+import type { Prettify } from "@/utils/type";
 
 // -------------------------------------------------------------------------------------------
 

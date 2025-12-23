@@ -1,29 +1,28 @@
-import { memo } from "react";
+import { memo, useEffect } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { Box, Typography, type SxProps } from "@mui/material";
 
 import { colorMix } from "@/utils/ui";
 import { tableRowHeight } from "@@/fileSystem/layout/tableConfig";
-import { TableRow } from "@@/fileSystem/layout/TableRow";
+import { tableRowSx, TableRow, tableRowClassName } from "@@/fileSystem/layout/TableRow";
 
 import { loadingStore } from "@@/fileSystem/store/queue";
 import { viewDataStore, viewStateStore } from "@@/fileSystem/store/data";
-import { useTableBodyEventHandlers } from "@@/fileSystem/action/table";
+import { registerTableBodyEventHandlers } from "@@/fileSystem/action/table";
 
-/**
- * 用於標識表格主體容器的唯一 ID，補充 1. 已經保證每次只會有一個存在 2. 這是寫在模組層，因此不會有重渲染導致 ID 變化的問題
- */
+/** 用於標識表格主體容器的唯一 ID */
 const tableBodyContainerId = "table-body" + crypto.randomUUID().slice(0, 8);
 
-/**
- * 用於標示表格主體中，用於包裹虛擬化列表的容器的唯一 ID
- */
+/** 用於標識表格主體中，用於包裹虛擬化列表的容器的唯一 ID */
 const tableBodyVirtualListContainerId = "table-body-virtual-list" + crypto.randomUUID().slice(0, 8);
 
-/**
- * 表格交替背景色
- */
+/** 用於標識虛擬化列表中每一個項目包裹容器的 className */
+const virtualItemWrapperClassName = "virtual-item-wrapper";
+
+/** 表格交替背景色 */
 const tableAlternateBgcolor = colorMix("background.content", "text.primary", 0.98);
+
+// ---------------------------------------------------------------------------------
 
 /**
  * ### 表格背景設計
@@ -46,7 +45,15 @@ const tableBodyContainerSx: SxProps = {
   backgroundSize: `100% ${tableRowHeight * 2}px`,
   backgroundRepeat: "repeat",
   backgroundPositionY: "var(--scroll-top, 0px)",
-};
+
+  [`& #${tableBodyVirtualListContainerId}`]: {
+    position: "relative",
+    width: 1,
+    [`& > .${virtualItemWrapperClassName}`]: { position: "absolute", top: 0, left: 0, width: 1 },
+  },
+
+  [`& .${tableRowClassName}`]: tableRowSx,
+} as SxProps;
 
 /**
  * 用於呈現表格主體的容器組件
@@ -97,72 +104,81 @@ const NoItemDisplay = () => {
 
 // ---------------------------------------------------------------------------------
 
+/** 獲取滾動容器 */
+const getScrollElement = () => {
+  return document.getElementById(tableBodyContainerId);
+};
+
+/** 獲取每個虛擬項目的高度 */
+const estimateSize = () => {
+  return tableRowHeight;
+};
+
+/** 根據起始位置生成虛擬項目的內聯樣式 */
+const getVirtualItemStyle = (start: number) => {
+  return { height: `${tableRowHeight}px`, transform: `translateY(${start}px)` };
+};
+
 /**
- * 用於虛擬化渲染整個列表的容器樣式 (也就是有著整個列表總高度的容器)
+ * 專注於用虛擬化渲染表格主體中的所有資料列
  */
-const virtualItemListWrapperSx: SxProps = {
+const TableBodyVirtualRows = memo(() => {
+  const viewEntries = viewDataStore((state) => state.entries);
+  const rowVirtualizer = useVirtualizer({ getScrollElement, estimateSize, count: viewEntries.length, overscan: 1 });
+  const virtualItemListWrapperStyle = { height: `${rowVirtualizer.getTotalSize()}px` };
+
+  return (
+    <div id={tableBodyVirtualListContainerId} style={virtualItemListWrapperStyle}>
+      {viewEntries.length === 0 && (
+        <div className={virtualItemWrapperClassName} style={getVirtualItemStyle(0)}>
+          <NoItemDisplay />
+        </div>
+      )}
+
+      {rowVirtualizer.getVirtualItems().map(({ key, start, index }) => (
+        <div key={key} className={virtualItemWrapperClassName} style={getVirtualItemStyle(start)}>
+          <TableRow index={index} />
+        </div>
+      ))}
+    </div>
+  );
+});
+
+// ---------------------------------------------------------------------------------
+
+/**
+ * 用於在載入時調整不透明度的容器樣式
+ */
+const loadingOpacityContainerSx: SxProps = {
   position: "relative",
   width: 1,
   transition: "opacity 0.05s step-end", // 所有小於 50ms 的載入時間都不顯示載入回饋，以避免閃爍
 };
 
 /**
- * 用於虛擬化渲染/定位單一項目的容器樣式
- */
-const virtualItemWrapperSx: SxProps = {
-  position: "absolute",
-  top: 0,
-  left: 0,
-  width: 1,
-};
-
-/**
- * 專注於用虛擬化渲染表格主體中的所有資料列
- */
-const TableBodyVirtualRows = () => {
-  const viewEntries = viewDataStore((state) => state.entries);
-  const loading = loadingStore((state) => state.loading);
-
-  const rowVirtualizer = useVirtualizer({
-    getScrollElement: () => document.getElementById(tableBodyContainerId),
-    count: viewEntries.length,
-    estimateSize: () => tableRowHeight,
-    overscan: 1,
-  });
-
-  const virtualItemListWrapperStyle: React.CSSProperties = {
-    height: `${rowVirtualizer.getTotalSize()}px`,
-    opacity: loading ? 0.5 : 1,
-  };
-
-  return (
-    <Box id={tableBodyVirtualListContainerId} sx={virtualItemListWrapperSx} style={virtualItemListWrapperStyle}>
-      {viewEntries.length === 0 && (
-        <Box sx={virtualItemWrapperSx} style={{ height: `${tableRowHeight}px`, transform: `translateY(0px)` }}>
-          <NoItemDisplay />
-        </Box>
-      )}
-
-      {rowVirtualizer.getVirtualItems().map(({ key, size, start, index }) => (
-        <Box key={key} sx={virtualItemWrapperSx} style={{ height: `${size}px`, transform: `translateY(${start}px)` }}>
-          <TableRow index={index} />
-        </Box>
-      ))}
-    </Box>
-  );
-};
-
-// ---------------------------------------------------------------------------------
-
-/**
  * 表格主體組件
  */
 const TableBody = memo(() => {
-  useTableBodyEventHandlers();
+  const viewMode = viewDataStore((state) => state.viewMode);
+  const loading = loadingStore((state) => state.loading);
+
+  useEffect(() => {
+    if (viewMode !== "directory") return;
+    const dispose = registerTableBodyEventHandlers();
+    return () => {
+      dispose?.();
+    };
+  }, [viewMode]);
+
+  if (viewMode !== "directory") {
+    return null;
+  }
 
   return (
     <TableBodyContainer>
-      <TableBodyVirtualRows />
+      <Box sx={loadingOpacityContainerSx} style={{ opacity: loading ? 0.5 : 1 }}>
+        <TableBodyVirtualRows />
+      </Box>
     </TableBodyContainer>
   );
 });

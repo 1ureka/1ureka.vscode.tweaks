@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { tableRowClassName, tableRowIndexAttr } from "@@/fileSystem/layout/TableRow";
 import { tableBodyContainerId, tableBodyVirtualListContainerId } from "@@/fileSystem/layout/TableBody";
 import { tableRowHeight } from "@@/fileSystem/layout/tableConfig";
@@ -264,21 +263,19 @@ const handleContextMenu = (e: MouseEvent) => {
 /**
  * 將表格主體的事件處理程式掛載到對應的容器上
  */
-const useTableBodyEventHandlers = () => {
-  useEffect(() => {
-    const container = document.getElementById(tableBodyContainerId);
-    if (!container) return;
+const registerTableBodyEventHandlers = () => {
+  const container = document.getElementById(tableBodyContainerId);
+  if (!container) return;
 
-    container.addEventListener("click", handleClick);
-    container.addEventListener("contextmenu", handleContextMenu);
-    container.addEventListener("dragstart", handleDragStart);
+  container.addEventListener("click", handleClick);
+  container.addEventListener("contextmenu", handleContextMenu);
+  container.addEventListener("dragstart", handleDragStart);
 
-    return () => {
-      container.removeEventListener("click", handleClick);
-      container.removeEventListener("contextmenu", handleContextMenu);
-      container.removeEventListener("dragstart", handleDragStart);
-    };
-  }, []);
+  return () => {
+    container.removeEventListener("click", handleClick);
+    container.removeEventListener("contextmenu", handleContextMenu);
+    container.removeEventListener("dragstart", handleDragStart);
+  };
 };
 
-export { useTableBodyEventHandlers };
+export { registerTableBodyEventHandlers };

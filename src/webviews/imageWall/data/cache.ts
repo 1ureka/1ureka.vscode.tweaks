@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { invoke } from "@/utils/message_client";
-import type { OneOf } from "@/utils";
+import type { OneOf } from "@/utils/type";
 import type { GenerateThumbnailAPI } from "@/providers/imageWallProvider";
 
 /** data 是 base64 編碼的圖片數據，為了避免無限制增長，採用定期清理機制 */

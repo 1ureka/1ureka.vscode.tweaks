@@ -91,5 +91,15 @@ const navigateToNextFolder = async () => {
   dataStore.setState({ ...result });
 };
 
-export { stageDestinationPath, openInEnvironment, refresh };
+/**
+ * 前往目前資料夾的圖片網格檢視
+ */
+const navigateToImageGridView = async () => {
+  const { currentPath } = dataStore.getState();
+  const result = await requestQueue.add(() => invoke("system.read.images", { dirPath: currentPath }));
+
+  dataStore.setState({ ...result });
+};
+
+export { stageDestinationPath, openInEnvironment, refresh, navigateToImageGridView };
 export { navigateGotoFolder, navigateToFolder, navigateUp, navigateToPreviousFolder, navigateToNextFolder };

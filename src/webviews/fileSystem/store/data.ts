@@ -7,9 +7,10 @@ import { create } from "zustand";
 import { invoke } from "@@/fileSystem/store/init";
 import { getInitialData } from "@/utils/message_client";
 import type { InspectDirectoryEntry } from "@/utils/system";
-import type { ReadDirectoryResult } from "@/handlers/fileSystemHandlers";
+import type { ImageMetadata } from "@/utils/image";
+import type { ReadResourceResult } from "@/providers/fileSystemProvider";
 
-const initialData = getInitialData<ReadDirectoryResult>();
+const initialData = getInitialData<ReadResourceResult>();
 if (!initialData) {
   invoke("show.error", "無法取得檔案系統初始資料");
   throw new Error("無法取得檔案系統初始資料");
@@ -26,6 +27,12 @@ const initialNavigationState = {
   pathHeatmap: initialPathHeatmap,
   recentlyVisitedPaths: [initialPath],
   mostFrequentPaths: [initialPath],
+};
+
+const initialViewDataState = {
+  viewMode: initialData.mode,
+  entries: [],
+  imageEntries: { tracks: [], yMax: 0 },
 };
 
 // ----------------------------------------------------------------------------
@@ -50,7 +57,12 @@ type ViewState = {
 };
 
 type ViewDataState = {
+  viewMode: typeof initialData.mode;
   entries: InspectDirectoryEntry[];
+  imageEntries: {
+    tracks: { item: ImageMetadata; yStart: number; yEnd: number }[][];
+    yMax: number;
+  };
 };
 
 type SelectionState = {
@@ -72,7 +84,7 @@ type RenameState = {
 /**
  * 建立前端用於儲存檔案系統資料的容器
  */
-const dataStore = create<ReadDirectoryResult>(() => ({ ...initialData }));
+const dataStore = create<ReadResourceResult>(() => ({ ...initialData }));
 
 /**
  * 建立用於儲存導航狀態的容器
@@ -92,7 +104,7 @@ const viewStateStore = create<ViewState>(() => ({ sortField: "fileName", sortOrd
 /**
  * 建立用於儲存根據檢視條件計算後，要顯示的資料狀態的容器
  */
-const viewDataStore = create<ViewDataState>(() => ({ entries: [] }));
+const viewDataStore = create<ViewDataState>(() => ({ ...initialViewDataState }));
 
 /**
  * 建立用於儲存選取狀態的容器

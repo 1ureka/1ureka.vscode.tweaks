@@ -725,9 +725,9 @@ describe("handlePaste - 錯誤處理與副作用", () => {
       overwrite: false,
       withProgress: async (title, fn) => {
         expect(title).toContain("複製");
-        await fn((progress) => {
+        return await fn((progress) => {
           progressCalls++;
-          progressTotal += progress;
+          progressTotal = progress.increment + progressTotal;
         });
       },
       showErrorReport: (content) => console.error(content),
@@ -1005,9 +1005,9 @@ describe("handleDelete", () => {
       dirPath,
       withProgress: async (title, fn) => {
         expect(title).toContain("刪除");
-        await fn((progress) => {
+        return await fn((progress) => {
           progressCalls++;
-          progressTotal += progress;
+          progressTotal = progress.increment + progressTotal;
         });
       },
       showErrorReport: (content) => console.error(content),

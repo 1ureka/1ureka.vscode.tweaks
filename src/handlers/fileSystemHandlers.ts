@@ -3,44 +3,33 @@ import * as path from "path";
 
 import { tryCatch } from "@/utils";
 import { generateErrorMessage } from "@/utils/formatter";
+
 import { readDirectory, inspectDirectory } from "@/utils/system";
 import { isRootDirectory, pathToArray, toParentPath, shortenPath } from "@/utils/system";
-import type { InspectDirectoryEntry } from "@/utils/system";
-import type { WithProgress } from "@/utils";
+import { openImages } from "@/utils/image";
 
-type ReadDirectoryResult = {
-  // 有關當前目錄的資訊
-  currentPath: string;
-  shortenedPath: string;
-  currentPathParts: string[];
-  isCurrentRoot: boolean;
-  fileCount: number;
-  folderCount: number;
-  // 實際的檔案資料
-  entries: InspectDirectoryEntry[];
-  // 資料最後更新的時間戳記
-  timestamp: number;
-};
+import type { ReadResourceResult } from "@/providers/fileSystemProvider";
+import type { WithProgress } from "@/utils/type";
 
 /**
  * 處理初始資料注入
  */
-const handleInitialData = (params: { dirPath: string }): ReadDirectoryResult => {
+const handleInitialData = (params: { dirPath: string }): ReadResourceResult => {
   const currentPath = path.resolve(params.dirPath);
   const shortenedPath = shortenPath(currentPath, 40);
   const currentPathParts = pathToArray(currentPath);
   const isCurrentRoot = isRootDirectory(currentPath);
 
-  const baseInfo = { currentPath, shortenedPath, currentPathParts, isCurrentRoot };
+  const baseInfo = { mode: "directory", currentPath, shortenedPath, currentPathParts, isCurrentRoot } as const;
 
-  return { ...baseInfo, entries: [], folderCount: 0, fileCount: 0, timestamp: Date.now() };
+  return { ...baseInfo, entries: [], imageEntries: [], folderCount: 0, fileCount: 0, timestamp: Date.now() };
 };
 
 /**
  * 掃描資料夾內容，讀取檔案系統資訊並回傳
  * 其中，depthOffset 可以是正數、零或負數，但都視作向上移動目錄層級來處理。
  */
-const handleReadDirectory = async (params: { dirPath: string; depthOffset?: number }): Promise<ReadDirectoryResult> => {
+const handleReadDirectory = async (params: { dirPath: string; depthOffset?: number }): Promise<ReadResourceResult> => {
   const { dirPath, depthOffset = 0 } = params;
 
   const currentPath = path.resolve(toParentPath(dirPath, depthOffset));
@@ -48,12 +37,12 @@ const handleReadDirectory = async (params: { dirPath: string; depthOffset?: numb
   const currentPathParts = pathToArray(currentPath);
   const isCurrentRoot = isRootDirectory(currentPath);
 
-  const baseInfo = { currentPath, shortenedPath, currentPathParts, isCurrentRoot };
+  const baseInfo = { mode: "directory", currentPath, shortenedPath, currentPathParts, isCurrentRoot } as const;
   const counts = { folderCount: 0, fileCount: 0 };
 
   const entries = await readDirectory(currentPath);
   if (!entries) {
-    return { ...baseInfo, entries: [], ...counts, timestamp: Date.now() };
+    return { ...baseInfo, entries: [], imageEntries: [], ...counts, timestamp: Date.now() };
   }
 
   const inspectedEntries = await inspectDirectory(entries);
@@ -62,8 +51,37 @@ const handleReadDirectory = async (params: { dirPath: string; depthOffset?: numb
     else if (fileType === "file") counts.fileCount++;
   });
 
-  return { ...baseInfo, entries: inspectedEntries, ...counts, timestamp: Date.now() };
+  return { ...baseInfo, entries: inspectedEntries, imageEntries: [], ...counts, timestamp: Date.now() };
 };
+
+/**
+ * 根據指定目錄讀取並回傳所有其中直接子層且是圖片的元資料
+ */
+async function handleReadImages(dirPath: string, withProgress: WithProgress): Promise<ReadResourceResult> {
+  const currentPath = path.resolve(toParentPath(dirPath, 0));
+  const shortenedPath = shortenPath(currentPath, 40);
+  const currentPathParts = pathToArray(currentPath);
+  const isCurrentRoot = isRootDirectory(currentPath);
+
+  const baseInfo = { mode: "images", currentPath, shortenedPath, currentPathParts, isCurrentRoot } as const;
+  const counts = { folderCount: 0, fileCount: 0 };
+
+  let lastProgress = 0;
+
+  const images = await withProgress("正在讀取圖片...", async (report) => {
+    return await openImages(currentPath, (message, percent) => {
+      const increment = percent - lastProgress;
+      report({ increment, message });
+      lastProgress = percent;
+    });
+  });
+
+  counts.fileCount = images.length;
+
+  return { ...baseInfo, entries: [], imageEntries: images, ...counts, timestamp: Date.now() };
+}
+
+// ----------------------------------------------------------------------------
 
 /**
  * 建立新檔案並在成功後回傳該檔案的路徑
@@ -103,6 +121,8 @@ const handleCreateDir = async (params: { dirPath: string; folderName: string; sh
 
   return handleReadDirectory({ dirPath });
 };
+
+// ----------------------------------------------------------------------------
 
 /**
  * 錯誤發生時的副作用說明對照表
@@ -148,7 +168,7 @@ const handlePaste = async (params: {
   overwrite: boolean;
   withProgress: WithProgress;
   showErrorReport: (content: string) => void;
-}): Promise<ReadDirectoryResult | null> => {
+}): Promise<ReadResourceResult | null> => {
   const { srcList, destDir, type, overwrite, withProgress, showErrorReport } = params;
 
   const itemCount = srcList.length;
@@ -169,7 +189,7 @@ const handlePaste = async (params: {
       } catch (error) {
         itemFailures[src] = error instanceof Error ? error.message : "未知錯誤";
       } finally {
-        report(progressPerItem);
+        report({ increment: progressPerItem });
       }
     }
   });
@@ -188,6 +208,8 @@ const handlePaste = async (params: {
   showErrorReport(errorContent);
   return handleReadDirectory({ dirPath: destDir });
 };
+
+// ----------------------------------------------------------------------------
 
 /**
  * 處理重新命名檔案/資料夾
@@ -244,7 +266,7 @@ const handleDelete = async (params: {
       } catch (error) {
         itemFailures[targetPath] = error instanceof Error ? error.message : "未知錯誤";
       } finally {
-        report(progressPerItem);
+        report({ increment: progressPerItem });
       }
     }
   });
@@ -262,6 +284,7 @@ const handleDelete = async (params: {
   return handleReadDirectory({ dirPath });
 };
 
-export type { ReadDirectoryResult };
+// ----------------------------------------------------------------------------
+
 export { handleInitialData, handleCreateFile, handleCreateDir, handlePaste, handleRename, handleDelete };
-export { handleReadDirectory };
+export { handleReadDirectory, handleReadImages };
