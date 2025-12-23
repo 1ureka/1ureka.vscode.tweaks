@@ -4,7 +4,7 @@ import type { CustomDocument, CustomDocumentOpenContext, WebviewPanel, Cancellat
 
 import { handleCopyImage } from "@/handlers/imageViewerHandler";
 import { createWebviewPanelManager } from "@/utils/webview";
-import { registerInvokeEvents } from "@/utils/message_host";
+import { registerInvokeEvents } from "@/message/host";
 import { exportImage, openImage } from "@/utils/image";
 import type { ExportFormat, ImageMetadata } from "@/utils/image";
 

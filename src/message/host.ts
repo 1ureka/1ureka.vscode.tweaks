@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import * as vscode from "vscode";
-import type { InvokeMessage } from "@/utils/message_client";
+import type { InvokeMessage } from "@/message/client";
 
 /**
  * 一組可供 webview 調用的擴展主機處理函式型別定義
