@@ -4,7 +4,8 @@ import { ellipsisSx } from "@/utils/ui";
 
 import { viewDataStore, viewStateStore } from "@@/fileSystem/store/data";
 import { setSorting } from "@@/fileSystem/action/view";
-import { type TableColumn, tableColumns, tableHeadHeight, tableIconWidth } from "@@/fileSystem/layout/tableConfig";
+import { tableColumns, tableHeadHeight, tableIconWidth } from "@@/fileSystem/layout_table/tableConfig";
+import type { TableColumn } from "@@/fileSystem/layout_table/tableConfig";
 
 /**
  * 用於表格標題列的單元格樣式變體

@@ -8,10 +8,10 @@ import { Box } from "@mui/material";
 import { LoadingDisplay } from "@@/fileSystem/layout/LoadingDisplay";
 import { NavigationPanels } from "@@/fileSystem/layout/NavigationPanels";
 import { NavigationBar } from "@@/fileSystem/layout/NavigationBar";
-import { TableHead } from "@@/fileSystem/layout/TableHead";
-import { TableBody } from "@@/fileSystem/layout/TableBody";
+import { TableHead } from "@@/fileSystem/layout_table/TableHead";
+import { TableBody } from "@@/fileSystem/layout_table/TableBody";
 import { ActionBar } from "@@/fileSystem/layout/ActionBar";
-import { ImageGrid } from "@@/fileSystem/layout/ImageGrid";
+import { ImageGrid } from "@@/fileSystem/layout_grid/ImageGrid";
 
 const Container = ({ children }: { children: React.ReactNode }) => (
   <Box sx={{ position: "relative", height: "100dvh", width: "100dvw", overflow: "hidden", overflowX: "auto" }}>
