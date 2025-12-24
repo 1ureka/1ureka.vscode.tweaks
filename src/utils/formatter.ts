@@ -1,14 +1,5 @@
 import { extensionTypeMap } from "@/assets/fileExtMap";
 
-/** 格式化路徑陣列 (用於在 windows 系統將磁碟機大寫顯示) */
-function formatPathArray(array: string[]): string[] {
-  const newArray = [...array];
-  if (newArray.length > 0 && /^[a-zA-Z]:$/.test(newArray[0])) {
-    newArray[0] = newArray[0].toUpperCase();
-  }
-  return newArray;
-}
-
 /** 格式化日期為 "MM-DD HH:mm" */
 function formatDateCompact(date: Date): string {
   const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -170,4 +161,4 @@ const formatFileType = (params: { fileName: string; fileType: string }): string 
 };
 
 export { formatFixedLengthDateTime, formatRelativeTime };
-export { formatPathArray, formatDateCompact, formatDateFull, formatFileSize, formatFileType, generateErrorMessage };
+export { formatDateCompact, formatDateFull, formatFileSize, formatFileType, generateErrorMessage };

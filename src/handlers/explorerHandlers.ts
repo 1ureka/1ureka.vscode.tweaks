@@ -4,7 +4,7 @@ import * as path from "path";
 import { tryCatch } from "@/utils";
 import { generateErrorMessage } from "@/utils/formatter";
 
-import { readDirectory, inspectDirectory } from "@/utils/system";
+import { readDirectory, inspectDirectory, resolvePath } from "@/utils/system";
 import { isRootDirectory, pathToArray, toParentPath, shortenPath } from "@/utils/system";
 import { openImages } from "@/utils/image";
 
@@ -15,7 +15,7 @@ import type { WithProgress } from "@/utils/type";
  * 處理初始資料注入
  */
 const handleInitialData = (params: { dirPath: string }): ReadResourceResult => {
-  const currentPath = path.resolve(params.dirPath);
+  const currentPath = resolvePath(params.dirPath);
   const shortenedPath = shortenPath(currentPath, 40);
   const currentPathParts = pathToArray(currentPath);
   const isCurrentRoot = isRootDirectory(currentPath);
@@ -32,7 +32,7 @@ const handleInitialData = (params: { dirPath: string }): ReadResourceResult => {
 const handleReadDirectory = async (params: { dirPath: string; depthOffset?: number }): Promise<ReadResourceResult> => {
   const { dirPath, depthOffset = 0 } = params;
 
-  const currentPath = path.resolve(toParentPath(dirPath, depthOffset));
+  const currentPath = resolvePath(toParentPath(dirPath, depthOffset));
   const shortenedPath = shortenPath(currentPath, 40);
   const currentPathParts = pathToArray(currentPath);
   const isCurrentRoot = isRootDirectory(currentPath);
@@ -58,7 +58,7 @@ const handleReadDirectory = async (params: { dirPath: string; depthOffset?: numb
  * 根據指定目錄讀取並回傳所有其中直接子層且是圖片的元資料
  */
 async function handleReadImages(dirPath: string, withProgress: WithProgress): Promise<ReadResourceResult> {
-  const currentPath = path.resolve(toParentPath(dirPath, 0));
+  const currentPath = resolvePath(dirPath);
   const shortenedPath = shortenPath(currentPath, 40);
   const currentPathParts = pathToArray(currentPath);
   const isCurrentRoot = isRootDirectory(currentPath);
