@@ -99,6 +99,8 @@ async function packageExtension() {
 async function main() {
   console.log("Starting build process...");
 
+  console.log();
+
   try {
     await fs.remove("dist");
     console.log("✓ Cleaned dist directory");
@@ -106,6 +108,8 @@ async function main() {
     console.error("✗ Cleanup failed:", error);
     process.exit(1);
   }
+
+  console.log();
 
   try {
     await buildExtension();
@@ -131,19 +135,23 @@ async function main() {
     process.exit(1);
   }
 
+  console.log();
+
   try {
     await backupAndInjectContribute();
     await packageExtension();
     await restorePackageJson();
-
-    console.log("\n🚀 All build tasks completed successfully");
-    process.exit(0);
   } catch (err) {
     await restorePackageJson();
 
-    console.error("\n✗ Packaging process failed:", err);
+    console.error("✗ Packaging process failed:", err);
     process.exit(1);
   }
+
+  console.log();
+
+  console.log("🚀 All build tasks completed successfully");
+  process.exit(0);
 }
 
 main();
