@@ -1,4 +1,4 @@
-import { refresh } from "@explorer/action/navigation";
+import { navigateToNextFolder, navigateToPreviousFolder, navigateUp, refresh } from "@explorer/action/navigation";
 import { selectAll, selectInvert, selectNone } from "@explorer/action/selection";
 import { readClipboard, writeClipboard } from "@explorer/action/clipboard";
 import { actionInputClassName } from "@explorer/components/Action";
@@ -17,6 +17,27 @@ const registerAllShortcuts = () => {
       e.preventDefault();
       e.stopPropagation();
       deleteItems();
+    }
+
+    // Alt + Left Arrow: 返回上一個資料夾
+    if (e.altKey && e.key === "ArrowLeft") {
+      e.preventDefault();
+      e.stopPropagation();
+      navigateToPreviousFolder();
+    }
+
+    // Alt + Right Arrow: 前往下一個資料夾
+    if (e.altKey && e.key === "ArrowRight") {
+      e.preventDefault();
+      e.stopPropagation();
+      navigateToNextFolder();
+    }
+
+    // Alt + Up Arrow: 往上一層資料夾
+    if (e.altKey && e.key === "ArrowUp") {
+      e.preventDefault();
+      e.stopPropagation();
+      navigateUp();
     }
 
     // Ctrl + R: 重新整理

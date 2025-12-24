@@ -1,5 +1,5 @@
 import { invoke } from "@explorer/store/init";
-import { dataStore, navigationStore, navigateHistoryStore } from "@explorer/store/data";
+import { dataStore, navigationStore, navigateHistoryStore, navigationExternalStore } from "@explorer/store/data";
 import { requestQueue } from "@explorer/store/queue";
 
 /**
@@ -24,6 +24,14 @@ const stageDestinationPath = (dirPath: string) => {
 const openInEnvironment = (target: "workspace" | "terminal") => {
   const { currentPath } = dataStore.getState();
   invoke("system.open.dir", { target, dirPath: currentPath });
+};
+
+/**
+ * 獲取/更新磁碟機列表
+ */
+const readDrives = async () => {
+  const drives = await invoke("system.read.volumes", undefined);
+  navigationExternalStore.setState({ systemDrives: drives });
 };
 
 // ---------------------------------------------------------------------------
@@ -101,5 +109,5 @@ const navigateToImageGridView = async () => {
   dataStore.setState({ ...result });
 };
 
-export { stageDestinationPath, openInEnvironment, refresh, navigateToImageGridView };
+export { stageDestinationPath, openInEnvironment, refresh, readDrives, navigateToImageGridView };
 export { navigateGotoFolder, navigateToFolder, navigateUp, navigateToPreviousFolder, navigateToNextFolder };

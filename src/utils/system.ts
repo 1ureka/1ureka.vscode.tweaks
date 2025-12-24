@@ -100,6 +100,17 @@ async function inspectDirectory(entries: ReadDirectoryEntry[]): Promise<InspectD
 // -------------------------------------------------------------------------------------------
 
 /**
+ * 解析並標準化路徑，確保在 Windows 系統中磁碟機代號為大寫字母。
+ */
+function resolvePath(dirPath: string): string {
+  let resolvedPath = path.resolve(dirPath);
+  if (resolvedPath.length >= 2 && resolvedPath[1] === ":" && /^[a-zA-Z]$/.test(resolvedPath[0])) {
+    return resolvedPath[0].toUpperCase() + resolvedPath.slice(1);
+  }
+  return resolvedPath;
+}
+
+/**
  *檢查一個路徑是否已到達檔案系統的根目錄。如果已到達根目錄（沒有上一層目錄），則返回 true。
  */
 function isRootDirectory(dirPath: string): boolean {
@@ -207,4 +218,4 @@ async function openWithDefaultApp(params: {
 
 export type { ReadDirectoryEntry, InspectDirectoryEntry };
 export { readDirectory, inspectDirectory, openWithDefaultApp };
-export { isRootDirectory, pathToArray, shortenPath, toParentPath };
+export { resolvePath, isRootDirectory, pathToArray, shortenPath, toParentPath };
