@@ -5,6 +5,7 @@ import { List, type ListItem } from "@explorer/components/List";
 import { ActionButton, ActionDropdown, ActionDropdownButton, ActionGroup } from "@explorer/components/Action";
 import { navigateHistoryStore, navigationExternalStore, navigationStore } from "@explorer/store/data";
 import { navigateToFolder } from "@explorer/action/navigation";
+import { formatFileSize } from "@/utils/formatter";
 
 const fakeBookmarkItems: ListItem[] = [
   {
@@ -206,6 +207,7 @@ const HistoryPanel = () => {
  * 用於顯示路徑導航面板的系統和磁碟機面板元件。
  */
 const RestPanels = () => {
+  const currentPath = navigationStore((state) => state.currentPath);
   const systemFolders = navigationExternalStore((state) => state.systemFolders);
   const systemDrives = navigationExternalStore((state) => state.systemDrives);
 
@@ -226,24 +228,50 @@ const RestPanels = () => {
     detail: folder.Path,
   }));
 
-  const volumnItems: ListItem[] = systemDrives.map((drive) => ({
-    id: drive.DeviceID,
-    icon: "codicon codicon-server",
-    text: drive.VolumeName ? `${drive.VolumeName} (${drive.DeviceID})` : `磁碟機 (${drive.DeviceID})`,
-    detail: drive.DeviceID,
-  }));
+  const volumnItems: ListItem[] = systemDrives.map((drive) => {
+    let detail = [drive.DeviceID];
+
+    if (drive.FileSystem) {
+      detail.push(drive.FileSystem);
+    }
+
+    if (drive.FreeSpace && drive.Size) {
+      const totalSize = formatFileSize(drive.Size);
+      const usedSpace = formatFileSize(drive.Size - drive.FreeSpace);
+      detail.push(`已使用 ${usedSpace} / ${totalSize}`);
+    }
+
+    detail = detail.filter(Boolean);
+
+    return {
+      id: drive.DeviceID + "\\",
+      icon: "codicon codicon-server",
+      text: drive.VolumeName ? `${drive.VolumeName} (${drive.DeviceID})` : `磁碟機 (${drive.DeviceID})`,
+      detail: detail.join(" • "),
+    };
+  });
 
   return (
     <>
       {systemFolderItems.length > 0 && (
         <Panel title="系統">
-          <List items={systemFolderItems} activeItemId="" defaultRows={6} />
+          <List
+            items={systemFolderItems}
+            activeItemId={currentPath}
+            defaultRows={6}
+            onClickItem={({ id }) => navigateToFolder({ dirPath: id })}
+          />
         </Panel>
       )}
 
       {volumnItems.length > 0 && (
         <Panel title="Volumes">
-          <List items={volumnItems} activeItemId="" defaultRows={3} />
+          <List
+            items={volumnItems}
+            activeItemId={currentPath}
+            defaultRows={3}
+            onClickItem={({ id }) => navigateToFolder({ dirPath: id })}
+          />
         </Panel>
       )}
     </>
