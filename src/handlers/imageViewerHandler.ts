@@ -1,4 +1,4 @@
-import { copyImageBinaryToSystem } from "@/utils/system_windows";
+import { copyImageBinaryToSystem } from "@/utils/system-windows";
 import { generateBase64 } from "@/utils/image";
 
 /**
