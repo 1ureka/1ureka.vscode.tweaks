@@ -3,8 +3,8 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 import { Box, Typography, type SxProps } from "@mui/material";
 
 import { colorMix } from "@/utils/ui";
-import { tableRowHeight } from "@explorer/layout_table/tableConfig";
-import { tableRowSx, TableRow, tableRowClassName } from "@explorer/layout_table/TableRow";
+import { tableRowHeight } from "@explorer/layout-table/tableConfig";
+import { tableRowSx, TableRow, tableRowClassName } from "@explorer/layout-table/TableRow";
 
 import { loadingStore } from "@explorer/store/queue";
 import { viewDataStore, viewStateStore } from "@explorer/store/data";

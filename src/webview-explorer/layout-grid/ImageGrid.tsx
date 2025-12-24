@@ -1,7 +1,7 @@
 import { memo, Suspense, useRef } from "react";
 import { Box, keyframes, SxProps } from "@mui/material";
 import { viewDataStore } from "@explorer/store/data";
-import { useVirtualizer } from "@explorer/layout_grid/imageGridUtils";
+import { useVirtualizer } from "@explorer/layout-grid/imageGridUtils";
 import { thumbnailCache } from "@explorer/store/cache";
 
 // ---------------------------------------------------------------------------------
