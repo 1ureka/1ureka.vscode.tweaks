@@ -4,7 +4,7 @@ import { Panel } from "@explorer/components/Panel";
 import { List, type ListItem } from "@explorer/components/List";
 import { ActionButton, ActionDropdown, ActionDropdownButton, ActionGroup } from "@explorer/components/Action";
 import { navigateHistoryStore, navigationExternalStore, navigationStore } from "@explorer/store/data";
-import { navigateToFolder } from "@explorer/action/navigation";
+import { navigateToFolder, readDrives } from "@explorer/action/navigation";
 import { formatFileSize } from "@/utils/formatter";
 
 const fakeBookmarkItems: ListItem[] = [
@@ -266,12 +266,23 @@ const RestPanels = () => {
 
       {volumnItems.length > 0 && (
         <Panel title="Volumes">
-          <List
-            items={volumnItems}
-            activeItemId={currentPath}
-            defaultRows={3}
-            onClickItem={({ id }) => navigateToFolder({ dirPath: id })}
-          />
+          <Box sx={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 1, alignItems: "start" }}>
+            <List
+              items={volumnItems}
+              activeItemId={currentPath}
+              defaultRows={3}
+              onClickItem={({ id }) => navigateToFolder({ dirPath: id })}
+            />
+
+            <ActionGroup orientation="vertical" size="small">
+              <ActionButton
+                actionIcon="codicon codicon-sync"
+                actionName="重新整理"
+                actionDetail="重新讀取磁碟機列表"
+                onClick={readDrives}
+              />
+            </ActionGroup>
+          </Box>
         </Panel>
       )}
     </>
