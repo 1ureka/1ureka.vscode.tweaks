@@ -7,6 +7,7 @@ import { handleCreateFile, handleCreateDir } from "@/handlers/explorerHandlers";
 import { handleReadDirectory, handleReadImages } from "@/handlers/explorerHandlers";
 
 import { generateThumbnail, type ImageMetadata } from "@/utils/image";
+import { listSystemFolders, listVolumes } from "@/utils/system-windows";
 import type { InspectDirectoryEntry } from "@/utils/system";
 import type { OneOf, Prettify, WithProgress } from "@/utils/type";
 
@@ -170,6 +171,14 @@ const explorerAPI = {
   "clipboard.write": writeClipboard,
 
   "system.read.dir": handleReadDirectory,
+  "system.read.system.folders": () => {
+    if (process.platform !== "win32") return Promise.resolve([]);
+    return listSystemFolders();
+  },
+  "system.read.volumes": () => {
+    if (process.platform !== "win32") return Promise.resolve([]);
+    return listVolumes();
+  },
   "system.read.images": ({ dirPath }: { dirPath: string }) => {
     return handleReadImages(dirPath, withProgress);
   },

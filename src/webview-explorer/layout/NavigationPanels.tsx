@@ -3,7 +3,7 @@ import { Box, Divider } from "@mui/material";
 import { Panel } from "@explorer/components/Panel";
 import { List, type ListItem } from "@explorer/components/List";
 import { ActionButton, ActionDropdown, ActionDropdownButton, ActionGroup } from "@explorer/components/Action";
-import { navigateHistoryStore, navigationStore } from "@explorer/store/data";
+import { navigateHistoryStore, navigationExternalStore, navigationStore } from "@explorer/store/data";
 import { navigateToFolder } from "@explorer/action/navigation";
 
 const fakeBookmarkItems: ListItem[] = [
@@ -29,57 +29,24 @@ const fakeBookmarkItems: ListItem[] = [
   },
 ];
 
-const fakeSystemItems: ListItem[] = [
-  {
-    id: "C:\\Users\\user\\Desktop",
-    icon: "codicon codicon-vm",
-    text: "桌面",
-  },
-  {
-    id: "C:\\Users\\user\\Documents",
-    icon: "codicon codicon-file-text",
-    text: "文件",
-  },
-  {
-    id: "C:\\Users\\user\\Pictures",
-    icon: "codicon codicon-file-media",
-    text: "圖片",
-  },
-  {
-    id: "C:\\Users\\user\\Music",
-    icon: "codicon codicon-music",
-    text: "音樂",
-  },
-  {
-    id: "C:\\Users\\user\\Downloads",
-    icon: "codicon codicon-download",
-    text: "下載",
-  },
-  {
-    id: "C:\\Users\\user\\Videos",
-    icon: "codicon codicon-device-camera-video",
-    text: "影片",
-  },
-  {
-    id: "C:\\Users\\user\\OneDrive",
-    icon: "codicon codicon-globe",
-    text: "OneDrive",
-  },
-];
+/**
+ * 映射特殊資料夾到對應圖示
+ */
+const iconMap = {
+  Desktop: "codicon codicon-vm",
+  Documents: "codicon codicon-file-text",
+  Downloads: "codicon codicon-download",
+  Music: "codicon codicon-music",
+  Pictures: "codicon codicon-file-media",
+  Videos: "codicon codicon-device-camera-video",
+  "3D Objects": "codicon codicon-symbol-method",
+  OneDrive: "codicon codicon-globe",
+  ":": "codicon codicon-server",
+} as const;
 
-const fakeVolumnItems: ListItem[] = [
-  {
-    id: "C:\\",
-    icon: "codicon codicon-server",
-    text: "本機磁碟 (C:)",
-  },
-  {
-    id: "D:\\",
-    icon: "codicon codicon-server",
-    text: "本機磁碟 (D:)",
-  },
-];
-
+/**
+ * 從路徑中提取最後一個路徑段作為名稱
+ */
 const getBasename = (path: string) => {
   const normalizedPath = path.replace(/[\\/]+$/, ""); // 去除末尾的斜線，防止 pop 出空字串 (避免 "/usr/local/bin/" 變成 "")
   const parts = normalizedPath.split(/[\\/]/); // 同時匹配 \ 或 / 進行分割
@@ -101,7 +68,7 @@ const BookmarkPanel = () => {
           items={fakeBookmarkItems.map((item) => ({ ...item, detail: item.id }))}
           activeItemId={activeId}
           onClickItem={(item) => setActiveId(item.id)}
-          defaultRows={6}
+          defaultRows={5}
           defaultActionExpanded
         />
 
@@ -176,34 +143,20 @@ const HistoryPanel = () => {
 
   let activeItemId: string = currentPath;
   let listItems: ListItem[] = [];
+  const icon = "codicon codicon-folder";
 
   if (mode === "history") {
-    const reverseHistory = [...historyPaths].reverse();
     activeItemId = currentIndex.toString();
-    listItems = reverseHistory.map((path, index) => ({
-      id: (historyPaths.length - 1 - index).toString(),
-      icon: "codicon codicon-folder",
-      text: getBasename(path),
-      detail: path,
-    }));
+    listItems = historyPaths.map((path, i) => ({ id: i.toString(), icon, text: getBasename(path), detail: path }));
+    listItems.reverse();
   }
 
   if (mode === "recent") {
-    listItems = recentlyVisitedPaths.map((path) => ({
-      id: path,
-      icon: "codicon codicon-folder",
-      text: getBasename(path),
-      detail: path,
-    }));
+    listItems = recentlyVisitedPaths.map((path) => ({ id: path, icon, text: getBasename(path), detail: path }));
   }
 
   if (mode === "frequent") {
-    listItems = mostFrequentPaths.map((path) => ({
-      id: path,
-      icon: "codicon codicon-folder",
-      text: getBasename(path),
-      detail: path,
-    }));
+    listItems = mostFrequentPaths.map((path) => ({ id: path, icon, text: getBasename(path), detail: path }));
   }
 
   return (
@@ -253,26 +206,46 @@ const HistoryPanel = () => {
  * 用於顯示路徑導航面板的系統和磁碟機面板元件。
  */
 const RestPanels = () => {
-  const [activeId, setActiveId] = useState("");
+  const systemFolders = navigationExternalStore((state) => state.systemFolders);
+  const systemDrives = navigationExternalStore((state) => state.systemDrives);
+
+  const getFolderIcon = (path: string) => {
+    const keys = Object.keys(iconMap);
+    for (const key of keys) {
+      const lowerKey = key.toLowerCase();
+      if (path.toLowerCase().includes(lowerKey)) {
+        return iconMap[key as keyof typeof iconMap];
+      }
+    }
+  };
+
+  const systemFolderItems: ListItem[] = systemFolders.map((folder) => ({
+    id: folder.Path,
+    icon: getFolderIcon(folder.Path) || "codicon codicon-folder",
+    text: folder.Name,
+    detail: folder.Path,
+  }));
+
+  const volumnItems: ListItem[] = systemDrives.map((drive) => ({
+    id: drive.DeviceID,
+    icon: "codicon codicon-server",
+    text: drive.VolumeName ? `${drive.VolumeName} (${drive.DeviceID})` : `磁碟機 (${drive.DeviceID})`,
+    detail: drive.DeviceID,
+  }));
 
   return (
     <>
-      <Panel title="系統">
-        <List
-          items={fakeSystemItems.map((item) => ({ ...item, detail: item.id }))}
-          activeItemId={activeId}
-          defaultRows={6}
-          onClickItem={(item) => setActiveId(item.id)}
-        />
-      </Panel>
+      {systemFolderItems.length > 0 && (
+        <Panel title="系統">
+          <List items={systemFolderItems} activeItemId="" defaultRows={6} />
+        </Panel>
+      )}
 
-      <Panel title="Volumes">
-        <List
-          items={fakeVolumnItems.map((item) => ({ ...item, detail: item.id }))}
-          activeItemId={activeId}
-          onClickItem={(item) => setActiveId(item.id)}
-        />
-      </Panel>
+      {volumnItems.length > 0 && (
+        <Panel title="Volumes">
+          <List items={volumnItems} activeItemId="" defaultRows={3} />
+        </Panel>
+      )}
     </>
   );
 };

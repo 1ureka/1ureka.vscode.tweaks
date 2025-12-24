@@ -1,6 +1,6 @@
 import type { ExplorerAPI } from "@/providers/explorerProvider";
 import { createInvoke } from "@/utils-vscode/message/client";
-import { dataStore } from "@explorer/store/data";
+import { dataStore, navigationExternalStore } from "@explorer/store/data";
 import { requestQueue } from "@explorer/store/queue";
 
 /**
@@ -12,10 +12,15 @@ const { invoke } = createInvoke<ExplorerAPI>();
  * 初始化，利用注入的初始資料，來獲取完整資料
  */
 const readInitData = async () => {
+  invoke("system.read.system.folders", undefined).then((folders) => {
+    navigationExternalStore.setState({ systemFolders: folders });
+  });
+  invoke("system.read.volumes", undefined).then((drives) => {
+    navigationExternalStore.setState({ systemDrives: drives });
+  });
+
   const initialData = dataStore.getState();
-
   const result = await requestQueue.add(() => invoke("system.read.dir", { dirPath: initialData.currentPath }));
-
   dataStore.setState({ ...result });
 };
 

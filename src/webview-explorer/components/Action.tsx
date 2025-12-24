@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { memo, useState } from "react";
 import { centerTextSx, colorMix } from "@/utils/ui";
 import { Box, ButtonBase, InputBase, Popover, Typography } from "@mui/material";
 import type { SxProps, PopoverOrigin } from "@mui/material";
@@ -333,5 +333,18 @@ const ActionDropdownButton = (props: Omit<ActionButtonProps, "actionShortcut">) 
   );
 };
 
-export { actionGroupClassName, actionButtonClassName, actionDropdownButtonClassName, actionInputClassName };
-export { actionSize, ActionGroup, ActionButton, ActionInput, ActionDropdown, ActionDropdownButton };
+export { actionSize, actionGroupClassName, actionButtonClassName, actionDropdownButtonClassName, actionInputClassName };
+
+const MemoActionGroup = memo(ActionGroup);
+const MemoActionButton = memo(ActionButton);
+const MemoActionInput = memo(ActionInput);
+const MemoActionDropdown = memo(ActionDropdown);
+const MemoActionDropdownButton = memo(ActionDropdownButton);
+
+export {
+  MemoActionGroup as ActionGroup,
+  MemoActionButton as ActionButton,
+  MemoActionInput as ActionInput,
+  MemoActionDropdown as ActionDropdown,
+  MemoActionDropdownButton as ActionDropdownButton,
+};

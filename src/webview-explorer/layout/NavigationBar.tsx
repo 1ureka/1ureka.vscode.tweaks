@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { memo, useEffect, useState } from "react";
 import { Box } from "@mui/material";
 import { ActionButton, ActionDropdown, ActionGroup, ActionInput } from "@explorer/components/Action";
 import { formatRelativeTime } from "@/utils/formatter";
@@ -10,7 +10,7 @@ import { navigateToFolder, navigateToNextFolder, navigateToPreviousFolder } from
 import { navigateToImageGridView } from "@explorer/action/navigation";
 import { createNewFolder } from "@explorer/action/operation";
 
-const ActionButtonRefresh = () => {
+const ActionButtonRefresh = memo(() => {
   const timestamp = dataStore((state) => state.timestamp);
   const [lastUpdate, setLastUpdate] = useState(formatRelativeTime(new Date(timestamp)));
 
@@ -39,9 +39,9 @@ const ActionButtonRefresh = () => {
       onClick={refresh}
     />
   );
-};
+});
 
-const NavigationBar = () => {
+const NavigationBar = memo(() => {
   const currentPath = navigationStore((state) => state.currentPath);
   const destPath = navigationStore((state) => state.destPath);
 
@@ -146,6 +146,6 @@ const NavigationBar = () => {
       </ActionGroup>
     </Box>
   );
-};
+});
 
 export { NavigationBar };

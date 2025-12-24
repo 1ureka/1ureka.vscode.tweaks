@@ -13,10 +13,14 @@ async function buildExtension() {
     bundle: true,
     platform: "node",
     format: "esm",
-    external: ["vscode", "sharp", "fs-extra", "iconv-lite", "open"],
+    external: ["vscode", "sharp"],
     outfile: "dist/extension.js",
     loader: { ".svg": "dataurl", ".css": "text" },
+    minify: true,
     alias: { "@": "./src" },
+    banner: {
+      js: `import { createRequire } from 'module'; const require = createRequire(import.meta.url);`,
+    },
   });
 
   console.log("✓ Extension bundle built successfully");
@@ -77,6 +81,8 @@ async function restorePackageJson() {
  * 執行 vsce 指令將擴充功能打包成 .vsix 檔案
  */
 async function packageExtension() {
+  console.log();
+
   await new Promise<void>((resolve, reject) => {
     const vsceProcess = spawn(
       "npx",
@@ -89,6 +95,8 @@ async function packageExtension() {
       else reject(new Error(`vsce exited with code ${code}`));
     });
   });
+
+  console.log();
 
   console.log("✓ Successfully packaged extension");
 }

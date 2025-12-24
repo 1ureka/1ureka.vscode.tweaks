@@ -2,13 +2,47 @@ import Fuse from "fuse.js";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Box, SxProps, Typography } from "@mui/material";
 import { ActionButton, ActionGroup, ActionInput, actionSize } from "@explorer/components/Action";
-import { centerTextSx, colorMix } from "@/utils/ui";
 import { Tooltip } from "@explorer/components/Tooltip";
+import { colorMix } from "@/utils/ui";
 
 /**
  * 列表元件中，每一列的高度
  */
 const listRowHeight = 22;
+
+/**
+ * 列表列的樣式
+ */
+const listRowSx: SxProps = {
+  // 因為有些瀏覽器明明在 overflow 對齊時，仍會渲染上面或下面那個應該完全看不見的 item 的一小塊，因此加個內框遮住
+  boxShadow: "inset 0 0 0 1px var(--mui-palette-background-content)",
+
+  display: "flex",
+  alignItems: "center",
+  minHeight: listRowHeight,
+  maxHeight: listRowHeight,
+  gap: 0.75,
+  px: 0.25,
+  borderRadius: 1,
+  overflow: "hidden",
+  "&:hover": { bgcolor: colorMix("background.content", "text.primary", 0.9) },
+
+  "&.active": { bgcolor: "action.active" },
+  "&.active:hover": { bgcolor: "action.active" },
+
+  "& i.codicon[class*='codicon-']": {
+    lineHeight: `${listRowHeight}px`,
+    fontSize: listRowHeight - 2,
+    color: "text.primary",
+  },
+
+  "& span": {
+    lineHeight: `${listRowHeight}px`,
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    textWrap: "nowrap",
+  },
+};
 
 /**
  * 渲染列表時，應該要傳入的每個項目型別
@@ -33,26 +67,11 @@ const ListRow = (props: ListItem) => {
 
   return (
     <Tooltip actionName={detail ? detail : text} placement="right">
-      <Box
-        className="list-row"
-        sx={{
-          borderRadius: 1,
-          px: 0.25,
-          cursor: "default",
-          bgcolor: active ? "action.active" : undefined,
-          "&:hover": { bgcolor: active ? "action.active" : colorMix("background.content", "text.primary", 0.9) },
-          // 因為有些瀏覽器明明在 overflow 對齊時，仍會渲染上面或下面那個應該完全看不見的 item 的一小塊，因此加個內框遮住
-          boxShadow: "inset 0 0 0 1px var(--mui-palette-background-content)",
-        }}
-      >
-        <Box sx={{ display: "flex", alignItems: "center", height: listRowHeight, overflow: "hidden", gap: 0.75 }}>
-          <Box sx={{ color: "text.primary" }}>
-            <i className={icon} style={{ display: "block", fontSize: listRowHeight - 2 }} />
-          </Box>
-          <Typography variant="caption" sx={{ ...centerTextSx, textWrap: "nowrap" }}>
-            {text}
-          </Typography>
-        </Box>
+      <Box className={`list-row${active ? " active" : ""}`} sx={listRowSx}>
+        <i className={icon} />
+        <Typography component="span" variant="caption">
+          {text}
+        </Typography>
       </Box>
     </Tooltip>
   );
