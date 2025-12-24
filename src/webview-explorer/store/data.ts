@@ -8,7 +8,7 @@ import { invoke } from "@explorer/store/init";
 import { getInitialData } from "@/utils-vscode/message/client";
 import type { InspectDirectoryEntry } from "@/utils/system";
 import type { ImageMetadata } from "@/utils/image";
-import type { ReadResourceResult } from "@/providers/fileSystemProvider";
+import type { ReadResourceResult } from "@/providers/explorerProvider";
 
 const initialData = getInitialData<ReadResourceResult>();
 if (!initialData) {
