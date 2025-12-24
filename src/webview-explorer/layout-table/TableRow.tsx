@@ -5,10 +5,10 @@ import { formatFileSize, formatFileType, formatFixedLengthDateTime } from "@/uti
 import { extensionIconMap } from "@/assets/fileExtMap";
 import type { InspectDirectoryEntry } from "@/utils/system";
 
-import { tableColumns, tableRowHeight } from "@explorer/layout-table/tableConfig";
-import { tableIconFontSize, tableIconWidth } from "@explorer/layout-table/tableConfig";
+import { tableColumns, tableRowHeight } from "@explorer/layout-table/config";
+import { tableIconFontSize, tableIconWidth } from "@explorer/layout-table/config";
 import { clipboardStore, selectionStore, viewDataStore } from "@explorer/store/data";
-import type { TableColumn } from "@explorer/layout-table/tableConfig";
+import type { TableColumn } from "@explorer/layout-table/config";
 
 /** 用於標示表格列的 class 名稱 */
 const tableRowClassName = "table-row";

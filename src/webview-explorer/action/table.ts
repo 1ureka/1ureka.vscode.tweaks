@@ -1,6 +1,6 @@
 import { tableRowClassName, tableRowIndexAttr } from "@explorer/layout-table/TableRow";
 import { tableBodyContainerId, tableBodyVirtualListContainerId } from "@explorer/layout-table/TableBody";
-import { tableRowHeight } from "@explorer/layout-table/tableConfig";
+import { tableRowHeight } from "@explorer/layout-table/config";
 
 import { navigateToFolder } from "@explorer/action/navigation";
 import { openFile, startFileDrag } from "@explorer/action/operation";
