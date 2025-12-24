@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import type { CommandId, ConfigId } from "@/contribute";
+import type { CommandId } from "@/contribute";
 
 /**
  * 提供註冊 VSCode 命令的管理器，自動管理其生命週期，先在 closure 中保存 context，這樣外部代碼無需每次都傳入 context
@@ -17,21 +17,4 @@ function createCommandManager(context: vscode.ExtensionContext) {
   return { register };
 }
 
-/**
- * 提供獲取配置的工具函數
- */
-function getConfig<T = string>(id: ConfigId): T | undefined {
-  const parts = id.split(".");
-  if (parts.length !== 2) return undefined;
-
-  const prefix = parts[0];
-  if (prefix !== "1ureka") return undefined;
-
-  const key = parts[1];
-  if (!key) return undefined;
-
-  const config = vscode.workspace.getConfiguration(prefix);
-  return config.get<T>(key);
-}
-
-export { createCommandManager, getConfig };
+export { createCommandManager };

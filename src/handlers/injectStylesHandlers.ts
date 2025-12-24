@@ -2,7 +2,7 @@ import fs from "fs-extra";
 import * as path from "path";
 import customStyle from "@/assets/customStyle.css";
 import { parse as parseHtml } from "node-html-parser";
-import { getConfig } from "@/utils-vscode/command";
+import { getConfig } from "@/utils-vscode/config";
 
 /**
  * 定位 VSCode 的 workbench HTML 檔案路徑，成功時回傳找到的路徑
