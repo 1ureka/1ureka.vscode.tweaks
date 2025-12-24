@@ -97,13 +97,11 @@ const withProgress: WithProgress = async (taskName, taskFn) => {
   });
 };
 
-const openTarget = ({ dirPath, target }: { dirPath: string; target: "workspace" | "terminal" | "imageWall" }) => {
+const openTarget = ({ dirPath, target }: { dirPath: string; target: "workspace" | "terminal" }) => {
   if (target === "workspace") {
     vscode.commands.executeCommand("vscode.openFolder", vscode.Uri.file(dirPath), true);
   } else if (target === "terminal") {
     vscode.window.createTerminal({ cwd: dirPath }).show();
-  } else if (target === "imageWall") {
-    vscode.commands.executeCommand("1ureka.imageWall.openFromPath", dirPath);
   }
 };
 
@@ -226,9 +224,9 @@ function FileSystemPanelProvider(context: vscode.ExtensionContext) {
   const createPanel = (dirPath: string) => {
     const initialData = handleInitialData({ dirPath });
     const panel = panelManager.create<ReadResourceResult>({
-      panelId: "1ureka.fileSystem",
+      panelId: "1ureka.explorer",
       panelTitle: "系統瀏覽器",
-      webviewType: "fileSystem",
+      webviewType: "explorer",
       extensionUri: context.extensionUri,
       resourceUri: vscode.Uri.file(dirPath),
       initialData,

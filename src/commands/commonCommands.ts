@@ -34,7 +34,7 @@ export function registerNavigationCommands(context: vscode.ExtensionContext) {
 export function registerInjectStylesCommands(context: vscode.ExtensionContext) {
   const commandManager = createCommandManager(context);
 
-  commandManager.register("1ureka.injectStyles", () => {
+  commandManager.register("1ureka.vscode.injectStyles", () => {
     const { success, message } = injectStyles();
 
     if (success) {
@@ -44,7 +44,7 @@ export function registerInjectStylesCommands(context: vscode.ExtensionContext) {
     }
   });
 
-  commandManager.register("1ureka.restoreStyles", () => {
+  commandManager.register("1ureka.vscode.restoreStyles", () => {
     const { success, message } = restoreStyles();
 
     if (success) {
@@ -54,7 +54,7 @@ export function registerInjectStylesCommands(context: vscode.ExtensionContext) {
     }
   });
 
-  commandManager.register("1ureka.restoreAndReinjectStyles", () => {
+  commandManager.register("1ureka.vscode.reinjectStyles", () => {
     const { success, message } = restoreAndReinjectStyles();
 
     if (success) {
@@ -91,7 +91,7 @@ export function registerFileMetadataCommands(context: vscode.ExtensionContext) {
 export function registerExternalAppCommands(context: vscode.ExtensionContext) {
   const commandManager = createCommandManager(context);
 
-  commandManager.register("1ureka.external.openWithSystemDefaultApp", (uri: vscode.Uri) => {
+  commandManager.register("1ureka.vscode.openWithSystemDefaultApp", (uri: vscode.Uri) => {
     if (!uri) return;
 
     openWithDefaultApp({

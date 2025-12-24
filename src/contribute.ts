@@ -6,17 +6,14 @@ import type { OneOf } from "@/utils/type";
 
 type CommandId =
   | "1ureka.main.openNavigation"
-  // External App Commands
-  | "1ureka.external.openWithSystemDefaultApp"
-  // File System Commands
-  | "1ureka.fileSystem.openFromPath"
-  | "1ureka.fileSystem.openFromDialog"
-  // Inject Styles Commands
-  | "1ureka.injectStyles"
-  | "1ureka.restoreStyles"
-  | "1ureka.restoreAndReinjectStyles";
+  | "1ureka.explorer.openFromPath"
+  | "1ureka.explorer.openFromDialog"
+  | "1ureka.vscode.openWithSystemDefaultApp"
+  | "1ureka.vscode.injectStyles"
+  | "1ureka.vscode.restoreStyles"
+  | "1ureka.vscode.reinjectStyles";
 
-type WebviewId = "1ureka.imageViewer" | "1ureka.imageWall" | "1ureka.fileSystem";
+type WebviewId = "1ureka.imageViewer" | "1ureka.explorer";
 
 type ConfigPrefix = "1ureka";
 
@@ -61,10 +58,10 @@ type CustomEditor = {
 // ============================================================================
 
 const commandPaletteEntries: CommandPaletteEntries = [
-  { id: "1ureka.fileSystem.openFromDialog", title: "開啟系統瀏覽器", icon: "$(folder-library)" },
-  { id: "1ureka.injectStyles", title: "注入自訂樣式" },
-  { id: "1ureka.restoreStyles", title: "還原樣式設定" },
-  { id: "1ureka.restoreAndReinjectStyles", title: "還原並重新注入樣式" },
+  { id: "1ureka.explorer.openFromDialog", title: "開啟系統瀏覽器", icon: "$(folder-library)" },
+  { id: "1ureka.vscode.injectStyles", title: "注入自訂樣式" },
+  { id: "1ureka.vscode.restoreStyles", title: "還原樣式設定" },
+  { id: "1ureka.vscode.reinjectStyles", title: "還原並重新注入樣式" },
 ];
 
 const explorerTitleMenuEntries: ContextMenuEntries = [
@@ -89,13 +86,13 @@ const editorTitleMenuEntries: ContextMenuEntries = [
 
 const explorerContextMenuEntries: ContextMenuEntries = [
   {
-    id: "1ureka.external.openWithSystemDefaultApp",
+    id: "1ureka.vscode.openWithSystemDefaultApp",
     title: "以預設應用程式開啟",
     when: "!explorerResourceIsFolder",
     group: "navigation@100",
   },
   {
-    id: "1ureka.fileSystem.openFromPath",
+    id: "1ureka.explorer.openFromPath",
     title: "在系統瀏覽器中顯示",
     when: "explorerResourceIsFolder",
     group: "extension@100",
@@ -104,7 +101,7 @@ const explorerContextMenuEntries: ContextMenuEntries = [
 
 const editorTitleContextMenuEntries: ContextMenuEntries = [
   {
-    id: "1ureka.external.openWithSystemDefaultApp",
+    id: "1ureka.vscode.openWithSystemDefaultApp",
     title: "以預設應用程式開啟",
     when: "resourceScheme == file",
     group: "navigation@100",

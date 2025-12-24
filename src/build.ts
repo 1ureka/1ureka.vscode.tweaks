@@ -117,7 +117,7 @@ async function main() {
     const webviewBuilds = [
       {
         srcPath: "src/webview-explorer/index.tsx",
-        outPath: "dist/webviews/fileSystem.js",
+        outPath: "dist/webviews/explorer.js",
         alias: { "@explorer": "./src/webview-explorer" },
       },
       {

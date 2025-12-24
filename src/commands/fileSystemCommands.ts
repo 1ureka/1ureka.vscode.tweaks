@@ -9,7 +9,7 @@ export function registerFileSystemCommands(context: vscode.ExtensionContext) {
   const fileSystemProvider = FileSystemPanelProvider(context);
   const commandManager = createCommandManager(context);
 
-  commandManager.register("1ureka.fileSystem.openFromPath", async (params: vscode.Uri | string | undefined) => {
+  commandManager.register("1ureka.explorer.openFromPath", async (params: vscode.Uri | string | undefined) => {
     if (params instanceof vscode.Uri) {
       fileSystemProvider.createPanel(params.fsPath);
     } else if (typeof params === "string") {
@@ -24,7 +24,7 @@ export function registerFileSystemCommands(context: vscode.ExtensionContext) {
     }
   });
 
-  commandManager.register("1ureka.fileSystem.openFromDialog", async () => {
+  commandManager.register("1ureka.explorer.openFromDialog", async () => {
     const folders = await vscode.window.showOpenDialog({
       canSelectFiles: false,
       canSelectFolders: true,
