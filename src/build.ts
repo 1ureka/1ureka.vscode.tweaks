@@ -4,39 +4,9 @@ import { spawn } from "child_process";
 import fs from "fs-extra";
 import * as path from "path";
 
-async function backupAndInjectContribute() {
-  const packageJsonPath = path.resolve("package.json");
-  const backupPath = path.resolve("package.json.bak");
-
-  // 備份原始 package.json
-  fs.copyFileSync(packageJsonPath, backupPath);
-  console.log("✓ Backed up package.json to package.json.bak");
-
-  // 讀取原始 package.json
-  const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf-8"));
-
-  // 注入 contributes
-  packageJson.contributes = generateContribute();
-
-  // 寫入新的 package.json
-  fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2), "utf-8");
-  console.log("✓ Injected contributes into package.json");
-}
-
-async function restorePackageJson() {
-  const packageJsonPath = path.resolve("package.json");
-  const backupPath = path.resolve("package.json.bak");
-
-  if (fs.existsSync(backupPath)) {
-    // 刪除當前的 package.json
-    fs.unlinkSync(packageJsonPath);
-
-    // 還原備份
-    fs.renameSync(backupPath, packageJsonPath);
-    console.log("✓ Restored package.json from backup");
-  }
-}
-
+/**
+ * 編譯 VS Code 擴充功能主程式
+ */
 async function buildExtension() {
   await build({
     entryPoints: ["src/extension.ts"],
@@ -52,31 +22,60 @@ async function buildExtension() {
   console.log("✓ Extension bundle built successfully");
 }
 
-async function buildWebviews() {
-  const webviewDirs = fs.readdirSync("src/webviews", { withFileTypes: true });
-  const webviews = webviewDirs.filter((dirent) => dirent.isDirectory()).map(({ name }) => name);
+/**
+ * 編譯 Webview 前端程式
+ */
+async function buildWebview(params: { srcPath: string; outPath: string; alias: Record<string, string> }) {
+  const { srcPath, outPath, alias } = params;
 
-  for (const dir of webviews) {
-    const entryPoint = `src/webviews/${dir}/index.tsx`;
-    if (!fs.existsSync(entryPoint)) continue;
+  await build({
+    entryPoints: [srcPath],
+    bundle: true,
+    platform: "browser",
+    format: "iife",
+    outfile: outPath,
+    jsx: "automatic",
+    minify: true,
+    alias: { "@": "./src", ...alias },
+  });
 
-    await build({
-      entryPoints: [entryPoint],
-      bundle: true,
-      platform: "browser",
-      format: "iife",
-      outfile: `dist/webviews/${dir}.js`,
-      jsx: "automatic",
-      minify: true,
-      alias: { "@": "./src", "@@": `./src/webviews` },
-    });
-
-    console.log(`✓ Built WebView bundle: ${dir}`);
-  }
-
-  console.log("✓ WebView bundles built successfully");
+  console.log(`✓ Built WebView bundle: ${path.basename(outPath)}`);
 }
 
+/**
+ * 備份 package.json 並注入動態生成的貢獻點設定
+ */
+async function backupAndInjectContribute() {
+  const packageJsonPath = path.resolve("package.json");
+  const backupPath = path.resolve("package.json.bak");
+
+  await fs.copyFile(packageJsonPath, backupPath);
+  console.log("✓ Backed up package.json to package.json.bak");
+
+  const packageJson = JSON.parse(await fs.readFile(packageJsonPath, "utf-8"));
+  packageJson.contributes = generateContribute();
+
+  await fs.writeFile(packageJsonPath, JSON.stringify(packageJson, null, 2), "utf-8");
+  console.log("✓ Injected contributes into package.json");
+}
+
+/**
+ * 從備份檔案還原 package.json 並移除備份檔
+ */
+async function restorePackageJson() {
+  const packageJsonPath = path.resolve("package.json");
+  const backupPath = path.resolve("package.json.bak");
+
+  if (await fs.pathExists(backupPath)) {
+    await fs.rm(packageJsonPath);
+    await fs.rename(backupPath, packageJsonPath);
+    console.log("✓ Restored package.json from backup");
+  }
+}
+
+/**
+ * 執行 vsce 指令將擴充功能打包成 .vsix 檔案
+ */
 async function packageExtension() {
   await new Promise<void>((resolve, reject) => {
     const vsceProcess = spawn(
@@ -94,30 +93,55 @@ async function packageExtension() {
   console.log("✓ Successfully packaged extension");
 }
 
+/**
+ * 擴充功能構建與打包的主流程入口
+ */
 async function main() {
+  console.log("Starting build process...");
+
   try {
-    // 清理舊的構建產物
-    if (fs.existsSync("dist")) fs.rmSync("dist", { recursive: true, force: true });
+    await fs.remove("dist");
+    console.log("✓ Cleaned dist directory");
+  } catch (error) {
+    console.error("✗ Cleanup failed:", error);
+    process.exit(1);
+  }
 
-    // 備份並注入 contributes
-    await backupAndInjectContribute();
-
-    // 執行構建流程
+  try {
     await buildExtension();
-    await buildWebviews();
-    await packageExtension();
 
-    // 還原 package.json
+    const webviewBuilds = [
+      {
+        srcPath: "src/webview-explorer/index.tsx",
+        outPath: "dist/webviews/fileSystem.js",
+        alias: { "@explorer": "./src/webview-explorer" },
+      },
+      {
+        srcPath: "src/webview-viewer/index.tsx",
+        outPath: "dist/webviews/imageViewer.js",
+        alias: { "@viewer": "./src/webview-viewer" },
+      },
+    ] as const;
+
+    for (const buildParams of webviewBuilds) {
+      await buildWebview(buildParams);
+    }
+  } catch (error) {
+    console.error("✗ Bundle compilation failed:", error);
+    process.exit(1);
+  }
+
+  try {
+    await backupAndInjectContribute();
+    await packageExtension();
     await restorePackageJson();
 
-    console.log("\n✓ Build completed successfully");
+    console.log("\n🚀 All build tasks completed successfully");
     process.exit(0);
   } catch (err) {
-    console.error("\n✗ Build failed:", err);
-
-    // 確保即使構建失敗也要還原 package.json
     await restorePackageJson();
 
+    console.error("\n✗ Packaging process failed:", err);
     process.exit(1);
   }
 }
