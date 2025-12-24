@@ -1,5 +1,5 @@
 import type { FileSystemAPI } from "@/providers/fileSystemProvider";
-import { createInvoke } from "@/message/client";
+import { createInvoke } from "@/utils-vscode/message/client";
 import { dataStore } from "@@/fileSystem/store/data";
 import { requestQueue } from "@@/fileSystem/store/queue";
 

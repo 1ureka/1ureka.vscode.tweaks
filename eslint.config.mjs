@@ -49,21 +49,14 @@ export default defineConfig([
   },
   {
     files: ["**/*.ts", "**/*.tsx"],
-    ignores: [
-      "src/providers/**",
-      "src/commands/**",
-      "src/message/host.ts",
-      "src/utils/command.ts",
-      "src/utils/webview.ts",
-      "src/extension.ts",
-    ],
+    ignores: ["src/providers/**", "src/commands/**", "src/utils-vscode/**", "src/extension.ts"],
     rules: { "no-restricted-imports": ["error", vscodeImportRestriction] },
   },
 
   // 特殊規則 - 禁止直接使用某些 API，必須透過 utils 中的輔助函數來使用
   {
     files: ["**/*.ts", "**/*.tsx"],
-    ignores: ["src/message/client.ts", "src/message/host.ts", "src/utils/command.ts"],
+    ignores: ["src/utils-vscode/message/client.ts", "src/utils-vscode/message/host.ts", "src/utils-vscode/command.ts"],
     rules: {
       "no-restricted-syntax": [
         "error",

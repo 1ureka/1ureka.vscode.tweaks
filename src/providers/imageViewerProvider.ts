@@ -3,8 +3,8 @@ import * as path from "path";
 import type { CustomDocument, CustomDocumentOpenContext, WebviewPanel, CancellationToken } from "vscode";
 
 import { handleCopyImage } from "@/handlers/imageViewerHandler";
-import { createWebviewPanelManager } from "@/utils/webview";
-import { registerInvokeEvents } from "@/message/host";
+import { createWebviewPanelManager } from "@/utils-vscode/webview";
+import { registerInvokeEvents } from "@/utils-vscode/message/host";
 import { exportImage, openImage } from "@/utils/image";
 import type { ExportFormat, ImageMetadata } from "@/utils/image";
 

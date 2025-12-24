@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { FileSystemPanelProvider } from "@/providers/fileSystemProvider";
-import { createCommandManager } from "@/utils/command";
+import { createCommandManager } from "@/utils-vscode/command";
 
 /**
  * 註冊系統瀏覽器相關命令與面板

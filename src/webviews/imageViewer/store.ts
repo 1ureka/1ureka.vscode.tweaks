@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import type { ReadImageResult, ImageViewerAPI } from "@/providers/imageViewerProvider";
-import { createInvoke, getInitialData } from "@/message/client";
+import { createInvoke, getInitialData } from "@/utils-vscode/message/client";
 
 /**
  * 建立用於調用延伸主機 API 的函式

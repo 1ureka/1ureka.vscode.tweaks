@@ -5,7 +5,7 @@
 
 import { create } from "zustand";
 import { invoke } from "@@/fileSystem/store/init";
-import { getInitialData } from "@/message/client";
+import { getInitialData } from "@/utils-vscode/message/client";
 import type { InspectDirectoryEntry } from "@/utils/system";
 import type { ImageMetadata } from "@/utils/image";
 import type { ReadResourceResult } from "@/providers/fileSystemProvider";
