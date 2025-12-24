@@ -13,8 +13,9 @@
     "noUnusedParameters": true,
     "baseUrl": ".",
     "paths": {
-      "@@/*": ["src/webviews/*"],
       "@/*": ["src/*"],
+      "@explorer/*": ["src/webview-explorer/*"],
+      "@viewer/*": ["src/webview-viewer/*"],
       "@tests/*": ["tests/*"]
     }
   },
