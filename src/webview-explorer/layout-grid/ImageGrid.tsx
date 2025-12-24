@@ -4,18 +4,10 @@ import { viewDataStore } from "@explorer/store/data";
 import { useVirtualizer } from "@explorer/layout-grid/imageGridUtils";
 import { thumbnailCache } from "@explorer/store/cache";
 
-// ---------------------------------------------------------------------------------
+const scrollContainerClassName = "image-grid-scroll-container";
+const virtualItemsContainerClassName = "image-grid-virtual-items-container";
 
-/** 滾動容器樣式，確保卷軸穩定性並填滿可用空間 */
-const scrollContainerSx: SxProps = {
-  position: "relative",
-  py: 1.5,
-  flex: 1,
-  overflowY: "auto",
-  scrollbarGutter: "stable",
-  bgcolor: "background.content",
-  borderRadius: 1,
-};
+// ---------------------------------------------------------------------------------
 
 /** 圖片進場淡入動畫 */
 const fadeIn = keyframes`
@@ -34,22 +26,44 @@ const skeletonBgColor = "var(--mui-palette-background-paper)";
 const skeletonHighlightColor =
   "color-mix(in srgb, var(--mui-palette-background-paper) 80%, var(--mui-palette-text-primary) 20%)";
 
-/** 透過樣式委派統一控制虛擬元素、Fallback(div) 與實體圖片的過渡效果 */
-const virtualGridContainerSx: SxProps = {
+// ---------------------------------------------------------------------------------
+
+/**
+ * 整個圖片網格組件的所有樣式，透過樣式委派傳遞
+ */
+const imageGridSx: SxProps = {
   position: "relative",
+  p: 1.5,
+  pr: 0, // 右側不留空間給 scrollContainer 做捲軸
+  flex: 1,
+  minHeight: 0,
+  borderRadius: 1,
+  bgcolor: "background.content",
 
-  // 虛擬元素容器
-  "& > *": { position: "absolute", p: 0.5 },
-
-  // 虛擬元素本體 (圖片或 fallback)
-  "& > * > *": {
-    borderRadius: 0.5,
-    background: `linear-gradient(90deg, ${skeletonBgColor} 25%, ${skeletonHighlightColor} 50%, ${skeletonBgColor} 75%)`,
-    backgroundSize: "200% 100%",
-    animation: `${fadeIn} 0.25s cubic-bezier(0, 0, 0.2, 1) forwards, ${shimmer} 2s linear infinite`,
-    width: 1,
+  [`& .${scrollContainerClassName}`]: {
+    position: "relative",
     height: 1,
-    objectFit: "cover",
+    minHeight: 0,
+    overflowY: "auto",
+    scrollbarGutter: "stable",
+  },
+
+  [`& .${virtualItemsContainerClassName}`]: {
+    position: "relative",
+
+    // 虛擬項目容器
+    "& > *": { position: "absolute", p: 0.5 },
+
+    // 虛擬元素本體 (圖片或 fallback)
+    "& > * > *": {
+      borderRadius: 0.5,
+      background: `linear-gradient(90deg, ${skeletonBgColor} 25%, ${skeletonHighlightColor} 50%, ${skeletonBgColor} 75%)`,
+      backgroundSize: "200% 100%",
+      animation: `${fadeIn} 0.25s cubic-bezier(0, 0, 0.2, 1) forwards, ${shimmer} 2s linear infinite`,
+      width: 1,
+      height: 1,
+      objectFit: "cover",
+    },
   },
 };
 
@@ -64,23 +78,16 @@ const ImageGridItem = memo(({ filePath }: { filePath: string }) => {
 });
 
 /**
- * 圖片虛擬網格主組件
- * 結合虛擬捲動、Suspense 非同步載入與樣式委派
+ * 圖片虛擬網格，結合虛擬捲動、Suspense 非同步載入
  */
-const ImageGrid = memo(() => {
-  const viewMode = viewDataStore((state) => state.viewMode);
+const ImageVirtualGrid = memo(() => {
   const imageLayout = viewDataStore((state) => state.imageEntries);
-
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const { visibleItems, totalHeight } = useVirtualizer({ scrollContainerRef, ...imageLayout });
 
-  if (viewMode !== "images") {
-    return null;
-  }
-
   return (
-    <Box ref={scrollContainerRef} sx={scrollContainerSx}>
-      <Box sx={virtualGridContainerSx} style={{ height: `${totalHeight}px` }}>
+    <div className={scrollContainerClassName} ref={scrollContainerRef}>
+      <div className={virtualItemsContainerClassName} style={{ height: `${totalHeight}px` }}>
         {visibleItems.map((item) => {
           const style = {
             width: item.pixelW,
@@ -96,7 +103,24 @@ const ImageGrid = memo(() => {
             </div>
           );
         })}
-      </Box>
+      </div>
+    </div>
+  );
+});
+
+/**
+ * 圖片網格組件，結合虛擬捲動、Suspense 非同步載入與樣式委派
+ */
+const ImageGrid = memo(() => {
+  const viewMode = viewDataStore((state) => state.viewMode);
+
+  if (viewMode !== "images") {
+    return null;
+  }
+
+  return (
+    <Box sx={imageGridSx}>
+      <ImageVirtualGrid />
     </Box>
   );
 });
