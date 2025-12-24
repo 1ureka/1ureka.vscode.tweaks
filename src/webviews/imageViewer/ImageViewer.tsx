@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
-import { Box, Container, Skeleton, Typography } from "@mui/material";
+import { Box, ButtonBase, Container, Divider, Popover, Skeleton, SxProps, Typography } from "@mui/material";
 import { TransformWrapper, TransformComponent, useControls } from "react-zoom-pan-pinch";
 
+import { centerTextSx, colorMix } from "@/utils/ui";
 import { resetTransformRef } from "@@/imageViewer/action";
+import { handleResetTransform, handleEyeDropper, handleExportImage } from "@@/imageViewer/action";
 import { useDecodeImage } from "@@/imageViewer/hooks";
-import { dataStore } from "@@/imageViewer/store";
+import { contextMenuStore, dataStore } from "@@/imageViewer/store";
 
 const Controls = () => {
   const { resetTransform } = useControls();
@@ -83,5 +85,109 @@ export const ImageViewer: React.FC = () => {
         <Typography variant="body1">請確認圖片檔案是否存在，或重新開啟圖片檢視器。</Typography>
       </Box>
     </Container>
+  );
+};
+
+const actionDropdownMenuSx: SxProps = {
+  ".menu-bottom &": { mt: 0.5 },
+  ".menu-top &": { mt: -0.5 },
+  p: 1,
+  bgcolor: "tooltip.background",
+  border: 1,
+  borderColor: "tooltip.border",
+  borderRadius: 1,
+  boxShadow: "0 2px 8px var(--vscode-widget-shadow)",
+};
+
+/**
+ * 操作元件的大小（高度或寬度，取決於方向）
+ */
+const actionSize = { small: 26, medium: 30 };
+
+const actionDropdownButtonSx: SxProps = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "flex-start",
+  width: 1,
+  height: actionSize.small - 4,
+  gap: 1.5,
+  pr: 1.5,
+  pl: 0.5,
+  borderRadius: 0.5,
+  bgcolor: "tooltip.background",
+  "&:hover": { bgcolor: colorMix("tooltip.background", "text.primary", 0.95) },
+  "&:active": { bgcolor: "action.active" },
+  "&.active": { bgcolor: "action.active", "&:hover": { bgcolor: "action.active" } },
+  "&.disabled": { color: "text.disabled" },
+};
+
+type ActionButtonProps = {
+  actionIcon: `codicon codicon-${string}`;
+  actionName: string;
+  onClick?: () => void;
+  active?: boolean;
+  disabled?: boolean;
+};
+
+/**
+ * 下拉選單內的按鈕元件
+ */
+const ActionDropdownButton = (props: ActionButtonProps) => {
+  const { actionIcon, actionName, onClick, active, disabled } = props;
+
+  let className = "";
+  if (active) className += "active ";
+  if (disabled) className += "disabled ";
+
+  return (
+    <ButtonBase disableRipple className={className} onClick={onClick} disabled={disabled} sx={actionDropdownButtonSx}>
+      <i className={actionIcon} style={{ display: "block" }} />
+      <Typography variant="caption" sx={{ color: "inherit", ...centerTextSx }}>
+        {actionName}
+      </Typography>
+    </ButtonBase>
+  );
+};
+
+export const ContextMenu = () => {
+  const anchorPosition = contextMenuStore((state) => state.anchorPosition);
+  const open = Boolean(anchorPosition);
+
+  const handleClose = () => {
+    contextMenuStore.setState({ anchorPosition: null });
+  };
+
+  const handlerWrapper = (handler: () => void) => {
+    handleClose();
+    handler();
+  };
+
+  return (
+    <Popover
+      open={open}
+      onClose={handleClose}
+      anchorReference="anchorPosition"
+      anchorPosition={anchorPosition!}
+      slotProps={{ paper: { elevation: 0, sx: actionDropdownMenuSx } }}
+    >
+      <ActionDropdownButton
+        actionIcon="codicon codicon-debug-restart"
+        actionName="重設縮放與位置"
+        onClick={() => handlerWrapper(handleResetTransform)}
+      />
+
+      <Divider sx={{ my: 0.5 }} />
+
+      <ActionDropdownButton
+        actionIcon="codicon codicon-inspect"
+        actionName="吸取顏色並複製"
+        onClick={() => handlerWrapper(handleEyeDropper)}
+      />
+      <ActionDropdownButton
+        actionIcon="codicon codicon-export"
+        actionName="導出為..."
+        onClick={() => handlerWrapper(handleExportImage)}
+      />
+    </Popover>
   );
 };

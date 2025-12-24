@@ -18,4 +18,11 @@ if (!initialData || !initialData.metadata) {
  */
 const dataStore = create<ReadImageResult>(() => ({ ...initialData }));
 
-export { dataStore, invoke };
+/**
+ * 建立用於儲存右鍵選單狀態的容器
+ */
+const contextMenuStore = create<{ anchorPosition: { top: number; left: number } | null }>(() => ({
+  anchorPosition: null,
+}));
+
+export { dataStore, contextMenuStore, invoke };
