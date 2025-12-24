@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { openWithDefaultApp } from "@/utils/system";
-import { createCommandManager } from "@/utils/command";
+import { createCommandManager } from "@/utils-vscode/command";
 import { FileMetadataProvider } from "@/providers/fileMetadataProvider";
 import { openNavigationMenu } from "@/providers/navigationProvider";
 import { injectStyles, restoreStyles, restoreAndReinjectStyles } from "@/handlers/injectStylesHandlers";

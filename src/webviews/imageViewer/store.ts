@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import type { ReadImageResult, ImageViewerAPI } from "@/providers/imageViewerProvider";
-import { createInvoke, getInitialData } from "@/message/client";
+import { createInvoke, getInitialData } from "@/utils-vscode/message/client";
 
 /**
  * 建立用於調用延伸主機 API 的函式
@@ -18,4 +18,11 @@ if (!initialData || !initialData.metadata) {
  */
 const dataStore = create<ReadImageResult>(() => ({ ...initialData }));
 
-export { dataStore, invoke };
+/**
+ * 建立用於儲存右鍵選單狀態的容器
+ */
+const contextMenuStore = create<{ anchorPosition: { top: number; left: number } | null }>(() => ({
+  anchorPosition: null,
+}));
+
+export { dataStore, contextMenuStore, invoke };

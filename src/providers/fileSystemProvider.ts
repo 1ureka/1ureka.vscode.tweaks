@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 
-import { registerInvokeEvents } from "@/message/host";
-import { createWebviewPanelManager } from "@/utils/webview";
+import { registerInvokeEvents } from "@/utils-vscode/message/host";
+import { createWebviewPanelManager } from "@/utils-vscode/webview";
 import { handleDelete, handleInitialData, handlePaste, handleRename } from "@/handlers/fileSystemHandlers";
 import { handleCreateFile, handleCreateDir } from "@/handlers/fileSystemHandlers";
 import { handleReadDirectory, handleReadImages } from "@/handlers/fileSystemHandlers";
