@@ -1,5 +1,6 @@
 import { loadingStore } from "@explorer/store/queue";
 import { Box, LinearProgress } from "@mui/material";
+import { memo } from "react";
 
 const loadingContainerSx = {
   position: "absolute",
@@ -15,7 +16,7 @@ const loadingContainerSx = {
   },
 };
 
-const LoadingDisplay = () => {
+const LoadingDisplay = memo(() => {
   const loading = loadingStore((state) => state.loading);
 
   if (!loading) return null;
@@ -25,6 +26,6 @@ const LoadingDisplay = () => {
       <LinearProgress sx={{ width: 1, height: 6 }} color="info" />
     </Box>
   );
-};
+});
 
 export { LoadingDisplay };
