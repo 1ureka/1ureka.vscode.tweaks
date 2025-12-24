@@ -2,16 +2,16 @@ import * as vscode from "vscode";
 
 import { registerInvokeEvents } from "@/utils-vscode/message/host";
 import { createWebviewPanelManager } from "@/utils-vscode/webview";
-import { handleDelete, handleInitialData, handlePaste, handleRename } from "@/handlers/fileSystemHandlers";
-import { handleCreateFile, handleCreateDir } from "@/handlers/fileSystemHandlers";
-import { handleReadDirectory, handleReadImages } from "@/handlers/fileSystemHandlers";
+import { handleDelete, handleInitialData, handlePaste, handleRename } from "@/handlers/explorerHandlers";
+import { handleCreateFile, handleCreateDir } from "@/handlers/explorerHandlers";
+import { handleReadDirectory, handleReadImages } from "@/handlers/explorerHandlers";
 
 import { generateThumbnail, type ImageMetadata } from "@/utils/image";
 import type { InspectDirectoryEntry } from "@/utils/system";
 import type { OneOf, Prettify, WithProgress } from "@/utils/type";
 
-import fileSystemLight from "@/assets/file-system-light.svg";
-import fileSystemDark from "@/assets/file-system-dark.svg";
+import explorerIconLight from "@/assets/explorer-light.svg";
+import explorerIconDark from "@/assets/explorer-dark.svg";
 
 // ---------------------------------------------------------------------------------
 
@@ -97,13 +97,11 @@ const withProgress: WithProgress = async (taskName, taskFn) => {
   });
 };
 
-const openTarget = ({ dirPath, target }: { dirPath: string; target: "workspace" | "terminal" | "imageWall" }) => {
+const openTarget = ({ dirPath, target }: { dirPath: string; target: "workspace" | "terminal" }) => {
   if (target === "workspace") {
     vscode.commands.executeCommand("vscode.openFolder", vscode.Uri.file(dirPath), true);
   } else if (target === "terminal") {
     vscode.window.createTerminal({ cwd: dirPath }).show();
-  } else if (target === "imageWall") {
-    vscode.commands.executeCommand("1ureka.imageWall.openFromPath", dirPath);
   }
 };
 
@@ -166,7 +164,7 @@ const pasteOptions: (vscode.QuickPickItem & { type?: "copy" | "move"; overwrite?
 
 // ---------------------------------------------------------------------------------
 
-const fileSystemAPI = {
+const explorerAPI = {
   "show.info": showInfo,
   "show.error": showError,
   "clipboard.write": writeClipboard,
@@ -213,32 +211,32 @@ const fileSystemAPI = {
   },
 };
 
-type FileSystemAPI = typeof fileSystemAPI;
+type ExplorerAPI = typeof explorerAPI;
 
 // ---------------------------------------------------------------------------------
 
 /**
  * 提供系統瀏覽器面板的管理功能，包括創建和獲取當前面板、面板的各種API註冊、與提供給處理器所需的流程依賴
  */
-function FileSystemPanelProvider(context: vscode.ExtensionContext) {
+function createExplorerProvider(context: vscode.ExtensionContext) {
   const panelManager = createWebviewPanelManager(context);
 
   const createPanel = (dirPath: string) => {
     const initialData = handleInitialData({ dirPath });
     const panel = panelManager.create<ReadResourceResult>({
-      panelId: "1ureka.fileSystem",
+      panelId: "1ureka.explorer",
       panelTitle: "系統瀏覽器",
-      webviewType: "fileSystem",
+      webviewType: "explorer",
       extensionUri: context.extensionUri,
       resourceUri: vscode.Uri.file(dirPath),
       initialData,
-      iconPath: { light: vscode.Uri.parse(fileSystemLight), dark: vscode.Uri.parse(fileSystemDark) },
+      iconPath: { light: vscode.Uri.parse(explorerIconLight), dark: vscode.Uri.parse(explorerIconDark) },
     });
 
-    registerInvokeEvents(panel, fileSystemAPI);
+    registerInvokeEvents(panel, explorerAPI);
   };
 
   return { getCurrentPanel: panelManager.getCurrent, createPanel };
 }
 
-export { FileSystemPanelProvider, type FileSystemAPI };
+export { createExplorerProvider, type ExplorerAPI };

@@ -21,7 +21,7 @@ const stageDestinationPath = (dirPath: string) => {
 /**
  * 以該資料夾開啟新的環境 (比如工作區、終端機等)
  */
-const openInEnvironment = (target: "workspace" | "terminal" | "imageWall") => {
+const openInEnvironment = (target: "workspace" | "terminal") => {
   const { currentPath } = dataStore.getState();
   invoke("system.open.dir", { target, dirPath: currentPath });
 };
