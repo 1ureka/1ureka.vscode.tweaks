@@ -88,8 +88,8 @@ $ms.Dispose()
 const listSystemFoldersScript = `
 $shell = New-Object -ComObject Shell.Application
 $res = @()
-$res += $shell.Namespace(0x11).Items() | Where-Object { $_.Path }
 $res += $shell.Namespace(0x00).Items() | Where-Object { $_.Name -like "*OneDrive*" -and $_.Path -match '^[A-Z]:\\\\' }
+$res += $shell.Namespace(0x11).Items() | Where-Object { $_.Path }
 @($res | ForEach-Object { [PSCustomObject]@{ Name = $_.Name; Path = $_.Path } }) | ConvertTo-Json
 `;
 
