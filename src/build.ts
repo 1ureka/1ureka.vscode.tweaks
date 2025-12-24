@@ -81,6 +81,8 @@ async function restorePackageJson() {
  * 執行 vsce 指令將擴充功能打包成 .vsix 檔案
  */
 async function packageExtension() {
+  console.log();
+
   await new Promise<void>((resolve, reject) => {
     const vsceProcess = spawn(
       "npx",
@@ -93,6 +95,8 @@ async function packageExtension() {
       else reject(new Error(`vsce exited with code ${code}`));
     });
   });
+
+  console.log();
 
   console.log("✓ Successfully packaged extension");
 }
