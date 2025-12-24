@@ -9,10 +9,12 @@ import { thumbnailCache } from "@explorer/store/cache";
 /** 滾動容器樣式，確保卷軸穩定性並填滿可用空間 */
 const scrollContainerSx: SxProps = {
   position: "relative",
-  mt: 1,
+  py: 1.5,
   flex: 1,
   overflowY: "auto",
   scrollbarGutter: "stable",
+  bgcolor: "background.content",
+  borderRadius: 1,
 };
 
 /** 圖片進場淡入動畫 */
