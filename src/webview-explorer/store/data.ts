@@ -9,6 +9,7 @@ import { getInitialData } from "@/utils-vscode/message/client";
 import type { InspectDirectoryEntry } from "@/utils/system";
 import type { ImageMetadata } from "@/utils/image";
 import type { ReadResourceResult } from "@/providers/explorerProvider";
+import type { SystemFolder, VolumeInfo } from "@/utils/system-windows";
 
 const initialData = getInitialData<ReadResourceResult>();
 if (!initialData) {
@@ -35,6 +36,12 @@ const initialViewDataState = {
   imageEntries: { tracks: [], yMax: 0 },
 };
 
+const initialNavigationExternalState = {
+  favoritePaths: [],
+  systemFolders: [],
+  systemDrives: [],
+};
+
 // ----------------------------------------------------------------------------
 
 type NavigationState = {
@@ -48,6 +55,12 @@ type NavigationState = {
 type NavigateHistoryState = {
   history: string[];
   currentIndex: number;
+};
+
+type NavigationExternalState = {
+  favoritePaths: string[];
+  systemFolders: SystemFolder[];
+  systemDrives: VolumeInfo[];
 };
 
 type ViewState = {
@@ -97,6 +110,11 @@ const navigationStore = create<NavigationState>(() => ({ ...initialNavigationSta
 const navigateHistoryStore = create<NavigateHistoryState>(() => ({ history: [initialPath], currentIndex: 0 }));
 
 /**
+ * 建立用於儲存導航外部狀態的容器，所謂外部就是與目前目錄無關的導航資料，他們的請求、更新與應用的其他狀態無關
+ */
+const navigationExternalStore = create<NavigationExternalState>(() => ({ ...initialNavigationExternalState }));
+
+/**
  * 建立用於檢視系統瀏覽器的狀態容器
  */
 const viewStateStore = create<ViewState>(() => ({ sortField: "fileName", sortOrder: "asc", filter: "all" }));
@@ -123,6 +141,7 @@ const renameStore = create<RenameState>(() => ({ srcName: "", destName: "" }));
 
 // ----------------------------------------------------------------------------
 
+export { navigationStore, navigateHistoryStore, navigationExternalStore };
 export { dataStore, viewStateStore, viewDataStore };
-export { navigationStore, navigateHistoryStore, selectionStore, clipboardStore, renameStore };
+export { selectionStore, clipboardStore, renameStore };
 export type { ViewState };
