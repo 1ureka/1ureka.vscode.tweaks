@@ -13,10 +13,14 @@ async function buildExtension() {
     bundle: true,
     platform: "node",
     format: "esm",
-    external: ["vscode", "sharp", "fs-extra", "iconv-lite", "open"],
+    external: ["vscode", "sharp"],
     outfile: "dist/extension.js",
     loader: { ".svg": "dataurl", ".css": "text" },
+    minify: true,
     alias: { "@": "./src" },
+    banner: {
+      js: `import { createRequire } from 'module'; const require = createRequire(import.meta.url);`,
+    },
   });
 
   console.log("✓ Extension bundle built successfully");
