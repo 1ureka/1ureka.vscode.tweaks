@@ -121,6 +121,8 @@ function createHandleDrawBox(params: { boxContainer: HTMLElement; startX: number
     const stripeSize = 24;
 
     box.style.position = "absolute";
+    box.style.left = "0px";
+    box.style.top = "0px";
     box.style.pointerEvents = "none";
     box.style.opacity = "0.2";
 
@@ -145,10 +147,12 @@ function createHandleDrawBox(params: { boxContainer: HTMLElement; startX: number
     const top = Math.min(startY, currentY);
     const bottom = Math.max(startY, currentY);
 
-    box.style.left = `${left}px`;
-    box.style.right = `${boxContainer.clientWidth - right}px`;
-    box.style.top = `${top}px`;
-    box.style.bottom = `${boxContainer.clientHeight - bottom}px`;
+    const width = right - left;
+    const height = bottom - top;
+
+    box.style.transform = `translate(${left}px, ${top}px)`;
+    box.style.width = `${width}px`;
+    box.style.height = `${height}px`;
   };
 
   const handleDrawEnd = () => {
