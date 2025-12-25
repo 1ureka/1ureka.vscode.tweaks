@@ -5,8 +5,7 @@ import { formatFileSize, formatFileType, formatFixedLengthDateTime } from "@/uti
 import { extensionIconMap } from "@/assets/fileExtMap";
 import type { InspectDirectoryEntry } from "@/utils/system";
 
-import { tableColumns, tableRowHeight, tableClass } from "@explorer/layout-table/config";
-import { tableIconFontSize, tableIconWidth } from "@explorer/layout-table/config";
+import { tableColumns, tableClass } from "@explorer/layout-table/config";
 import { clipboardStore, selectionStore, viewDataStore } from "@explorer/store/data";
 import type { TableColumn } from "@explorer/layout-table/config";
 
@@ -97,56 +96,6 @@ const TableRowBorder = memo(() => (
 // ---------------------------------------------------------------------------------
 
 /**
- * 用於表格某一列中的單元格的樣式
- */
-const tableRowCellSx: SxProps = {
-  minWidth: 0,
-  display: "block",
-
-  "&.align-left": { textAlign: "left" },
-  "&.align-center": { textAlign: "center" },
-  "&.align-right": { textAlign: "right" },
-
-  textOverflow: "ellipsis",
-  overflow: "hidden",
-  whiteSpace: "pre",
-  lineHeight: `${tableRowHeight}px`,
-
-  "&.primary": { color: "text.primary" },
-  "&.secondary": { color: "text.secondary" },
-};
-
-/**
- * 用於表格列圖示的樣式
- */
-const tableRowIconCellSx: SxProps = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  width: tableIconWidth,
-  fontSize: tableIconFontSize,
-};
-
-/**
- * 用於表格中每一列的樣式，由 TableBody 來指派，增加效能
- */
-const tableRowSx: SxProps = {
-  position: "relative",
-  width: 1,
-  height: tableRowHeight,
-  overflow: "visible",
-  px: 0.5,
-
-  display: "flex",
-  alignItems: "stretch",
-  justifyContent: "stretch",
-
-  "&.selected": { bgcolor: "action.active" },
-  [`& .${tableClass.rowCell}`]: tableRowCellSx,
-  [`& .codicon[class*='codicon-']`]: tableRowIconCellSx,
-};
-
-/**
  * 用於呈現一個普通的資料列
  */
 const TableRow = memo(({ index }: { index: number }) => {
@@ -175,4 +124,4 @@ const TableRow = memo(({ index }: { index: number }) => {
   );
 });
 
-export { tableRowSx, TableRow, tableRowIndexAttr };
+export { TableRow, tableRowIndexAttr };

@@ -2,12 +2,39 @@ import { memo, useEffect } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { Box, Typography, type SxProps } from "@mui/material";
 
-import { tableRowHeight, tableAlternateBgcolor, tableClass, tableId } from "@explorer/layout-table/config";
-import { tableRowSx, TableRow } from "@explorer/layout-table/TableRow";
+import { tableAlternateBgcolor, tableClass, tableId } from "@explorer/layout-table/config";
+import { tableRowHeight, tableIconWidth, tableIconFontSize } from "@explorer/layout-table/config";
+import { TableRow } from "@explorer/layout-table/TableRow";
 
 import { loadingStore } from "@explorer/store/queue";
 import { viewDataStore, viewStateStore } from "@explorer/store/data";
 import { registerTableBodyEventHandlers } from "@explorer/action/table";
+
+// ---------------------------------------------------------------------------------
+
+/**
+ * 用於在沒有任何項目時顯示訊息
+ */
+const NoItemDisplay = () => {
+  const loading = loadingStore((state) => state.loading);
+  const filter = viewStateStore((state) => state.filter);
+
+  let noItemMessage = "此資料夾是空的";
+
+  if (loading) {
+    noItemMessage = "載入中...";
+  } else if (filter === "file") {
+    noItemMessage = "此資料夾中沒有檔案";
+  } else if (filter === "folder") {
+    noItemMessage = "此資料夾中沒有資料夾";
+  }
+
+  return (
+    <Typography className={`${tableClass.rowCell} align-center secondary`} component="span" variant="caption">
+      {noItemMessage}
+    </Typography>
+  );
+};
 
 // ---------------------------------------------------------------------------------
 
@@ -43,6 +70,9 @@ const tableSx: SxProps = {
   [`& #${tableId.rowsContainer}`]: {
     position: "relative",
     width: 1,
+    opacity: 1,
+    transition: "opacity 0.05s step-end", // 所有小於 50 ms 的載入時間都不顯示載入回饋，以避免閃爍
+    "&.loading": { opacity: 0.5 },
   },
 
   [`& .${tableClass.rowWrapper}`]: {
@@ -52,55 +82,43 @@ const tableSx: SxProps = {
     width: 1,
   },
 
-  [`& .${tableClass.row}`]: tableRowSx,
-} as SxProps;
+  [`& .${tableClass.row}`]: {
+    position: "relative",
+    width: 1,
+    height: tableRowHeight,
+    overflow: "visible",
+    px: 0.5,
 
-/**
- * 處理滾動事件，同步背景位置
- */
-const handleScroll = () => {
-  const container = document.getElementById(tableId.scrollContainer);
-  if (container) {
-    const scrollTop = container.scrollTop;
-    container.style.setProperty("--scroll-top", `${-scrollTop}px`);
-  }
-};
+    display: "flex",
+    alignItems: "stretch",
+    justifyContent: "stretch",
 
-/**
- * 用於呈現表格主體的容器組件
- */
-const TableBodyContainer = ({ children }: { children: React.ReactNode }) => (
-  <Box id={tableId.scrollContainer} onScroll={handleScroll} sx={tableSx}>
-    {children}
-  </Box>
-);
+    "&.selected": { bgcolor: "action.active" },
 
-// ---------------------------------------------------------------------------------
+    [`& .codicon[class*='codicon-']`]: {
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      width: tableIconWidth,
+      fontSize: tableIconFontSize,
+    },
+  },
 
-/**
- * 用於在沒有任何項目時顯示訊息
- */
-const NoItemDisplay = () => {
-  const loading = loadingStore((state) => state.loading);
-  const filter = viewStateStore((state) => state.filter);
+  [`& .${tableClass.rowCell}`]: {
+    display: "block",
+    lineHeight: `${tableRowHeight}px`,
+    minWidth: 0,
+    overflow: "hidden",
+    whiteSpace: "pre",
+    textOverflow: "ellipsis",
 
-  let noItemMessage = "此資料夾是空的";
+    "&.align-left": { textAlign: "left" },
+    "&.align-center": { textAlign: "center" },
+    "&.align-right": { textAlign: "right" },
 
-  if (loading) {
-    noItemMessage = "載入中...";
-  } else if (filter === "file") {
-    noItemMessage = "此資料夾中沒有檔案";
-  } else if (filter === "folder") {
-    noItemMessage = "此資料夾中沒有資料夾";
-  }
-
-  return (
-    <Box sx={{ display: "grid", placeItems: "center", height: tableRowHeight }}>
-      <Typography variant="caption" sx={{ color: "text.secondary" }}>
-        {noItemMessage}
-      </Typography>
-    </Box>
-  );
+    "&.primary": { color: "text.primary" },
+    "&.secondary": { color: "text.secondary" },
+  },
 };
 
 // ---------------------------------------------------------------------------------
@@ -127,9 +145,10 @@ const TableBodyVirtualRows = memo(() => {
   const viewEntries = viewDataStore((state) => state.entries);
   const rowVirtualizer = useVirtualizer({ getScrollElement, estimateSize, count: viewEntries.length, overscan: 1 });
   const virtualItemListWrapperStyle = { height: `${rowVirtualizer.getTotalSize()}px` };
+  const loading = loadingStore((state) => state.loading);
 
   return (
-    <div id={tableId.rowsContainer} style={virtualItemListWrapperStyle}>
+    <div id={tableId.rowsContainer} className={loading ? "loading" : ""} style={virtualItemListWrapperStyle}>
       {viewEntries.length === 0 && (
         <div className={tableClass.rowWrapper} style={getVirtualItemStyle(0)}>
           <NoItemDisplay />
@@ -148,12 +167,14 @@ const TableBodyVirtualRows = memo(() => {
 // ---------------------------------------------------------------------------------
 
 /**
- * 用於在載入時調整不透明度的容器樣式
+ * 處理滾動事件，同步背景位置
  */
-const loadingOpacityContainerSx: SxProps = {
-  position: "relative",
-  width: 1,
-  transition: "opacity 0.05s step-end", // 所有小於 50ms 的載入時間都不顯示載入回饋，以避免閃爍
+const handleScroll = () => {
+  const container = document.getElementById(tableId.scrollContainer);
+  if (container) {
+    const scrollTop = container.scrollTop;
+    container.style.setProperty("--scroll-top", `${-scrollTop}px`);
+  }
 };
 
 /**
@@ -161,7 +182,6 @@ const loadingOpacityContainerSx: SxProps = {
  */
 const TableBody = memo(() => {
   const viewMode = viewDataStore((state) => state.viewMode);
-  const loading = loadingStore((state) => state.loading);
 
   useEffect(() => {
     if (viewMode !== "directory") return;
@@ -176,11 +196,9 @@ const TableBody = memo(() => {
   }
 
   return (
-    <TableBodyContainer>
-      <Box sx={loadingOpacityContainerSx} style={{ opacity: loading ? 0.5 : 1 }}>
-        <TableBodyVirtualRows />
-      </Box>
-    </TableBodyContainer>
+    <Box id={tableId.scrollContainer} onScroll={handleScroll} sx={tableSx}>
+      <TableBodyVirtualRows />
+    </Box>
   );
 });
 
