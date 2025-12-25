@@ -10,7 +10,7 @@ import { clamp } from "@/utils";
 /**
  * 根據事件獲取對應的資料列索引
  */
-const getIndexFromEvent = (e: Event) => {
+const getIndexFromEvent = (e: React.SyntheticEvent) => {
   const target = e.target as HTMLElement;
 
   const indexStr = target.closest(`.${tableClass.row}`)?.getAttribute(tableRowIndexAttr);
@@ -168,7 +168,7 @@ function createHandleDrawBox(params: { boxContainer: HTMLElement; startX: number
 /**
  * 處理開始拖動某一資料列的事件
  */
-const handleDragStart = (e: DragEvent) => {
+const handleDragStart = (e: React.DragEvent) => {
   const index = getIndexFromEvent(e);
   if (index === null) return;
 
@@ -236,7 +236,7 @@ const handleDragStart = (e: DragEvent) => {
 /**
  * 處理點擊某一資料列的事件
  */
-const handleClick = (e: MouseEvent) => {
+const handleClick = (e: React.MouseEvent) => {
   const index = getIndexFromEvent(e);
   if (index === null) return;
 
@@ -259,7 +259,7 @@ const handleClick = (e: MouseEvent) => {
 /**
  * 處理右鍵點擊某一資料列的事件
  */
-const handleContextMenu = (e: MouseEvent) => {
+const handleContextMenu = (e: React.MouseEvent) => {
   const index = getIndexFromEvent(e);
   if (index === null) return;
 
@@ -269,22 +269,4 @@ const handleContextMenu = (e: MouseEvent) => {
 
 // ---------------------------------------------------------------------------------
 
-/**
- * 將表格主體的事件處理程式掛載到對應的容器上
- */
-const registerTableBodyEventHandlers = () => {
-  const container = document.getElementById(tableId.scrollContainer);
-  if (!container) return;
-
-  container.addEventListener("click", handleClick);
-  container.addEventListener("contextmenu", handleContextMenu);
-  container.addEventListener("dragstart", handleDragStart);
-
-  return () => {
-    container.removeEventListener("click", handleClick);
-    container.removeEventListener("contextmenu", handleContextMenu);
-    container.removeEventListener("dragstart", handleDragStart);
-  };
-};
-
-export { registerTableBodyEventHandlers };
+export { handleClick, handleContextMenu, handleDragStart };

@@ -1,4 +1,4 @@
-import { memo, useEffect } from "react";
+import { memo, useEffect, useRef } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { Box, keyframes, type SxProps } from "@mui/material";
 
@@ -8,7 +8,7 @@ import { TableRow, TableRowNoItem } from "@explorer/layout-table/TableRow";
 
 import { loadingStore } from "@explorer/store/queue";
 import { viewDataStore } from "@explorer/store/data";
-import { registerTableBodyEventHandlers } from "@explorer/action/table";
+import { handleClick, handleContextMenu, handleDragStart } from "@explorer/action/table";
 
 /**
  * ### 表格背景設計
@@ -186,22 +186,32 @@ const handleScroll = () => {
  * 表格主體組件
  */
 const TableBody = memo(() => {
+  const containerRef = useRef<HTMLDivElement>(null);
   const viewMode = viewDataStore((state) => state.viewMode);
 
   useEffect(() => {
     if (viewMode !== "directory") return;
-    const dispose = registerTableBodyEventHandlers();
+
+    const container = containerRef.current;
+    if (!container) return;
+
+    container.addEventListener("scroll", handleScroll, { passive: true });
     return () => {
-      dispose?.();
+      container.removeEventListener("scroll", handleScroll);
     };
   }, [viewMode]);
 
-  if (viewMode !== "directory") {
-    return null;
-  }
+  if (viewMode !== "directory") return null;
 
   return (
-    <Box id={tableId.scrollContainer} onScroll={handleScroll} sx={tableSx}>
+    <Box
+      id={tableId.scrollContainer}
+      ref={containerRef}
+      sx={tableSx}
+      onClick={handleClick}
+      onContextMenu={handleContextMenu}
+      onDragStart={handleDragStart}
+    >
       <TableBodyVirtualRows />
     </Box>
   );

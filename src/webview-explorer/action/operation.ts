@@ -2,6 +2,10 @@ import { invoke } from "@explorer/store/init";
 import { dataStore, renameStore, selectionStore, viewDataStore } from "@explorer/store/data";
 import { requestQueue } from "@explorer/store/queue";
 
+type StartDragEvent = React.DragEvent | DragEvent;
+
+// ---------------------------------------------------------------------------------
+
 /**
  * 刪除選取的項目
  */
@@ -50,7 +54,7 @@ const createNewFile = async () => {
 /**
  * 處理拖曳檔案到外部，目前支援作業系統檔案總管與 VSCode
  */
-const startFileDrag = ({ e, filePath, fileName }: { e: DragEvent; filePath: string; fileName: string }) => {
+const startFileDrag = ({ e, filePath, fileName }: { e: StartDragEvent; filePath: string; fileName: string }) => {
   if (!e.dataTransfer) return;
 
   const fileUrl = `file:///${filePath.replace(/\\/g, "/")}`;
