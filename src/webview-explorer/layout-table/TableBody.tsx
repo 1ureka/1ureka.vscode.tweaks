@@ -1,51 +1,25 @@
 import { memo, useEffect } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { Box, Typography, type SxProps } from "@mui/material";
+import { Box, keyframes, type SxProps } from "@mui/material";
 
 import { tableAlternateBgcolor, tableClass, tableId } from "@explorer/layout-table/config";
 import { tableRowHeight, tableIconWidth, tableIconFontSize } from "@explorer/layout-table/config";
-import { TableRow } from "@explorer/layout-table/TableRow";
+import { TableRow, TableRowNoItem } from "@explorer/layout-table/TableRow";
 
 import { loadingStore } from "@explorer/store/queue";
-import { viewDataStore, viewStateStore } from "@explorer/store/data";
+import { viewDataStore } from "@explorer/store/data";
 import { registerTableBodyEventHandlers } from "@explorer/action/table";
-
-// ---------------------------------------------------------------------------------
-
-/**
- * 用於在沒有任何項目時顯示訊息
- */
-const NoItemDisplay = () => {
-  const loading = loadingStore((state) => state.loading);
-  const filter = viewStateStore((state) => state.filter);
-
-  let noItemMessage = "此資料夾是空的";
-
-  if (loading) {
-    noItemMessage = "載入中...";
-  } else if (filter === "file") {
-    noItemMessage = "此資料夾中沒有檔案";
-  } else if (filter === "folder") {
-    noItemMessage = "此資料夾中沒有資料夾";
-  }
-
-  return (
-    <Typography className={`${tableClass.rowCell} align-center secondary`} component="span" variant="caption">
-      {noItemMessage}
-    </Typography>
-  );
-};
-
-// ---------------------------------------------------------------------------------
 
 /**
  * ### 表格背景設計
  *
- * 1. 背景由容器繪製，而非子元素。這確保了即便資料列數較少時，斑馬紋依然能鋪滿整個視圖空間。
+ * 1. 確保即便資料列數較少時，斑馬紋依然能鋪滿整個視圖空間。
  *
- * 2. 不使用 background-attachment: local 改用「預設背景 + CSS 變數同步」是為了避免 Scrollbar Gutter 區域出現空白 (沒有斑馬背景)。
+ * 2. 配合全局透明 Gutter ，由於背景繪製在 scroll 容器本身，因此條紋會穿透至捲軸下方，模擬行動端無縫捲動體驗。
  *
- * 3. Row 元件無需維護 index 或 nth-child 狀態，對於虛擬列表 (Virtual List) 或排序功能具有極佳的適配性與效能表現。
+ * 3. Row 元件無需 nth-child 狀態，對於虛擬列表 (Virtual List) 或排序功能具有極佳的適配性與效能表現。
+ *
+ * 4. 在快速捲動或資料加載時，斑馬紋始終作為「視覺佔位符」存在，根本上解決虛擬化後的白塊問題。
  */
 const tableBackgroundSx: SxProps = {
   backgroundImage: `linear-gradient(var(--mui-palette-background-content) 50%, ${tableAlternateBgcolor} 50%)`,
@@ -53,6 +27,14 @@ const tableBackgroundSx: SxProps = {
   backgroundRepeat: "repeat",
   backgroundPositionY: "var(--scroll-top, 0px)",
 };
+
+/**
+ * 用於為處在剪貼簿中的列提供背景動畫
+ */
+const clipboardAnimation = keyframes`
+  0% { background-position: 0% 0%; }
+  100% { background-position: 0px -${tableRowHeight}px; }
+`;
 
 /**
  * 整個表格主體組件的所有樣式，透過樣式委派傳遞
@@ -119,6 +101,29 @@ const tableSx: SxProps = {
     "&.primary": { color: "text.primary" },
     "&.secondary": { color: "text.secondary" },
   },
+
+  [`& .${tableClass.rowClipboardOverlay}`]: {
+    position: "absolute",
+    inset: 0,
+    pointerEvents: "none",
+    zIndex: -1,
+
+    opacity: 0.35,
+    animation: `${clipboardAnimation} 0.5s linear infinite`,
+    backgroundSize: `${tableRowHeight}px ${tableRowHeight}px`,
+    backgroundImage: `
+      linear-gradient(
+        45deg,
+        var(--mui-palette-background-paper) 25%,
+        transparent 25%,
+        transparent 50%,
+        var(--mui-palette-background-paper) 50%,
+        var(--mui-palette-background-paper) 75%,
+        transparent 75%,
+        transparent 100%
+      )
+    `,
+  },
 };
 
 // ---------------------------------------------------------------------------------
@@ -151,7 +156,7 @@ const TableBodyVirtualRows = memo(() => {
     <div id={tableId.rowsContainer} className={loading ? "loading" : ""} style={virtualItemListWrapperStyle}>
       {viewEntries.length === 0 && (
         <div className={tableClass.rowWrapper} style={getVirtualItemStyle(0)}>
-          <NoItemDisplay />
+          <TableRowNoItem />
         </div>
       )}
 

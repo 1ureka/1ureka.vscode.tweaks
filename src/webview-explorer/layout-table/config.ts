@@ -88,6 +88,7 @@ const tableClass = {
   rowWrapper: "table-row-wrapper",
   row: "table-row",
   rowCell: "table-cell",
+  rowClipboardOverlay: "table-row-clipboard-overlay",
 };
 
 /** 表格各種元素用於識別自身的 id */
