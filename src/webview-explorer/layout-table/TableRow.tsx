@@ -5,17 +5,14 @@ import { formatFileSize, formatFileType, formatFixedLengthDateTime } from "@/uti
 import { extensionIconMap } from "@/assets/fileExtMap";
 import type { InspectDirectoryEntry } from "@/utils/system";
 
-import { tableColumns, tableRowHeight } from "@explorer/layout-table/config";
+import { tableColumns, tableRowHeight, tableClass } from "@explorer/layout-table/config";
 import { tableIconFontSize, tableIconWidth } from "@explorer/layout-table/config";
 import { clipboardStore, selectionStore, viewDataStore } from "@explorer/store/data";
 import type { TableColumn } from "@explorer/layout-table/config";
 
-/** 用於標示表格列的 class 名稱 */
-const tableRowClassName = "table-row";
-/** 用於標示表格中某列的單元格的 class 名稱 */
-const tableRowCellClassName = "table-cell";
-
-/** 表格列儲存在 html 中的指標屬性名稱 */
+/**
+ * 表格列儲存在 html 中的指標屬性名稱
+ */
 const tableRowIndexAttr = "data-index";
 
 /**
@@ -57,7 +54,7 @@ const TableCell = ({ column, row }: { column: TableColumn; row: InspectDirectory
     text = String(row[field]);
   }
 
-  const className = `${tableRowCellClassName} align-${align} ${variant}`;
+  const className = `${tableClass.rowCell} align-${align} ${variant}`;
 
   return (
     <Typography className={className} style={layoutStyle} component="span" variant="caption">
@@ -145,7 +142,7 @@ const tableRowSx: SxProps = {
   justifyContent: "stretch",
 
   "&.selected": { bgcolor: "action.active" },
-  [`& .${tableRowCellClassName}`]: tableRowCellSx,
+  [`& .${tableClass.rowCell}`]: tableRowCellSx,
   [`& .codicon[class*='codicon-']`]: tableRowIconCellSx,
 };
 
@@ -159,7 +156,7 @@ const TableRow = memo(({ index }: { index: number }) => {
   const clipboardEntries = clipboardStore((state) => state.entries);
   const isInClipboard = row.filePath in clipboardEntries;
 
-  let className = tableRowClassName;
+  let className = tableClass.row;
   const selected = selectionStore((state) => state.selected);
   if (selected[index]) {
     className += " selected";
@@ -178,4 +175,4 @@ const TableRow = memo(({ index }: { index: number }) => {
   );
 });
 
-export { tableRowSx, TableRow, tableRowClassName, tableRowIndexAttr };
+export { tableRowSx, TableRow, tableRowIndexAttr };

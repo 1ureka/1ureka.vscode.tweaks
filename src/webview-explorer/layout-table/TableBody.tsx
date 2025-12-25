@@ -2,25 +2,12 @@ import { memo, useEffect } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { Box, Typography, type SxProps } from "@mui/material";
 
-import { colorMix } from "@/utils/ui";
-import { tableRowHeight } from "@explorer/layout-table/config";
-import { tableRowSx, TableRow, tableRowClassName } from "@explorer/layout-table/TableRow";
+import { tableRowHeight, tableAlternateBgcolor, tableClass, tableId } from "@explorer/layout-table/config";
+import { tableRowSx, TableRow } from "@explorer/layout-table/TableRow";
 
 import { loadingStore } from "@explorer/store/queue";
 import { viewDataStore, viewStateStore } from "@explorer/store/data";
 import { registerTableBodyEventHandlers } from "@explorer/action/table";
-
-/** 用於標識表格主體容器的唯一 ID */
-const tableBodyContainerId = "table-body" + crypto.randomUUID().slice(0, 8);
-
-/** 用於標識表格主體中，用於包裹虛擬化列表的容器的唯一 ID */
-const tableBodyVirtualListContainerId = "table-body-virtual-list" + crypto.randomUUID().slice(0, 8);
-
-/** 用於標識虛擬化列表中每一個項目包裹容器的 className */
-const virtualItemWrapperClassName = "virtual-item-wrapper";
-
-/** 表格交替背景色 */
-const tableAlternateBgcolor = colorMix("background.content", "text.primary", 0.98);
 
 // ---------------------------------------------------------------------------------
 
@@ -33,7 +20,17 @@ const tableAlternateBgcolor = colorMix("background.content", "text.primary", 0.9
  *
  * 3. Row 元件無需維護 index 或 nth-child 狀態，對於虛擬列表 (Virtual List) 或排序功能具有極佳的適配性與效能表現。
  */
-const tableBodyContainerSx: SxProps = {
+const tableBackgroundSx: SxProps = {
+  backgroundImage: `linear-gradient(var(--mui-palette-background-content) 50%, ${tableAlternateBgcolor} 50%)`,
+  backgroundSize: `100% ${tableRowHeight * 2}px`,
+  backgroundRepeat: "repeat",
+  backgroundPositionY: "var(--scroll-top, 0px)",
+};
+
+/**
+ * 整個表格主體組件的所有樣式，透過樣式委派傳遞
+ */
+const tableSx: SxProps = {
   flex: 1,
   overflowY: "auto",
   scrollbarGutter: "stable",
@@ -41,38 +38,42 @@ const tableBodyContainerSx: SxProps = {
   borderRadius: 1,
   borderTopLeftRadius: 0,
   borderTopRightRadius: 0,
-  backgroundImage: `linear-gradient(var(--mui-palette-background-content) 50%, ${tableAlternateBgcolor} 50%)`,
-  backgroundSize: `100% ${tableRowHeight * 2}px`,
-  backgroundRepeat: "repeat",
-  backgroundPositionY: "var(--scroll-top, 0px)",
+  ...tableBackgroundSx,
 
-  [`& #${tableBodyVirtualListContainerId}`]: {
+  [`& #${tableId.rowsContainer}`]: {
     position: "relative",
     width: 1,
-    [`& > .${virtualItemWrapperClassName}`]: { position: "absolute", top: 0, left: 0, width: 1 },
   },
 
-  [`& .${tableRowClassName}`]: tableRowSx,
+  [`& .${tableClass.rowWrapper}`]: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    width: 1,
+  },
+
+  [`& .${tableClass.row}`]: tableRowSx,
 } as SxProps;
+
+/**
+ * 處理滾動事件，同步背景位置
+ */
+const handleScroll = () => {
+  const container = document.getElementById(tableId.scrollContainer);
+  if (container) {
+    const scrollTop = container.scrollTop;
+    container.style.setProperty("--scroll-top", `${-scrollTop}px`);
+  }
+};
 
 /**
  * 用於呈現表格主體的容器組件
  */
-const TableBodyContainer = ({ children }: { children: React.ReactNode }) => {
-  const handleScroll = () => {
-    const container = document.getElementById(tableBodyContainerId);
-    if (container) {
-      const scrollTop = container.scrollTop;
-      container.style.setProperty("--scroll-top", `${-scrollTop}px`);
-    }
-  };
-
-  return (
-    <Box id={tableBodyContainerId} onScroll={handleScroll} sx={tableBodyContainerSx}>
-      {children}
-    </Box>
-  );
-};
+const TableBodyContainer = ({ children }: { children: React.ReactNode }) => (
+  <Box id={tableId.scrollContainer} onScroll={handleScroll} sx={tableSx}>
+    {children}
+  </Box>
+);
 
 // ---------------------------------------------------------------------------------
 
@@ -106,7 +107,7 @@ const NoItemDisplay = () => {
 
 /** 獲取滾動容器 */
 const getScrollElement = () => {
-  return document.getElementById(tableBodyContainerId);
+  return document.getElementById(tableId.scrollContainer);
 };
 
 /** 獲取每個虛擬項目的高度 */
@@ -128,15 +129,15 @@ const TableBodyVirtualRows = memo(() => {
   const virtualItemListWrapperStyle = { height: `${rowVirtualizer.getTotalSize()}px` };
 
   return (
-    <div id={tableBodyVirtualListContainerId} style={virtualItemListWrapperStyle}>
+    <div id={tableId.rowsContainer} style={virtualItemListWrapperStyle}>
       {viewEntries.length === 0 && (
-        <div className={virtualItemWrapperClassName} style={getVirtualItemStyle(0)}>
+        <div className={tableClass.rowWrapper} style={getVirtualItemStyle(0)}>
           <NoItemDisplay />
         </div>
       )}
 
       {rowVirtualizer.getVirtualItems().map(({ key, start, index }) => (
-        <div key={key} className={virtualItemWrapperClassName} style={getVirtualItemStyle(start)}>
+        <div key={key} className={tableClass.rowWrapper} style={getVirtualItemStyle(start)}>
           <TableRow index={index} />
         </div>
       ))}
@@ -183,4 +184,4 @@ const TableBody = memo(() => {
   );
 });
 
-export { TableBody, tableBodyContainerId, tableBodyVirtualListContainerId };
+export { TableBody };

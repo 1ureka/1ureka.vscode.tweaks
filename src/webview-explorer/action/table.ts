@@ -1,6 +1,5 @@
-import { tableRowClassName, tableRowIndexAttr } from "@explorer/layout-table/TableRow";
-import { tableBodyContainerId, tableBodyVirtualListContainerId } from "@explorer/layout-table/TableBody";
-import { tableRowHeight } from "@explorer/layout-table/config";
+import { tableRowIndexAttr } from "@explorer/layout-table/TableRow";
+import { tableRowHeight, tableClass, tableId } from "@explorer/layout-table/config";
 
 import { navigateToFolder } from "@explorer/action/navigation";
 import { openFile, startFileDrag } from "@explorer/action/operation";
@@ -14,7 +13,7 @@ import { clamp } from "@/utils";
 const getIndexFromEvent = (e: Event) => {
   const target = e.target as HTMLElement;
 
-  const indexStr = target.closest(`.${tableRowClassName}`)?.getAttribute(tableRowIndexAttr);
+  const indexStr = target.closest(`.${tableClass.row}`)?.getAttribute(tableRowIndexAttr);
   if (indexStr === undefined) return null;
 
   const index = Number(indexStr);
@@ -22,6 +21,8 @@ const getIndexFromEvent = (e: Event) => {
 
   return index;
 };
+
+// ---------------------------------------------------------------------------------
 
 /**
  * 根據滑鼠位置自動滾動容器
@@ -162,6 +163,8 @@ function createHandleDrawBox(params: { boxContainer: HTMLElement; startX: number
   return { handleDrawStart, handleDraw, handleDrawEnd };
 }
 
+// ---------------------------------------------------------------------------------
+
 /**
  * 處理開始拖動某一資料列的事件
  */
@@ -183,8 +186,8 @@ const handleDragStart = (e: DragEvent) => {
   } else if (e.button === 0) {
     e.preventDefault();
 
-    const boxContainer = document.getElementById(tableBodyVirtualListContainerId);
-    const scrollContainer = document.getElementById(tableBodyContainerId);
+    const boxContainer = document.getElementById(tableId.rowsContainer);
+    const scrollContainer = document.getElementById(tableId.scrollContainer);
     if (!boxContainer || !scrollContainer) return;
 
     const handleCalculateSelection = createHandleCalculateSelection({
@@ -264,11 +267,13 @@ const handleContextMenu = (e: MouseEvent) => {
   selectRow({ index, isAdditive: true, isRange: false, forceSelect: true });
 };
 
+// ---------------------------------------------------------------------------------
+
 /**
  * 將表格主體的事件處理程式掛載到對應的容器上
  */
 const registerTableBodyEventHandlers = () => {
-  const container = document.getElementById(tableBodyContainerId);
+  const container = document.getElementById(tableId.scrollContainer);
   if (!container) return;
 
   container.addEventListener("click", handleClick);
