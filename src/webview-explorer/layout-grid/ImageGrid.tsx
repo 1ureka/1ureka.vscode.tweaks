@@ -5,7 +5,7 @@ import { viewDataStore, viewStateStore } from "@explorer/store/data";
 import { thumbnailCache } from "@explorer/store/cache";
 import { loadingStore } from "@explorer/store/queue";
 
-import { useVirtualizer } from "@explorer/layout-grid/imageGridUtils";
+import { useVirtualizer } from "@explorer/layout-grid/virtualizer";
 import { getGridSize } from "@explorer/action/view";
 
 const imageGridClass = {
