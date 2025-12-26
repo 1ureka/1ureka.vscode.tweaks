@@ -62,10 +62,15 @@ const imageGridSx: SxProps = {
     transition: "opacity 0.05s step-end", // 所有小於 50 ms 的載入時間都不顯示載入回饋，以避免閃爍
   },
 
-  [`& .${imageGridClass.itemWrapper}`]: { position: "absolute" },
-  [`&.size-s .${imageGridClass.itemWrapper}`]: { p: 0.25 }, // 這是虛擬化最簡單製作 gap 的寫法
+  [`& .${imageGridClass.itemWrapper}`]: {
+    position: "absolute",
+    p: 0.5, // 這是虛擬化最簡單製作 gap 的寫法
+  },
+
+  [`&.size-s .${imageGridClass.itemWrapper}`]: { p: 0.25 },
   [`&.size-m .${imageGridClass.itemWrapper}`]: { p: 0.5 },
-  [`&.size-l .${imageGridClass.itemWrapper}`]: { p: 0.75 },
+  [`&.size-l .${imageGridClass.itemWrapper}`]: { p: 0.5 },
+  [`&.no-gap .${imageGridClass.itemWrapper}`]: { p: 0 },
 
   [`& .${imageGridClass.item}`]: {
     borderRadius: 0.5,
@@ -76,6 +81,11 @@ const imageGridSx: SxProps = {
     height: 1,
     objectFit: "cover",
   },
+
+  [`&.size-s .${imageGridClass.item}`]: { borderRadius: 0.25 },
+  [`&.size-m .${imageGridClass.item}`]: { borderRadius: 0.5 },
+  [`&.size-l .${imageGridClass.item}`]: { borderRadius: 0.5 },
+  [`&.no-gap .${imageGridClass.item}`]: { borderRadius: 0 },
 
   [`& .${imageGridClass.noItem}`]: {
     position: "absolute",
@@ -143,11 +153,12 @@ const ImageVirtualGrid = memo(() => {
 const ImageGrid = memo(() => {
   const viewMode = viewDataStore((state) => state.viewMode);
   const gridColumns = viewStateStore((state) => state.gridColumns);
+  const gridGap = viewStateStore((state) => state.gridGap);
 
   if (viewMode !== "images") return null;
 
   const gridSize = getGridSize(gridColumns);
-  const className = `size-${gridSize.toLowerCase()}`;
+  const className = gridGap ? `size-${gridSize.toLowerCase()}` : "no-gap";
 
   return (
     <Box className={className} sx={imageGridSx}>

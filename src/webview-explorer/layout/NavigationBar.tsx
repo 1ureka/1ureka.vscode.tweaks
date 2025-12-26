@@ -11,7 +11,7 @@ import { navigateHistoryStore, navigationStore } from "@explorer/store/data";
 import { stageDestinationPath, navigateGotoFolder, navigateUp, refresh } from "@explorer/action/navigation";
 import { navigateToFolder, navigateToNextFolder, navigateToPreviousFolder } from "@explorer/action/navigation";
 import { navigateToImageGridView } from "@explorer/action/navigation";
-import { setSortField, setSortOrder, setGridSize, getGridSize } from "@explorer/action/view";
+import { setSortField, setSortOrder, setGridSize, getGridSize, setGridGap } from "@explorer/action/view";
 import { createNewFolder } from "@explorer/action/operation";
 
 /**
@@ -152,6 +152,7 @@ const ActionDropdownViewOptions = memo(() => {
   const sortField = viewStateStore((state) => state.sortField);
   const sortOrder = viewStateStore((state) => state.sortOrder);
   const gridColumns = viewStateStore((state) => state.gridColumns);
+  const gridGap = viewStateStore((state) => state.gridGap);
 
   if (viewMode === "images") {
     return (
@@ -171,7 +172,7 @@ const ActionDropdownViewOptions = memo(() => {
               ]}
             />
             <Box sx={{ pr: 2 }}>
-              <PropBoolean label="顯示間距" value={true} disabled onChange={() => {}} />
+              <PropBoolean label="顯示間距" value={gridGap} onChange={setGridGap} />
             </Box>
           </Box>
         </Box>

@@ -48,4 +48,9 @@ const getGridSize = (columns: number): "S" | "M" | "L" => {
   }
 };
 
-export { setSorting, setSortField, setSortOrder, setFilter, setGridSize, getGridSize };
+/** 設定是否顯示網格間隙 */
+const setGridGap = (gap: boolean) => {
+  viewStateStore.setState({ gridGap: gap });
+};
+
+export { setSorting, setSortField, setSortOrder, setFilter, setGridSize, getGridSize, setGridGap };

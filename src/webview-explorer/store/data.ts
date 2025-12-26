@@ -47,6 +47,7 @@ const initialViewState = {
   sortOrder: "asc",
   filter: "all",
   gridColumns: 3,
+  gridGap: true,
 } as const;
 
 // ----------------------------------------------------------------------------
@@ -75,6 +76,7 @@ type ViewState = {
   sortOrder: "asc" | "desc";
   filter: "all" | "file" | "folder";
   gridColumns: number;
+  gridGap: boolean;
 };
 
 type ViewDataState = {
