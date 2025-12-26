@@ -42,6 +42,13 @@ const initialNavigationExternalState = {
   systemDrives: [],
 };
 
+const initialViewState = {
+  sortField: "fileName",
+  sortOrder: "asc",
+  filter: "all",
+  gridColumns: 3,
+} as const;
+
 // ----------------------------------------------------------------------------
 
 type NavigationState = {
@@ -67,6 +74,7 @@ type ViewState = {
   sortField: keyof Pick<InspectDirectoryEntry, "fileName" | "mtime" | "ctime" | "size">;
   sortOrder: "asc" | "desc";
   filter: "all" | "file" | "folder";
+  gridColumns: number;
 };
 
 type ViewDataState = {
@@ -117,7 +125,7 @@ const navigationExternalStore = create<NavigationExternalState>(() => ({ ...init
 /**
  * 建立用於檢視系統瀏覽器的狀態容器
  */
-const viewStateStore = create<ViewState>(() => ({ sortField: "fileName", sortOrder: "asc", filter: "all" }));
+const viewStateStore = create<ViewState>(() => ({ ...initialViewState }));
 
 /**
  * 建立用於儲存根據檢視條件計算後，要顯示的資料狀態的容器

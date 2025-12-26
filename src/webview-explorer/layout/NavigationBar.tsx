@@ -1,16 +1,18 @@
 import { memo, useEffect, useState } from "react";
 import { Box, Typography } from "@mui/material";
-import { ActionButton, ActionDropdown, ActionGroup, ActionInput } from "@explorer/components/Action";
-import { PropBoolean, PropEnum } from "@/webview-explorer/components/Props";
 import { formatRelativeTime } from "@/utils/formatter";
 import { setSchedule } from "@/utils";
 
-import { dataStore, viewDataStore, navigateHistoryStore, navigationStore, viewStateStore } from "@explorer/store/data";
+import { ActionButton, ActionDropdown, ActionGroup, ActionInput } from "@explorer/components/Action";
+import { PropBoolean, PropEnum } from "@/webview-explorer/components/Props";
+import { dataStore, viewDataStore, viewStateStore } from "@explorer/store/data";
+import { navigateHistoryStore, navigationStore } from "@explorer/store/data";
+
 import { stageDestinationPath, navigateGotoFolder, navigateUp, refresh } from "@explorer/action/navigation";
 import { navigateToFolder, navigateToNextFolder, navigateToPreviousFolder } from "@explorer/action/navigation";
 import { navigateToImageGridView } from "@explorer/action/navigation";
+import { setSortField, setSortOrder, setGridSize, getGridSize } from "@/webview-explorer/action/view";
 import { createNewFolder } from "@explorer/action/operation";
-import { setSortField, setSortOrder } from "@/webview-explorer/action/view";
 
 /**
  * 重新整理按鈕，會顯示上次更新的相對時間，並且會自動更新
@@ -149,6 +151,7 @@ const ActionDropdownViewOptions = memo(() => {
   const viewMode = viewDataStore((state) => state.viewMode);
   const sortField = viewStateStore((state) => state.sortField);
   const sortOrder = viewStateStore((state) => state.sortOrder);
+  const gridColumns = viewStateStore((state) => state.gridColumns);
 
   if (viewMode === "images") {
     return (
@@ -159,8 +162,8 @@ const ActionDropdownViewOptions = memo(() => {
           </Typography>
           <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
             <PropEnum
-              onChange={() => {}}
-              value="M"
+              onChange={(value) => setGridSize(value)}
+              value={getGridSize(gridColumns)}
               options={[
                 { label: "小", value: "S" },
                 { label: "中", value: "M" },

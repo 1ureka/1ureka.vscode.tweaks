@@ -24,4 +24,28 @@ const setFilter = (filter: ViewState["filter"]) => {
   viewStateStore.setState({ filter });
 };
 
-export { setSorting, setSortField, setSortOrder, setFilter };
+/** 設定網格檢視的尺寸 */
+const setGridSize = (size: "S" | "M" | "L") => {
+  let columns: number;
+  if (size === "S") {
+    columns = 5;
+  } else if (size === "M") {
+    columns = 3;
+  } else {
+    columns = 2;
+  }
+  viewStateStore.setState({ gridColumns: columns });
+};
+
+/** 根據 column 數量取得網格尺寸 */
+const getGridSize = (columns: number): "S" | "M" | "L" => {
+  if (columns > 3) {
+    return "S";
+  } else if (columns === 3) {
+    return "M";
+  } else {
+    return "L";
+  }
+};
+
+export { setSorting, setSortField, setSortOrder, setFilter, setGridSize, getGridSize };
