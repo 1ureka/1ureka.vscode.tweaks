@@ -78,8 +78,6 @@ class RAFEventAggregator<T = undefined> {
   }
 }
 
-export { RAFEventAggregator };
-
 // ---------------------------------------------------------------------------------
 
 /** 定義帶有寬高屬性的基本物件介面 */

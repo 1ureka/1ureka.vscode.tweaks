@@ -131,7 +131,7 @@ const handleViewDataUpdate = () => {
 
   const imageEntries = dataStore.getState().imageEntries;
 
-  const columns = 3;
+  const columns = viewStateStore.getState().gridColumns;
   const layout = createWeightBasedLayout({ items: imageEntries, columns });
 
   viewDataStore.setState({ viewMode: mode, entries: entriesSorted, imageEntries: { ...layout } });

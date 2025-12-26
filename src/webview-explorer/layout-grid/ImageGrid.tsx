@@ -1,9 +1,13 @@
 import { memo, Suspense, useRef } from "react";
 import { Box, keyframes, SxProps, Typography } from "@mui/material";
-import { viewDataStore } from "@explorer/store/data";
-import { useVirtualizer } from "@explorer/layout-grid/imageGridUtils";
+
+import { viewDataStore, viewStateStore } from "@explorer/store/data";
 import { thumbnailCache } from "@explorer/store/cache";
-import { loadingStore } from "@/webview-explorer/store/queue";
+import { loadingStore } from "@explorer/store/queue";
+
+import { useVirtualizer } from "@explorer/layout-grid/virtualizer";
+import { getGridSize } from "@explorer/action/view";
+import { handleDragStart, handleClick } from "@explorer/action/grid";
 
 const imageGridClass = {
   scrollContainer: "image-grid-scroll-container",
@@ -12,6 +16,15 @@ const imageGridClass = {
   item: "image-grid-item",
   noItem: "image-grid-no-item-message",
 };
+
+/** 用於標記圖片網格中單一項目的自定義數據屬性 */
+// const imageGridItemDataAttr = "data-grid-item";
+const imageGridItemDataAttr = {
+  filePath: "data-grid-item-file-path",
+  fileName: "data-grid-item-file-name",
+};
+
+export { imageGridClass, imageGridItemDataAttr };
 
 // ---------------------------------------------------------------------------------
 
@@ -61,8 +74,13 @@ const imageGridSx: SxProps = {
 
   [`& .${imageGridClass.itemWrapper}`]: {
     position: "absolute",
-    p: 0.5,
+    p: 0.5, // 這是虛擬化最簡單製作 gap 的寫法
   },
+
+  [`&.size-s .${imageGridClass.itemWrapper}`]: { p: 0.25 },
+  [`&.size-m .${imageGridClass.itemWrapper}`]: { p: 0.5 },
+  [`&.size-l .${imageGridClass.itemWrapper}`]: { p: 0.5 },
+  [`&.no-gap .${imageGridClass.itemWrapper}`]: { p: 0 },
 
   [`& .${imageGridClass.item}`]: {
     borderRadius: 0.5,
@@ -73,6 +91,11 @@ const imageGridSx: SxProps = {
     height: 1,
     objectFit: "cover",
   },
+
+  [`&.size-s .${imageGridClass.item}`]: { borderRadius: 0.25 },
+  [`&.size-m .${imageGridClass.item}`]: { borderRadius: 0.5 },
+  [`&.size-l .${imageGridClass.item}`]: { borderRadius: 0.5 },
+  [`&.no-gap .${imageGridClass.item}`]: { borderRadius: 0 },
 
   [`& .${imageGridClass.noItem}`]: {
     position: "absolute",
@@ -109,6 +132,11 @@ const ImageVirtualGrid = memo(() => {
     <div className={imageGridClass.scrollContainer} ref={scrollContainerRef}>
       <div className={imageGridClass.itemsContainer} style={itemsContainerStyle}>
         {visibleItems.map((item) => {
+          const dataAttr = {
+            [imageGridItemDataAttr.filePath]: item.filePath,
+            [imageGridItemDataAttr.fileName]: item.fileName,
+          };
+
           const style = {
             width: item.pixelW,
             height: item.pixelH,
@@ -116,7 +144,7 @@ const ImageVirtualGrid = memo(() => {
           };
 
           return (
-            <div key={item.filePath} className={imageGridClass.itemWrapper} style={style}>
+            <div key={item.filePath} className={imageGridClass.itemWrapper} style={style} draggable {...dataAttr}>
               <Suspense fallback={<div className={imageGridClass.item} />}>
                 <ImageGridItem filePath={item.filePath} />
               </Suspense>
@@ -139,11 +167,16 @@ const ImageVirtualGrid = memo(() => {
  */
 const ImageGrid = memo(() => {
   const viewMode = viewDataStore((state) => state.viewMode);
+  const gridColumns = viewStateStore((state) => state.gridColumns);
+  const gridGap = viewStateStore((state) => state.gridGap);
 
   if (viewMode !== "images") return null;
 
+  const gridSize = getGridSize(gridColumns);
+  const className = gridGap ? `size-${gridSize.toLowerCase()}` : "no-gap";
+
   return (
-    <Box sx={imageGridSx}>
+    <Box className={className} sx={imageGridSx} onDragStart={handleDragStart} onClick={handleClick}>
       <ImageVirtualGrid />
     </Box>
   );
