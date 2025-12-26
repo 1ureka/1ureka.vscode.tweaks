@@ -10,7 +10,11 @@ const commonImportRestrictions = {
     },
     {
       group: ["../*", "./*"],
-      message: "請使用絕對路徑導入模組: @/ 代表 src 資料夾, @@/ 代表 src/webviews 資料夾。",
+      message: "請使用絕對路徑導入模組: @/ 代表 src 資料夾, @[feature]/ 代表 src/webview-*/ 資料夾。",
+    },
+    {
+      group: ["@/webview-*/*"],
+      message: "請使用 @[feature]/ 代表 src/webview-*/ 資料夾來導入模組。",
     },
   ],
 };
