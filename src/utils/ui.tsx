@@ -63,6 +63,9 @@ const theme = createTheme({
   colorSchemes: {
     dark: {
       palette: {
+        primary: {
+          main: colord(getVarValue("editor-selectionBackground")).alpha(1).lighten(0.1).toHex(),
+        },
         background: {
           default: getVarValue("editor-background"),
           paper: getVarValue("menu-background"),

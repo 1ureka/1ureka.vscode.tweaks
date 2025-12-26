@@ -1,6 +1,7 @@
 import { memo, useEffect, useState } from "react";
-import { Box } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import { ActionButton, ActionDropdown, ActionGroup, ActionInput } from "@explorer/components/Action";
+import { PropBoolean, PropEnum } from "@/webview-explorer/components/Props";
 import { formatRelativeTime } from "@/utils/formatter";
 import { setSchedule } from "@/utils";
 
@@ -128,7 +129,34 @@ const NavigationBar = memo(() => {
           active={viewMode === "images"}
         />
         <ActionDropdown actionName="顯示設定">
-          <Box sx={{ p: 2, px: 5 }} />
+          <Box sx={{ display: "grid", gridTemplateColumns: "auto auto", gap: 1.5, px: 1 }}>
+            <Typography variant="caption" sx={{ color: "text.secondary", textAlign: "right" }}>
+              欄位
+            </Typography>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
+              <PropBoolean label="大小" value={true} onChange={() => {}} />
+              <PropBoolean label="建立日期" value={false} disabled onChange={() => {}} />
+            </Box>
+
+            <Typography variant="caption" sx={{ color: "text.secondary", textAlign: "right" }}>
+              排序方式
+            </Typography>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5, alignItems: "stretch" }}>
+              <PropEnum
+                value="name"
+                options={[
+                  { label: "名稱", value: "name" },
+                  { label: "修改日期", value: "modifiedAt" },
+                  { label: "建立日期", value: "createdAt" },
+                  { label: "大小", value: "size" },
+                ]}
+                onChange={() => {}}
+              />
+              <Box sx={{ pr: 2 }}>
+                <PropBoolean label="反向排序" value={false} onChange={() => {}} />
+              </Box>
+            </Box>
+          </Box>
         </ActionDropdown>
       </ActionGroup>
 
