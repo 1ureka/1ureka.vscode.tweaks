@@ -364,18 +364,134 @@ for (let i = firstVisibleIdx; i < track.length; i++) {
 
 ## 拖曳支援
 
-<!-- TODO 架構寫完後，在每個功能章節先寫一段介紹，然後分成架構的 store/action/ui 談實際實現 -->
-<!-- 對於不管是表格列還是網格項目，都支援拖曳，且透過研究 VSCode 源碼，甚至可以拖曳到 VSCode 編輯器、 VSCode 檔案總管等，但不止於此，再透過 DownloadURL 甚至能拖曳到作業系統的 explorer -->
+系統瀏覽器的檔案支援拖曳操作，透過精心設計的資料傳輸格式，不僅能拖曳到作業系統的檔案總管，還能無縫整合 VSCode 的編輯器與檔案總管等內建視圖，實現真正的跨平台、跨應用程式的檔案拖放體驗。
+
+### 對於資料傳輸的深入研究
+
+拖曳功能的核心實現在 `startFileDrag` 函數中，透過標準的 HTML5 Drag and Drop API 的 `dataTransfer` 介面設定多種資料格式：
+
+**DownloadURL**：遵循 Chrome 的 DownloadURL 規範，格式為 `<MIME類型>:<檔名>:<URL>`，當拖曳到作業系統檔案總管時，瀏覽器會自動下載該檔案並以指定的檔名儲存，這使得即使是本地檔案，也能透過 `file:///` 協議實現「拖曳即複製」的體驗。
+
+**text/uri-list**：標準的 URI 列表格式，相容於大多數接受檔案路徑的應用程式。
+
+**application/vnd.code.uri-list**：VSCode 專用的 URI 列表格式，透過研究 VSCode 原始碼發現的內部格式，當拖曳到 VSCode 編輯器區域時，會自動開啟該檔案；拖曳到 VSCode 檔案總管時，則會複製該檔案到目標資料夾。
+
+**codefiles** 與 **resourceurls**：VSCode 內部使用的其他格式，進一步增強與 VSCode 生態系統的整合性。
+
+所有格式都設定為同一個檔案的不同表示形式，接收端會根據自身支援的格式選擇最合適的處理方式，同時將 `effectAllowed` 設為 `"copy"`，明確告知系統這是複製操作。
+
+## 表格框選
+
+當需要選取大量檔案時，逐一點擊不僅效率低下，也容易遺漏。系統瀏覽器的表格模式實現了完整的框選（Box Selection）功能，使用者可透過拖曳滑鼠繪製選取框，快速選取矩形區域內的所有項目。
+
+### 拖曳判斷與啟動
+
+框選功能整合在表格的 `handleDragStart` 事件中，透過條件判斷決定拖曳行為：
+
+```typescript
+// 若拖動的資料列是檔案或檔案符號連結，且該列已被選取，則啟動檔案拖放操作
+if (["file", "file-symlink-file"].includes(fileType) && isRowSelected) {
+  startFileDrag({ e, fileName, filePath });
+}
+// 否則，若是左鍵點擊，則啟動框選操作
+else if (e.button === 0) {
+  e.preventDefault();
+  // ... 框選邏輯
+}
+```
+
+這種設計確保了拖曳與框選的和諧共存：已選取的檔案可以拖曳到其他位置，而在空白區域或未選取項目上拖曳則觸發框選。
+
+### 三層協同機制
+
+框選操作由三個獨立的處理器協同完成：
+
+**1. 選取計算**
+
+根據框選矩形的位置計算應選取哪些項目，透過將滑鼠座標轉換為相對於行容器的座標，再除以單行高度，即可計算出框選範圍內的項目索引。這種實現完全基於「座標 ↔ 索引」的數學轉換，不依賴 DOM 查詢或遍歷，與虛擬化或渲染實現完全解耦。
+
+**2. 視覺繪製**
+
+動態創建並更新視覺化的框選矩形，框選框使用虛線邊框與斜紋背景，透過 `repeating-linear-gradient` 實現動態條紋效果。所有樣式都使用 MUI 主題變數，確保在不同主題下的視覺一致性。
+
+**3. 自動滾動**
+
+當滑鼠接近容器邊緣時，自動滾動以擴展選取範圍，滾動速度採用非線性加速曲線（`Math.pow(1 - normalizedDistance, accelerationPower)`），距離邊緣越近，滾動越快，提供直觀的操作回饋。
+
+來源事件僅更新滑鼠座標狀態，而三個處理器透過 `requestAnimationFrame` 在統一的更新循環中獲取狀態並執行。
 
 ## 縮圖快取
 
-<!-- TODO -->
+圖片網格檢視可能包含數百甚至數千張圖片，若每次滾動都重新載入縮圖，不僅造成大量重複的縮圖生成工作，更會導致嚴重的效能瓶頸與視覺閃爍。縮圖快取透過記憶化策略，將已載入的縮圖保存在記憶體中，同時使用 LRU 演算法管理快取大小，確保在有限的記憶體空間內最大化命中率。
 
-...
+### LRU 快取策略
 
-## 功能 N
+自製的 `createCache` 函數結合了經典的 LRU（Least Recently Used）演算法與 Suspense-ready 資源模式，透過 JavaScript 的 `Map` 資料結構天然維護插入順序：
 
-<!-- TODO -->
+**快取命中（Hit）**：當請求的縮圖已在快取中時，將該項目從當前位置移除並重新插入到末尾，這使得最近使用的項目始終位於 Map 的尾部。
+
+**快取未命中（Miss）**：觸發後端 API 生成縮圖，同時檢查快取大小，若達到上限，則刪除 Map 頭部的最久未使用項目，並拋出 Promise。
+
+```typescript
+if (cache.size >= limit) {
+  const oldestKey = cache.keys().next().value;
+  if (oldestKey !== undefined) cache.delete(oldestKey);
+}
+```
+
+這種設計帶來極致的時空複雜度：
+
+- **時間複雜度**：所有操作（查詢、插入、刪除）均為 O(1)
+- **空間複雜度**：固定上限，不會無限增長
+
+### Suspense 資源模式
+
+縮圖快取採用 React 的 Suspense 資源模式，將非同步載入過程完全封裝在資源層，UI 元件只需呼叫 `thumbnailCache.get(filePath).read()`，即可獲得 base64 格式的縮圖資料：
+
+```typescript
+const ImageGridItem = memo(({ filePath }: { filePath: string }) => {
+  const data = thumbnailCache.get(filePath).read();
+  return <img className={imageGridClass.item} src={data} draggable={false} />;
+});
+```
+
+當資源尚未載入完成時，`read()` 會拋出 Promise，被外層的 `<Suspense>` 捕獲並顯示骨架：
+
+```tsx
+<Suspense fallback={<div className={imageGridClass.item} />}>
+  <ImageGridItem filePath={item.filePath} />
+</Suspense>
+```
+
+利用兩者都共用相同 className 的特性，使得無論是因為 Suspense 還是圖片載入延遲，都共享相同載入畫面：
+
+```tsx
+[`& .${imageGridClass.item}`]: {
+  borderRadius: 0.5,
+  background: `linear-gradient(90deg, ${skeletonBgColor} 25%, ${skeletonHighlightColor} 50%, ${skeletonBgColor} 75%)`,
+  backgroundSize: "200% 100%",
+  animation: `${fadeIn} 0.25s cubic-bezier(0, 0, 0.2, 1) forwards, ${shimmer} 2s linear infinite`,
+  width: 1,
+  height: 1,
+  objectFit: "cover",
+},
+```
+
+### 後端壓縮邏輯
+
+縮圖生成在延伸主機端執行，透過 `sharp` 圖片處理庫實現智慧壓縮：
+
+**門檻判斷**：以 SD 解析度（720×480，約 34.5 萬像素）為基準，只對超過此解析度的圖片進行壓縮，避免對小圖片進行無意義的處理。
+
+**等比縮放**：計算縮放係數 `scaleFactor = √(threshold / originalPixels)`，確保縮圖的總像素數接近門檻值，同時維持原始長寬比。
+
+**格式轉換**：所有縮圖統一轉換為 WebP 格式，相比 JPEG 與 PNG，WebP 在相同視覺質量下具有更小的檔案體積，減少記憶體佔用與傳輸成本。
+
+```typescript
+const scaleFactor = Math.sqrt(PIXELS_THRESHOLD_1K / originalTotalPixels);
+const targetWidth = Math.floor(width * scaleFactor);
+return sharpToBase64(image.resize({ width: targetWidth }), "webp");
+```
 
 ---
 
