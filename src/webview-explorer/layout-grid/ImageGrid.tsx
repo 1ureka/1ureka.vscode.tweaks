@@ -7,6 +7,7 @@ import { loadingStore } from "@explorer/store/queue";
 
 import { useVirtualizer } from "@explorer/layout-grid/virtualizer";
 import { getGridSize } from "@explorer/action/view";
+import { handleDragStart, handleClick } from "@explorer/action/grid";
 
 const imageGridClass = {
   scrollContainer: "image-grid-scroll-container",
@@ -15,6 +16,15 @@ const imageGridClass = {
   item: "image-grid-item",
   noItem: "image-grid-no-item-message",
 };
+
+/** 用於標記圖片網格中單一項目的自定義數據屬性 */
+// const imageGridItemDataAttr = "data-grid-item";
+const imageGridItemDataAttr = {
+  filePath: "data-grid-item-file-path",
+  fileName: "data-grid-item-file-name",
+};
+
+export { imageGridClass, imageGridItemDataAttr };
 
 // ---------------------------------------------------------------------------------
 
@@ -122,6 +132,11 @@ const ImageVirtualGrid = memo(() => {
     <div className={imageGridClass.scrollContainer} ref={scrollContainerRef}>
       <div className={imageGridClass.itemsContainer} style={itemsContainerStyle}>
         {visibleItems.map((item) => {
+          const dataAttr = {
+            [imageGridItemDataAttr.filePath]: item.filePath,
+            [imageGridItemDataAttr.fileName]: item.fileName,
+          };
+
           const style = {
             width: item.pixelW,
             height: item.pixelH,
@@ -129,7 +144,7 @@ const ImageVirtualGrid = memo(() => {
           };
 
           return (
-            <div key={item.filePath} className={imageGridClass.itemWrapper} style={style}>
+            <div key={item.filePath} className={imageGridClass.itemWrapper} style={style} draggable {...dataAttr}>
               <Suspense fallback={<div className={imageGridClass.item} />}>
                 <ImageGridItem filePath={item.filePath} />
               </Suspense>
@@ -161,7 +176,7 @@ const ImageGrid = memo(() => {
   const className = gridGap ? `size-${gridSize.toLowerCase()}` : "no-gap";
 
   return (
-    <Box className={className} sx={imageGridSx}>
+    <Box className={className} sx={imageGridSx} onDragStart={handleDragStart} onClick={handleClick}>
       <ImageVirtualGrid />
     </Box>
   );
