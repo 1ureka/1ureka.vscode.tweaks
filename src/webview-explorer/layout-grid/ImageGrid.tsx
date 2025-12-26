@@ -1,21 +1,19 @@
 import { memo, Suspense, useRef } from "react";
-import { Box, keyframes, SxProps } from "@mui/material";
+import { Box, keyframes, SxProps, Typography } from "@mui/material";
 import { viewDataStore } from "@explorer/store/data";
 import { useVirtualizer } from "@explorer/layout-grid/imageGridUtils";
 import { thumbnailCache } from "@explorer/store/cache";
+import { loadingStore } from "@/webview-explorer/store/queue";
+
+const imageGridClass = {
+  scrollContainer: "image-grid-scroll-container",
+  itemsContainer: "image-grid-items-container",
+  itemWrapper: "image-grid-item-wrapper",
+  item: "image-grid-item",
+  noItem: "image-grid-no-item-message",
+};
 
 // ---------------------------------------------------------------------------------
-
-/** 滾動容器樣式，確保卷軸穩定性並填滿可用空間 */
-const scrollContainerSx: SxProps = {
-  position: "relative",
-  py: 1.5,
-  flex: 1,
-  overflowY: "auto",
-  scrollbarGutter: "stable",
-  bgcolor: "background.content",
-  borderRadius: 1,
-};
 
 /** 圖片進場淡入動畫 */
 const fadeIn = keyframes`
@@ -34,15 +32,39 @@ const skeletonBgColor = "var(--mui-palette-background-paper)";
 const skeletonHighlightColor =
   "color-mix(in srgb, var(--mui-palette-background-paper) 80%, var(--mui-palette-text-primary) 20%)";
 
-/** 透過樣式委派統一控制虛擬元素、Fallback(div) 與實體圖片的過渡效果 */
-const virtualGridContainerSx: SxProps = {
+// ---------------------------------------------------------------------------------
+
+/**
+ * 整個圖片網格組件的所有樣式，透過樣式委派傳遞
+ */
+const imageGridSx: SxProps = {
   position: "relative",
+  p: 1.5,
+  pr: 0, // 右側不留空間給 scrollContainer 做捲軸
+  flex: 1,
+  minHeight: 0,
+  borderRadius: 1,
+  bgcolor: "background.content",
 
-  // 虛擬元素容器
-  "& > *": { position: "absolute", p: 0.5 },
+  [`& .${imageGridClass.scrollContainer}`]: {
+    position: "relative",
+    height: 1,
+    minHeight: 0,
+    overflowY: "auto",
+    scrollbarGutter: "stable",
+  },
 
-  // 虛擬元素本體 (圖片或 fallback)
-  "& > * > *": {
+  [`& .${imageGridClass.itemsContainer}`]: {
+    position: "relative",
+    transition: "opacity 0.05s step-end", // 所有小於 50 ms 的載入時間都不顯示載入回饋，以避免閃爍
+  },
+
+  [`& .${imageGridClass.itemWrapper}`]: {
+    position: "absolute",
+    p: 0.5,
+  },
+
+  [`& .${imageGridClass.item}`]: {
     borderRadius: 0.5,
     background: `linear-gradient(90deg, ${skeletonBgColor} 25%, ${skeletonHighlightColor} 50%, ${skeletonBgColor} 75%)`,
     backgroundSize: "200% 100%",
@@ -50,6 +72,14 @@ const virtualGridContainerSx: SxProps = {
     width: 1,
     height: 1,
     objectFit: "cover",
+  },
+
+  [`& .${imageGridClass.noItem}`]: {
+    position: "absolute",
+    inset: 0,
+    display: "grid",
+    placeItems: "center",
+    "& > *": { color: "text.secondary" },
   },
 };
 
@@ -60,27 +90,24 @@ const virtualGridContainerSx: SxProps = {
  */
 const ImageGridItem = memo(({ filePath }: { filePath: string }) => {
   const data = thumbnailCache.get(filePath).read();
-  return <img src={data} draggable={false} />;
+  return <img className={imageGridClass.item} src={data} draggable={false} />;
 });
 
 /**
- * 圖片虛擬網格主組件
- * 結合虛擬捲動、Suspense 非同步載入與樣式委派
+ * 圖片虛擬網格，結合虛擬捲動、Suspense 非同步載入
  */
-const ImageGrid = memo(() => {
-  const viewMode = viewDataStore((state) => state.viewMode);
+const ImageVirtualGrid = memo(() => {
+  const loading = loadingStore((state) => state.loading);
   const imageLayout = viewDataStore((state) => state.imageEntries);
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const { visibleItems, totalHeight } = useVirtualizer({ scrollContainerRef, ...imageLayout });
 
-  if (viewMode !== "images") {
-    return null;
-  }
+  const itemsContainerStyle = { height: `${totalHeight}px`, opacity: loading ? 0.5 : 1 };
 
   return (
-    <Box ref={scrollContainerRef} sx={scrollContainerSx}>
-      <Box sx={virtualGridContainerSx} style={{ height: `${totalHeight}px` }}>
+    <div className={imageGridClass.scrollContainer} ref={scrollContainerRef}>
+      <div className={imageGridClass.itemsContainer} style={itemsContainerStyle}>
         {visibleItems.map((item) => {
           const style = {
             width: item.pixelW,
@@ -89,14 +116,35 @@ const ImageGrid = memo(() => {
           };
 
           return (
-            <div key={item.filePath} style={style}>
-              <Suspense fallback={<div />}>
+            <div key={item.filePath} className={imageGridClass.itemWrapper} style={style}>
+              <Suspense fallback={<div className={imageGridClass.item} />}>
                 <ImageGridItem filePath={item.filePath} />
               </Suspense>
             </div>
           );
         })}
-      </Box>
+      </div>
+
+      {totalHeight <= 0 && (
+        <div className={imageGridClass.noItem}>
+          <Typography variant="body2">{loading ? "載入中..." : "該資料夾中沒有可顯示的圖片檔案"}</Typography>
+        </div>
+      )}
+    </div>
+  );
+});
+
+/**
+ * 圖片網格組件，結合虛擬捲動、Suspense 非同步載入與樣式委派
+ */
+const ImageGrid = memo(() => {
+  const viewMode = viewDataStore((state) => state.viewMode);
+
+  if (viewMode !== "images") return null;
+
+  return (
+    <Box sx={imageGridSx}>
+      <ImageVirtualGrid />
     </Box>
   );
 });

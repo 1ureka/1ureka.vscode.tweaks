@@ -1,6 +1,5 @@
-import { tableRowClassName, tableRowIndexAttr } from "@explorer/layout-table/TableRow";
-import { tableBodyContainerId, tableBodyVirtualListContainerId } from "@explorer/layout-table/TableBody";
-import { tableRowHeight } from "@explorer/layout-table/config";
+import { tableRowIndexAttr } from "@explorer/layout-table/TableRow";
+import { tableRowHeight, tableClass, tableId } from "@explorer/layout-table/config";
 
 import { navigateToFolder } from "@explorer/action/navigation";
 import { openFile, startFileDrag } from "@explorer/action/operation";
@@ -11,10 +10,10 @@ import { clamp } from "@/utils";
 /**
  * 根據事件獲取對應的資料列索引
  */
-const getIndexFromEvent = (e: Event) => {
+const getIndexFromEvent = (e: React.SyntheticEvent) => {
   const target = e.target as HTMLElement;
 
-  const indexStr = target.closest(`.${tableRowClassName}`)?.getAttribute(tableRowIndexAttr);
+  const indexStr = target.closest(`.${tableClass.row}`)?.getAttribute(tableRowIndexAttr);
   if (indexStr === undefined) return null;
 
   const index = Number(indexStr);
@@ -22,6 +21,8 @@ const getIndexFromEvent = (e: Event) => {
 
   return index;
 };
+
+// ---------------------------------------------------------------------------------
 
 /**
  * 根據滑鼠位置自動滾動容器
@@ -121,6 +122,8 @@ function createHandleDrawBox(params: { boxContainer: HTMLElement; startX: number
     const stripeSize = 24;
 
     box.style.position = "absolute";
+    box.style.left = "0px";
+    box.style.top = "0px";
     box.style.pointerEvents = "none";
     box.style.opacity = "0.2";
 
@@ -145,10 +148,12 @@ function createHandleDrawBox(params: { boxContainer: HTMLElement; startX: number
     const top = Math.min(startY, currentY);
     const bottom = Math.max(startY, currentY);
 
-    box.style.left = `${left}px`;
-    box.style.right = `${boxContainer.clientWidth - right}px`;
-    box.style.top = `${top}px`;
-    box.style.bottom = `${boxContainer.clientHeight - bottom}px`;
+    const width = right - left;
+    const height = bottom - top;
+
+    box.style.transform = `translate(${left}px, ${top}px)`;
+    box.style.width = `${width}px`;
+    box.style.height = `${height}px`;
   };
 
   const handleDrawEnd = () => {
@@ -158,10 +163,12 @@ function createHandleDrawBox(params: { boxContainer: HTMLElement; startX: number
   return { handleDrawStart, handleDraw, handleDrawEnd };
 }
 
+// ---------------------------------------------------------------------------------
+
 /**
  * 處理開始拖動某一資料列的事件
  */
-const handleDragStart = (e: DragEvent) => {
+const handleDragStart = (e: React.DragEvent) => {
   const index = getIndexFromEvent(e);
   if (index === null) return;
 
@@ -179,8 +186,8 @@ const handleDragStart = (e: DragEvent) => {
   } else if (e.button === 0) {
     e.preventDefault();
 
-    const boxContainer = document.getElementById(tableBodyVirtualListContainerId);
-    const scrollContainer = document.getElementById(tableBodyContainerId);
+    const boxContainer = document.getElementById(tableId.rowsContainer);
+    const scrollContainer = document.getElementById(tableId.scrollContainer);
     if (!boxContainer || !scrollContainer) return;
 
     const handleCalculateSelection = createHandleCalculateSelection({
@@ -229,7 +236,7 @@ const handleDragStart = (e: DragEvent) => {
 /**
  * 處理點擊某一資料列的事件
  */
-const handleClick = (e: MouseEvent) => {
+const handleClick = (e: React.MouseEvent) => {
   const index = getIndexFromEvent(e);
   if (index === null) return;
 
@@ -252,7 +259,7 @@ const handleClick = (e: MouseEvent) => {
 /**
  * 處理右鍵點擊某一資料列的事件
  */
-const handleContextMenu = (e: MouseEvent) => {
+const handleContextMenu = (e: React.MouseEvent) => {
   const index = getIndexFromEvent(e);
   if (index === null) return;
 
@@ -260,22 +267,6 @@ const handleContextMenu = (e: MouseEvent) => {
   selectRow({ index, isAdditive: true, isRange: false, forceSelect: true });
 };
 
-/**
- * 將表格主體的事件處理程式掛載到對應的容器上
- */
-const registerTableBodyEventHandlers = () => {
-  const container = document.getElementById(tableBodyContainerId);
-  if (!container) return;
+// ---------------------------------------------------------------------------------
 
-  container.addEventListener("click", handleClick);
-  container.addEventListener("contextmenu", handleContextMenu);
-  container.addEventListener("dragstart", handleDragStart);
-
-  return () => {
-    container.removeEventListener("click", handleClick);
-    container.removeEventListener("contextmenu", handleContextMenu);
-    container.removeEventListener("dragstart", handleDragStart);
-  };
-};
-
-export { registerTableBodyEventHandlers };
+export { handleClick, handleContextMenu, handleDragStart };

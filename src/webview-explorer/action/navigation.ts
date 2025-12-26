@@ -6,9 +6,15 @@ import { requestQueue } from "@explorer/store/queue";
  * 重新整理
  */
 const refresh = async () => {
-  const { currentPath } = dataStore.getState();
-  const result = await requestQueue.add(() => invoke("system.read.dir", { dirPath: currentPath }));
-  dataStore.setState({ ...result });
+  const { currentPath, mode } = dataStore.getState();
+
+  if (mode === "directory") {
+    const result = await requestQueue.add(() => invoke("system.read.dir", { dirPath: currentPath }));
+    dataStore.setState({ ...result });
+  } else if (mode === "images") {
+    const result = await requestQueue.add(() => invoke("system.read.images", { dirPath: currentPath }));
+    dataStore.setState({ ...result });
+  }
 };
 
 /**
@@ -53,11 +59,33 @@ const navigateToFolder = async ({ dirPath, depthOffset }: { dirPath: string; dep
 };
 
 /**
+ * 請求切換到資料夾，以圖片布局模式顯示，對於歷史紀錄則當作普通資料夾檢視 (不記住是來自圖片模式)
+ */
+const navigateToImages = async ({ dirPath }: { dirPath: string }) => {
+  const result = await requestQueue.add(() => invoke("system.read.images", { dirPath }));
+
+  const { history, currentIndex } = navigateHistoryStore.getState();
+  if (history[currentIndex] !== result.currentPath) {
+    const newHistory = history.slice(0, currentIndex + 1);
+    newHistory.push(result.currentPath);
+    navigateHistoryStore.setState({ history: newHistory, currentIndex: newHistory.length - 1 });
+  }
+
+  dataStore.setState({ ...result });
+};
+
+/**
  * 正式根據使用者暫存的目標路徑切換資料夾
  */
 const navigateGotoFolder = () => {
+  const { mode } = dataStore.getState();
   const { destPath } = navigationStore.getState();
-  return navigateToFolder({ dirPath: destPath });
+
+  if (mode === "directory") {
+    return navigateToFolder({ dirPath: destPath });
+  } else if (mode === "images") {
+    return navigateToImages({ dirPath: destPath });
+  }
 };
 
 /**
@@ -102,11 +130,10 @@ const navigateToNextFolder = async () => {
 /**
  * 前往目前資料夾的圖片網格檢視
  */
-const navigateToImageGridView = async () => {
+const navigateToImageGridView = () => {
   const { currentPath } = dataStore.getState();
-  const result = await requestQueue.add(() => invoke("system.read.images", { dirPath: currentPath }));
 
-  dataStore.setState({ ...result });
+  return navigateToImages({ dirPath: currentPath });
 };
 
 export { stageDestinationPath, openInEnvironment, refresh, readDrives, navigateToImageGridView };

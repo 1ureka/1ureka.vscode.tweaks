@@ -1,18 +1,13 @@
 import type { InspectDirectoryEntry } from "@/utils/system";
+import { colorMix } from "@/utils/ui";
 
-/**
- * 表格單元格的對齊方式
- */
+/** 表格單元格的對齊方式 */
 type TableCellAlign = "left" | "right" | "center";
 
-/**
- * 可用的表格欄位
- */
+/** 可用的表格欄位 */
 type TableFields = Exclude<keyof InspectDirectoryEntry, "icon" | "filePath">;
 
-/**
- * 表格某一個 column 的資訊定義，比如欄位名稱、對齊方式等
- */
+/** 表格某一個 column 的資訊定義，比如欄位名稱、對齊方式等 */
 type TableColumn = {
   field: TableFields;
   align: TableCellAlign;
@@ -22,9 +17,7 @@ type TableColumn = {
   sortable: boolean;
 };
 
-/**
- * 定義系統瀏覽器表格的所有 column 及其屬性
- */
+/** 定義系統瀏覽器表格的所有 column 及其屬性 */
 const tableColumns: TableColumn[] = [
   {
     field: "fileName",
@@ -66,25 +59,42 @@ const tableColumns: TableColumn[] = [
   },
 ];
 
-/**
- * 表格標題列的高度
- */
+export type { TableCellAlign, TableFields, TableColumn };
+export { tableColumns };
+
+// ---------------------------------------------------------------------------------
+
+/** 表格標題列的高度 */
 const tableHeadHeight = 30;
 
-/**
- * 表格每 row 的高度
- */
+/** 表格資料列的高度 */
 const tableRowHeight = 26;
 
-/**
- * 圖示欄位的固定寬度
- */
+/** 表格列圖示欄位的固定寬度 */
 const tableIconWidth = tableRowHeight;
 
-/**
- * 圖示欄位的圖示大小
- */
+/** 表格列圖示欄位的圖示大小 */
 const tableIconFontSize = 16;
 
-export { tableColumns, tableHeadHeight, tableIconWidth, tableIconFontSize, tableRowHeight };
-export type { TableCellAlign, TableFields, TableColumn };
+/** 表格交替背景色 */
+const tableAlternateBgcolor = colorMix("background.content", "text.primary", 0.98);
+
+export { tableHeadHeight, tableIconWidth, tableIconFontSize, tableRowHeight, tableAlternateBgcolor };
+
+// ---------------------------------------------------------------------------------
+
+/** 表格各種元素用於識別自身的 class */
+const tableClass = {
+  rowWrapper: "table-row-wrapper",
+  row: "table-row",
+  rowCell: "table-cell",
+  rowClipboardOverlay: "table-row-clipboard-overlay",
+};
+
+/** 表格各種元素用於識別自身的 id */
+const tableId = {
+  scrollContainer: "table-scroll-container",
+  rowsContainer: "table-rows-container",
+};
+
+export { tableClass, tableId };
