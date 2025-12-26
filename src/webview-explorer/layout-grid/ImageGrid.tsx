@@ -1,10 +1,12 @@
 import { memo, Suspense, useRef } from "react";
 import { Box, keyframes, SxProps, Typography } from "@mui/material";
+
 import { viewDataStore, viewStateStore } from "@explorer/store/data";
-import { useVirtualizer } from "@explorer/layout-grid/imageGridUtils";
 import { thumbnailCache } from "@explorer/store/cache";
-import { loadingStore } from "@/webview-explorer/store/queue";
-import { getGridSize } from "@/webview-explorer/action/view";
+import { loadingStore } from "@explorer/store/queue";
+
+import { useVirtualizer } from "@explorer/layout-grid/imageGridUtils";
+import { getGridSize } from "@explorer/action/view";
 
 const imageGridClass = {
   scrollContainer: "image-grid-scroll-container",

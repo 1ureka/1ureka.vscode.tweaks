@@ -8,7 +8,7 @@ import type { InspectDirectoryEntry } from "@/utils/system";
 import type { TableColumn } from "@explorer/layout-table/config";
 import { tableColumns, tableClass } from "@explorer/layout-table/config";
 import { clipboardStore, selectionStore, viewDataStore, viewStateStore } from "@explorer/store/data";
-import { loadingStore } from "@/webview-explorer/store/queue";
+import { loadingStore } from "@explorer/store/queue";
 
 /**
  * 表格列儲存在 html 中的指標屬性名稱

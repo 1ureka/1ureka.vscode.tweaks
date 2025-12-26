@@ -4,14 +4,14 @@ import { formatRelativeTime } from "@/utils/formatter";
 import { setSchedule } from "@/utils";
 
 import { ActionButton, ActionDropdown, ActionGroup, ActionInput } from "@explorer/components/Action";
-import { PropBoolean, PropEnum } from "@/webview-explorer/components/Props";
+import { PropBoolean, PropEnum } from "@explorer/components/Props";
 import { dataStore, viewDataStore, viewStateStore } from "@explorer/store/data";
 import { navigateHistoryStore, navigationStore } from "@explorer/store/data";
 
 import { stageDestinationPath, navigateGotoFolder, navigateUp, refresh } from "@explorer/action/navigation";
 import { navigateToFolder, navigateToNextFolder, navigateToPreviousFolder } from "@explorer/action/navigation";
 import { navigateToImageGridView } from "@explorer/action/navigation";
-import { setSortField, setSortOrder, setGridSize, getGridSize } from "@/webview-explorer/action/view";
+import { setSortField, setSortOrder, setGridSize, getGridSize } from "@explorer/action/view";
 import { createNewFolder } from "@explorer/action/operation";
 
 /**
