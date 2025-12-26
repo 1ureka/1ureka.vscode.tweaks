@@ -143,14 +143,83 @@ const ActionGroupSearch = memo(() => {
 });
 
 /**
+ * 顯示設定的下拉選單內容
+ */
+const ActionDropdownViewOptions = memo(() => {
+  const viewMode = viewDataStore((state) => state.viewMode);
+  const sortField = viewStateStore((state) => state.sortField);
+  const sortOrder = viewStateStore((state) => state.sortOrder);
+
+  if (viewMode === "images") {
+    return (
+      <ActionDropdown actionName="顯示設定">
+        <Box sx={{ display: "grid", gridTemplateColumns: "auto auto", gap: 1.5, px: 1 }}>
+          <Typography variant="caption" sx={{ color: "text.secondary", textAlign: "right" }}>
+            網格尺寸
+          </Typography>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
+            <PropEnum
+              onChange={() => {}}
+              value="M"
+              options={[
+                { label: "小", value: "S" },
+                { label: "中", value: "M" },
+                { label: "大", value: "L" },
+              ]}
+            />
+            <Box sx={{ pr: 2 }}>
+              <PropBoolean label="顯示間距" value={true} disabled onChange={() => {}} />
+            </Box>
+          </Box>
+        </Box>
+      </ActionDropdown>
+    );
+  }
+
+  return (
+    <ActionDropdown actionName="顯示設定">
+      <Box sx={{ display: "grid", gridTemplateColumns: "auto auto", gap: 1.5, px: 1 }}>
+        <Typography variant="caption" sx={{ color: "text.secondary", textAlign: "right" }}>
+          欄位
+        </Typography>
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
+          <PropBoolean label="大小" value={true} onChange={() => {}} />
+          <PropBoolean label="建立日期" value={false} disabled onChange={() => {}} />
+        </Box>
+
+        <Typography variant="caption" sx={{ color: "text.secondary", textAlign: "right" }}>
+          排序方式
+        </Typography>
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5, alignItems: "stretch" }}>
+          <PropEnum
+            onChange={setSortField}
+            value={sortField}
+            options={[
+              { label: "名稱", value: "fileName" },
+              { label: "修改日期", value: "mtime" },
+              { label: "建立日期", value: "ctime" },
+              { label: "大小", value: "size" },
+            ]}
+          />
+          <Box sx={{ pr: 2 }}>
+            <PropBoolean
+              label="反向排序"
+              value={sortOrder === "desc"}
+              onChange={(value) => setSortOrder(value ? "desc" : "asc")}
+            />
+          </Box>
+        </Box>
+      </Box>
+    </ActionDropdown>
+  );
+});
+
+/**
  * 調整資料呈現的方式與排序規則
  */
 const ActionGroupViewOptions = memo(() => {
   const currentPath = navigationStore((state) => state.currentPath);
   const viewMode = viewDataStore((state) => state.viewMode);
-
-  const sortField = viewStateStore((state) => state.sortField);
-  const sortOrder = viewStateStore((state) => state.sortOrder);
 
   return (
     <ActionGroup>
@@ -169,40 +238,7 @@ const ActionGroupViewOptions = memo(() => {
         active={viewMode === "images"}
       />
 
-      <ActionDropdown actionName="顯示設定">
-        <Box sx={{ display: "grid", gridTemplateColumns: "auto auto", gap: 1.5, px: 1 }}>
-          <Typography variant="caption" sx={{ color: "text.secondary", textAlign: "right" }}>
-            欄位
-          </Typography>
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
-            <PropBoolean label="大小" value={true} onChange={() => {}} />
-            <PropBoolean label="建立日期" value={false} disabled onChange={() => {}} />
-          </Box>
-
-          <Typography variant="caption" sx={{ color: "text.secondary", textAlign: "right" }}>
-            排序方式
-          </Typography>
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5, alignItems: "stretch" }}>
-            <PropEnum
-              onChange={setSortField}
-              value={sortField}
-              options={[
-                { label: "名稱", value: "fileName" },
-                { label: "修改日期", value: "mtime" },
-                { label: "建立日期", value: "ctime" },
-                { label: "大小", value: "size" },
-              ]}
-            />
-            <Box sx={{ pr: 2 }}>
-              <PropBoolean
-                label="反向排序"
-                value={sortOrder === "desc"}
-                onChange={(value) => setSortOrder(value ? "desc" : "asc")}
-              />
-            </Box>
-          </Box>
-        </Box>
-      </ActionDropdown>
+      <ActionDropdownViewOptions />
     </ActionGroup>
   );
 });
