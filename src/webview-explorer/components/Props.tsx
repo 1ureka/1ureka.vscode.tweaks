@@ -75,7 +75,7 @@ const PropEnumSx: SxProps = {
 };
 
 type PropEnumProps<T extends React.Key = never> = {
-  value: T;
+  value: NoInfer<T>;
   options: { label: string; value: T }[];
   onChange: (value: T) => void;
   disabled?: boolean;
