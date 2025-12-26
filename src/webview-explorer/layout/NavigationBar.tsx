@@ -5,11 +5,12 @@ import { PropBoolean, PropEnum } from "@/webview-explorer/components/Props";
 import { formatRelativeTime } from "@/utils/formatter";
 import { setSchedule } from "@/utils";
 
-import { dataStore, viewDataStore, navigateHistoryStore, navigationStore } from "@explorer/store/data";
+import { dataStore, viewDataStore, navigateHistoryStore, navigationStore, viewStateStore } from "@explorer/store/data";
 import { stageDestinationPath, navigateGotoFolder, navigateUp, refresh } from "@explorer/action/navigation";
 import { navigateToFolder, navigateToNextFolder, navigateToPreviousFolder } from "@explorer/action/navigation";
 import { navigateToImageGridView } from "@explorer/action/navigation";
 import { createNewFolder } from "@explorer/action/operation";
+import { setSortField, setSortOrder } from "@/webview-explorer/action/view";
 
 /**
  * 重新整理按鈕，會顯示上次更新的相對時間，並且會自動更新
@@ -148,6 +149,9 @@ const ActionGroupViewOptions = memo(() => {
   const currentPath = navigationStore((state) => state.currentPath);
   const viewMode = viewDataStore((state) => state.viewMode);
 
+  const sortField = viewStateStore((state) => state.sortField);
+  const sortOrder = viewStateStore((state) => state.sortOrder);
+
   return (
     <ActionGroup>
       <ActionButton
@@ -180,17 +184,21 @@ const ActionGroupViewOptions = memo(() => {
           </Typography>
           <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5, alignItems: "stretch" }}>
             <PropEnum
-              value="name"
+              onChange={setSortField}
+              value={sortField}
               options={[
-                { label: "名稱", value: "name" },
-                { label: "修改日期", value: "modifiedAt" },
-                { label: "建立日期", value: "createdAt" },
+                { label: "名稱", value: "fileName" },
+                { label: "修改日期", value: "mtime" },
+                { label: "建立日期", value: "ctime" },
                 { label: "大小", value: "size" },
               ]}
-              onChange={() => {}}
             />
             <Box sx={{ pr: 2 }}>
-              <PropBoolean label="反向排序" value={false} onChange={() => {}} />
+              <PropBoolean
+                label="反向排序"
+                value={sortOrder === "desc"}
+                onChange={(value) => setSortOrder(value ? "desc" : "asc")}
+              />
             </Box>
           </Box>
         </Box>

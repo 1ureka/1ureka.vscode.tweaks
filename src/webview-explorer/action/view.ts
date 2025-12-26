@@ -9,9 +9,19 @@ const setSorting = (field: ViewState["sortField"]) => {
   viewStateStore.setState({ sortField: field, sortOrder: newOrder });
 };
 
+/** 設定排序欄位，順序不變 */
+const setSortField = (field: ViewState["sortField"]) => {
+  viewStateStore.setState({ sortField: field });
+};
+
+/** 設定排序順序，欄位不變 */
+const setSortOrder = (order: ViewState["sortOrder"]) => {
+  viewStateStore.setState({ sortOrder: order });
+};
+
 /** 設定篩選條件 */
 const setFilter = (filter: ViewState["filter"]) => {
   viewStateStore.setState({ filter });
 };
 
-export { setSorting, setFilter };
+export { setSorting, setSortField, setSortOrder, setFilter };
