@@ -1,5 +1,4 @@
 import { createRoot } from "react-dom/client";
-import { create } from "zustand";
 import { colord } from "colord";
 import { CssBaseline, ThemeProvider, createTheme } from "@mui/material";
 import type { SxProps } from "@mui/material";
@@ -19,33 +18,20 @@ const getVarValue = (varName: string) => {
 };
 
 /**
- * 測量指定字串在 VSCode 編輯器字型下的像素寬度。
- */
-function measureTextWidth(text: string, fontSize: number): number {
-  if (document.fonts.status !== "loaded") {
-    throw new Error("字型尚未載入，無法正確測量文字寬度。");
-  }
-
-  const canvas = document.createElement("canvas");
-  const context = canvas.getContext("2d");
-
-  if (!context) {
-    throw new Error("無法取得 Canvas 2D 上下文，無法正確測量文字寬度。");
-  }
-
-  context.font = `${fontSize}px ${getVarValue("editor-font-family")}`;
-  const metrics = context.measureText(text);
-  return metrics.width;
-}
-
-/**
- * 混合兩種顏色，weight 為 color1 的比例 (0-100)
+ * 混合兩種 MUI 顏色，weight 為 color1 的比例 (0-100)
  */
 const colorMix = (color1: string, color2: string, weight: number) => {
   if (weight < 1) weight = weight * 100;
   const color1CSSVar = `var(--mui-palette-${color1.replace(/\./g, "-")})`;
   const color2CSSVar = `var(--mui-palette-${color2.replace(/\./g, "-")})`;
   return `color-mix(in srgb, ${color1CSSVar} ${weight}%, ${color2CSSVar} ${100 - weight}%)`;
+};
+
+/**
+ * 將任意 CSS 可接受的顏色設置不透明度
+ */
+const colorWithAlpha = (color: string, alpha: number) => {
+  return `hsl(from ${color} h s l / ${alpha})`;
 };
 
 /**
@@ -114,12 +100,6 @@ const theme = createTheme({
 });
 
 // ----------------------------------------------------------------------------
-
-/**
- * 儲存與整個應用程式相關的狀態，例如字型是否載入完成等
- */
-const appStore = create<{ fontReady: boolean }>(() => ({ fontReady: false }));
-
 /**
  * 啟動 React 應用程式
  */
@@ -145,11 +125,6 @@ const startReactApp = async (params: { App: React.FC; beforeRender?: () => Promi
       <App />
     </ThemeProvider>
   );
-
-  const forceLoadStrings = `123 abc !@# $%^ &*()_+~\`-={}[]|;:'",.<>/? 中文`;
-  document.fonts.load(`12px ${getVarValue("editor-font-family")}`, forceLoadStrings).then(() => {
-    appStore.setState({ fontReady: true });
-  });
 };
 
-export { startReactApp, appStore, ellipsisSx, centerTextSx, colorMix, measureTextWidth };
+export { startReactApp, ellipsisSx, centerTextSx, colorMix, colorWithAlpha };
