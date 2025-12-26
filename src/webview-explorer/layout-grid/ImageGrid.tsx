@@ -1,9 +1,10 @@
 import { memo, Suspense, useRef } from "react";
 import { Box, keyframes, SxProps, Typography } from "@mui/material";
-import { viewDataStore } from "@explorer/store/data";
+import { viewDataStore, viewStateStore } from "@explorer/store/data";
 import { useVirtualizer } from "@explorer/layout-grid/imageGridUtils";
 import { thumbnailCache } from "@explorer/store/cache";
 import { loadingStore } from "@/webview-explorer/store/queue";
+import { getGridSize } from "@/webview-explorer/action/view";
 
 const imageGridClass = {
   scrollContainer: "image-grid-scroll-container",
@@ -59,10 +60,10 @@ const imageGridSx: SxProps = {
     transition: "opacity 0.05s step-end", // 所有小於 50 ms 的載入時間都不顯示載入回饋，以避免閃爍
   },
 
-  [`& .${imageGridClass.itemWrapper}`]: {
-    position: "absolute",
-    p: 0.5,
-  },
+  [`& .${imageGridClass.itemWrapper}`]: { position: "absolute" },
+  [`&.size-s .${imageGridClass.itemWrapper}`]: { p: 0.25 }, // 這是虛擬化最簡單製作 gap 的寫法
+  [`&.size-m .${imageGridClass.itemWrapper}`]: { p: 0.5 },
+  [`&.size-l .${imageGridClass.itemWrapper}`]: { p: 0.75 },
 
   [`& .${imageGridClass.item}`]: {
     borderRadius: 0.5,
@@ -139,11 +140,15 @@ const ImageVirtualGrid = memo(() => {
  */
 const ImageGrid = memo(() => {
   const viewMode = viewDataStore((state) => state.viewMode);
+  const gridColumns = viewStateStore((state) => state.gridColumns);
 
   if (viewMode !== "images") return null;
 
+  const gridSize = getGridSize(gridColumns);
+  const className = `size-${gridSize.toLowerCase()}`;
+
   return (
-    <Box sx={imageGridSx}>
+    <Box className={className} sx={imageGridSx}>
       <ImageVirtualGrid />
     </Box>
   );
