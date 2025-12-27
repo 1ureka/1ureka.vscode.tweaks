@@ -24,9 +24,14 @@ const setSortOrder = (order: ViewState["sortOrder"]) => {
   viewStateStore.setState({ sortOrder: order });
 };
 
+/** 開關篩選 */
+const toggleFilter = () => {
+  viewStateStore.setState(({ filter }) => ({ filter: !filter }));
+};
+
 /** 設定篩選條件 */
-const setFilter = (filter: ViewState["filter"]) => {
-  viewStateStore.setState({ filter });
+const setFilterOption = (option: ViewState["filterOption"]) => {
+  viewStateStore.setState({ filterOption: option });
 };
 
 /** 設定網格檢視的尺寸 */
@@ -58,4 +63,6 @@ const setGridGap = (gap: boolean) => {
   viewStateStore.setState({ gridGap: gap });
 };
 
-export { toggleLeftPanel, setSorting, setSortField, setSortOrder, setFilter, setGridSize, getGridSize, setGridGap };
+export { toggleLeftPanel };
+export { setSorting, setSortField, setSortOrder, toggleFilter, setFilterOption };
+export { setGridSize, getGridSize, setGridGap };

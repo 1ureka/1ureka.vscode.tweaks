@@ -42,10 +42,11 @@ const initialNavigationExternalState = {
   systemDrives: [],
 };
 
-const initialViewState = {
+const initialViewState: ViewState = {
   sortField: "fileName",
   sortOrder: "asc",
-  filter: "all",
+  filter: false,
+  filterOption: "file",
   gridColumns: 3,
   gridGap: true,
 } as const;
@@ -78,7 +79,8 @@ type NavigationExternalState = {
 type ViewState = {
   sortField: keyof Pick<InspectDirectoryEntry, "fileName" | "mtime" | "ctime" | "size">;
   sortOrder: "asc" | "desc";
-  filter: "all" | "file" | "folder";
+  filter: boolean;
+  filterOption: "file" | "folder" | "clipboard";
   gridColumns: number;
   gridGap: boolean;
 };
