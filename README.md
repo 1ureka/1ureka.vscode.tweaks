@@ -463,20 +463,6 @@ const ImageGridItem = memo(({ filePath }: { filePath: string }) => {
 </Suspense>
 ```
 
-利用兩者都共用相同 className 的特性，使得無論是因為 Suspense 還是圖片載入延遲，都共享相同載入畫面：
-
-```tsx
-[`& .${imageGridClass.item}`]: {
-  borderRadius: 0.5,
-  background: `linear-gradient(90deg, ${skeletonBgColor} 25%, ${skeletonHighlightColor} 50%, ${skeletonBgColor} 75%)`,
-  backgroundSize: "200% 100%",
-  animation: `${fadeIn} 0.25s cubic-bezier(0, 0, 0.2, 1) forwards, ${shimmer} 2s linear infinite`,
-  width: 1,
-  height: 1,
-  objectFit: "cover",
-},
-```
-
 ### 後端壓縮邏輯
 
 縮圖生成在延伸主機端執行，透過 `sharp` 圖片處理庫實現智慧壓縮：
