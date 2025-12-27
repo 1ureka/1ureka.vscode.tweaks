@@ -52,6 +52,10 @@ const initialViewState = {
 
 // ----------------------------------------------------------------------------
 
+type AppState = {
+  showLeftPanel: boolean;
+};
+
 type NavigationState = {
   currentPath: string;
   destPath: string;
@@ -105,6 +109,11 @@ type RenameState = {
 // ----------------------------------------------------------------------------
 
 /**
+ * 建立用於儲存應用程式狀態的容器
+ */
+const appStateStore = create<AppState>(() => ({ showLeftPanel: true }));
+
+/**
  * 建立前端用於儲存檔案系統資料的容器
  */
 const dataStore = create<ReadResourceResult>(() => ({ ...initialData }));
@@ -152,6 +161,6 @@ const renameStore = create<RenameState>(() => ({ srcName: "", destName: "" }));
 // ----------------------------------------------------------------------------
 
 export { navigationStore, navigateHistoryStore, navigationExternalStore };
-export { dataStore, viewStateStore, viewDataStore };
+export { appStateStore, dataStore, viewStateStore, viewDataStore };
 export { selectionStore, clipboardStore, renameStore };
 export type { ViewState };

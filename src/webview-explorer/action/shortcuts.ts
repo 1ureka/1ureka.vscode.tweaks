@@ -3,6 +3,7 @@ import { selectAll, selectInvert, selectNone } from "@explorer/action/selection"
 import { readClipboard, writeClipboard } from "@explorer/action/clipboard";
 import { actionInputClassName } from "@explorer/components/Action";
 import { deleteItems } from "@explorer/action/operation";
+import { toggleLeftPanel } from "@/webview-explorer/action/view";
 
 /**
  * 註冊所有快捷鍵
@@ -11,6 +12,13 @@ const registerAllShortcuts = () => {
   const handleKeydown = (e: KeyboardEvent) => {
     const target = e.target as HTMLElement;
     if (target.closest(`.${actionInputClassName}`)) return; // 在輸入框中不觸發快捷鍵
+
+    // N: 開/關左側面板
+    if (e.key.toLowerCase() === "n") {
+      e.preventDefault();
+      e.stopPropagation();
+      toggleLeftPanel();
+    }
 
     // Delete: 刪除選取項目
     if (e.key === "Delete") {
