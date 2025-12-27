@@ -276,6 +276,7 @@ const ActionDropdown = (props: ActionDropdownProps) => {
         anchorOrigin={anchorOrigin}
         transformOrigin={transformOrigin}
         slotProps={{ paper: { elevation: 0, sx: actionDropdownMenuSx } }}
+        marginThreshold={4}
       >
         {children}
       </Popover>
