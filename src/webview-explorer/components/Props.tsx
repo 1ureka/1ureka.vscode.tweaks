@@ -71,6 +71,10 @@ const PropEnumSx: SxProps = {
       "&:hover": { bgcolor: "action.active" },
       "&:active": { bgcolor: "action.active" },
     },
+
+    "&:disabled": {
+      color: "text.disabled",
+    },
   },
 };
 
