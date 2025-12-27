@@ -3,7 +3,7 @@ import { selectAll, selectInvert, selectNone } from "@explorer/action/selection"
 import { readClipboard, writeClipboard } from "@explorer/action/clipboard";
 import { actionInputClassName } from "@explorer/components/Action";
 import { deleteItems } from "@explorer/action/operation";
-import { toggleLeftPanel } from "@/webview-explorer/action/view";
+import { toggleLeftPanel } from "@explorer/action/view";
 
 /**
  * 註冊所有快捷鍵
