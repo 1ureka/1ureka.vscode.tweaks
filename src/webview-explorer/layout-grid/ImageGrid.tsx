@@ -84,12 +84,15 @@ const imageGridSx: SxProps = {
 
   [`& .${imageGridClass.item}`]: {
     borderRadius: 0.5,
-    background: `linear-gradient(90deg, ${skeletonBgColor} 25%, ${skeletonHighlightColor} 50%, ${skeletonBgColor} 75%)`,
-    backgroundSize: "200% 100%",
-    animation: `${fadeIn} 0.25s cubic-bezier(0, 0, 0.2, 1) forwards, ${shimmer} 2s linear infinite`,
     width: 1,
     height: 1,
     objectFit: "cover",
+    animation: `${fadeIn} 0.25s cubic-bezier(0, 0, 0.2, 1) forwards`,
+  },
+  [`& div.${imageGridClass.item}`]: {
+    background: `linear-gradient(90deg, ${skeletonBgColor} 25%, ${skeletonHighlightColor} 50%, ${skeletonBgColor} 75%)`,
+    backgroundSize: "200% 100%",
+    animation: `${fadeIn} 0.25s cubic-bezier(0, 0, 0.2, 1) forwards, ${shimmer} 2s linear infinite`,
   },
 
   [`&.size-s .${imageGridClass.item}`]: { borderRadius: 0.25 },

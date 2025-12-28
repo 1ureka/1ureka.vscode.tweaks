@@ -1,4 +1,9 @@
-import { viewStateStore, type ViewState } from "@explorer/store/data";
+import { appStateStore, viewStateStore, type ViewState } from "@explorer/store/data";
+
+/** 開/關左側面板 */
+const toggleLeftPanel = () => {
+  appStateStore.setState(({ showLeftPanel }) => ({ showLeftPanel: !showLeftPanel }));
+};
 
 /** 設定排序欄位與順序，如果點擊的是同一欄位，切換順序；否則使用預設升序 */
 const setSorting = (field: ViewState["sortField"]) => {
@@ -19,9 +24,14 @@ const setSortOrder = (order: ViewState["sortOrder"]) => {
   viewStateStore.setState({ sortOrder: order });
 };
 
+/** 開關篩選 */
+const toggleFilter = () => {
+  viewStateStore.setState(({ filter }) => ({ filter: !filter }));
+};
+
 /** 設定篩選條件 */
-const setFilter = (filter: ViewState["filter"]) => {
-  viewStateStore.setState({ filter });
+const setFilterOption = (option: ViewState["filterOption"]) => {
+  viewStateStore.setState({ filterOption: option });
 };
 
 /** 設定網格檢視的尺寸 */
@@ -53,4 +63,6 @@ const setGridGap = (gap: boolean) => {
   viewStateStore.setState({ gridGap: gap });
 };
 
-export { setSorting, setSortField, setSortOrder, setFilter, setGridSize, getGridSize, setGridGap };
+export { toggleLeftPanel };
+export { setSorting, setSortField, setSortOrder, toggleFilter, setFilterOption };
+export { setGridSize, getGridSize, setGridGap };

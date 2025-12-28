@@ -42,15 +42,20 @@ const initialNavigationExternalState = {
   systemDrives: [],
 };
 
-const initialViewState = {
+const initialViewState: ViewState = {
   sortField: "fileName",
   sortOrder: "asc",
-  filter: "all",
+  filter: false,
+  filterOption: "file",
   gridColumns: 3,
   gridGap: true,
 } as const;
 
 // ----------------------------------------------------------------------------
+
+type AppState = {
+  showLeftPanel: boolean;
+};
 
 type NavigationState = {
   currentPath: string;
@@ -74,7 +79,8 @@ type NavigationExternalState = {
 type ViewState = {
   sortField: keyof Pick<InspectDirectoryEntry, "fileName" | "mtime" | "ctime" | "size">;
   sortOrder: "asc" | "desc";
-  filter: "all" | "file" | "folder";
+  filter: boolean;
+  filterOption: "file" | "folder" | "clipboard";
   gridColumns: number;
   gridGap: boolean;
 };
@@ -103,6 +109,11 @@ type RenameState = {
 };
 
 // ----------------------------------------------------------------------------
+
+/**
+ * 建立用於儲存應用程式狀態的容器
+ */
+const appStateStore = create<AppState>(() => ({ showLeftPanel: true }));
 
 /**
  * 建立前端用於儲存檔案系統資料的容器
@@ -152,6 +163,6 @@ const renameStore = create<RenameState>(() => ({ srcName: "", destName: "" }));
 // ----------------------------------------------------------------------------
 
 export { navigationStore, navigateHistoryStore, navigationExternalStore };
-export { dataStore, viewStateStore, viewDataStore };
+export { appStateStore, dataStore, viewStateStore, viewDataStore };
 export { selectionStore, clipboardStore, renameStore };
 export type { ViewState };

@@ -3,7 +3,7 @@
  * @description 該文件負責定義更新鏈/依賴鏈，可參考 README.md 中的說明
  */
 
-import { dataStore, navigationStore, viewDataStore, viewStateStore } from "@explorer/store/data";
+import { clipboardStore, dataStore, navigationStore, viewDataStore, viewStateStore } from "@explorer/store/data";
 import { selectionStore, renameStore } from "@explorer/store/data";
 import type { InspectDirectoryEntry } from "@/utils/system";
 
@@ -11,13 +11,25 @@ import type { InspectDirectoryEntry } from "@/utils/system";
  * 根據目前的篩選條件回傳篩選後的檔案屬性陣列
  */
 const filterEntries = (entries: InspectDirectoryEntry[]) => {
-  const { filter } = viewStateStore.getState();
+  const { filter, filterOption } = viewStateStore.getState();
+
+  if (!filter) {
+    return [...entries];
+  }
 
   let filteredEntries: InspectDirectoryEntry[] = [];
-  if (filter === "all") {
-    filteredEntries = [...entries];
-  } else {
-    filteredEntries = entries.filter(({ fileType }) => fileType === filter);
+
+  if (filterOption === "file") {
+    filteredEntries = entries.filter(({ fileType }) => fileType === "file" || fileType === "file-symlink-file");
+  }
+
+  if (filterOption === "folder") {
+    filteredEntries = entries.filter(({ fileType }) => fileType === "folder" || fileType === "file-symlink-directory");
+  }
+
+  if (filterOption === "clipboard") {
+    const clipboardEntries = clipboardStore.getState().entries;
+    filteredEntries = entries.filter(({ filePath }) => filePath in clipboardEntries);
   }
 
   return filteredEntries;

@@ -100,10 +100,8 @@ const TableRowNoItem = memo(() => {
 
   if (loading) {
     noItemMessage = "載入中...";
-  } else if (filter === "file") {
-    noItemMessage = "此資料夾中沒有檔案";
-  } else if (filter === "folder") {
-    noItemMessage = "此資料夾中沒有資料夾";
+  } else if (filter) {
+    noItemMessage = "沒有符合篩選條件的項目";
   }
 
   return (

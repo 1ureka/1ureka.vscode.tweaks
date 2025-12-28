@@ -11,7 +11,8 @@ import { navigateHistoryStore, navigationStore } from "@explorer/store/data";
 import { stageDestinationPath, navigateGotoFolder, navigateUp, refresh } from "@explorer/action/navigation";
 import { navigateToFolder, navigateToNextFolder, navigateToPreviousFolder } from "@explorer/action/navigation";
 import { navigateToImageGridView } from "@explorer/action/navigation";
-import { setSortField, setSortOrder, setGridSize, getGridSize, setGridGap } from "@explorer/action/view";
+import { setSortField, setSortOrder, setFilterOption, toggleFilter } from "@explorer/action/view";
+import { setGridSize, getGridSize, setGridGap } from "@explorer/action/view";
 import { createNewFolder } from "@explorer/action/operation";
 
 /**
@@ -252,6 +253,8 @@ const ActionGroupViewOptions = memo(() => {
  */
 const ActionGroupFilter = memo(() => {
   const viewMode = viewDataStore((state) => state.viewMode);
+  const filterOption = viewStateStore((state) => state.filterOption);
+  const filter = viewStateStore((state) => state.filter);
 
   return (
     <ActionGroup>
@@ -259,11 +262,28 @@ const ActionGroupFilter = memo(() => {
         actionIcon="codicon codicon-filter"
         actionName="過濾器"
         actionDetail="啟用/停用過濾功能"
-        active
+        active={filter}
+        onClick={toggleFilter}
         disabled={viewMode === "images"}
       />
       <ActionDropdown actionName="過濾設定">
-        <Box sx={{ p: 2, px: 5 }} />
+        <Box sx={{ display: "grid", gridTemplateColumns: "auto auto", gap: 1.5, px: 1 }}>
+          <Typography variant="caption" sx={{ color: "text.secondary", textAlign: "right" }}>
+            過濾條件
+          </Typography>
+          <Box sx={{ width: 90 }}>
+            <PropEnum
+              disabled={viewMode === "images"}
+              onChange={setFilterOption}
+              value={filterOption}
+              options={[
+                { label: "檔案", value: "file" },
+                { label: "資料夾", value: "folder" },
+                { label: "剪貼簿", value: "clipboard" },
+              ]}
+            />
+          </Box>
+        </Box>
       </ActionDropdown>
     </ActionGroup>
   );
