@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import * as path from "path";
 import type { CustomDocument, CustomDocumentOpenContext, WebviewPanel, CancellationToken } from "vscode";
 
 import { createWebviewPanel } from "@/utils/vscode/webview";
@@ -52,7 +53,7 @@ class ImageViewerEditorProvider implements vscode.CustomReadonlyEditorProvider {
       panel: panel,
       jsBundleName: "imageViewer",
       jsInitialData: initialData,
-      panelResources: [document.uri],
+      panelResources: [vscode.Uri.file(path.dirname(document.uri.fsPath))],
     });
 
     registerInvokeEvents(initializedPanel, imageViewerAPI);
