@@ -1,27 +1,11 @@
 import * as vscode from "vscode";
 import { formatDateCompact, formatDateFull, formatFileSize } from "@/utils/formatter";
-import { handleGetFileMetadata } from "@/handlers/fileMetadataHandlers";
-
-type FileInfo = {
-  fileName: string;
-  createdDate: Date;
-  modifiedDate: Date;
-  fileSize: number;
-};
-
-type ImageInfo = FileInfo & {
-  width?: number;
-  height?: number;
-  format?: string;
-  space?: string;
-  channels?: number;
-  hasAlpha?: boolean;
-};
+import type { FileMetadata, ImageMetadata } from "@/feature-metadata/metadata";
 
 /**
  * 為圖片檔案設定狀態列 UI
  */
-function setImageStatusBar(statusBarItem: vscode.StatusBarItem, info: ImageInfo) {
+function renderImageMetadata(statusBarItem: vscode.StatusBarItem, info: ImageMetadata) {
   const { fileName, createdDate, modifiedDate, fileSize, width, height, format, space, channels, hasAlpha } = info;
 
   const resolution = width && height ? `${width} × ${height}` : "未知";
@@ -55,7 +39,7 @@ function setImageStatusBar(statusBarItem: vscode.StatusBarItem, info: ImageInfo)
 /**
  * 為一般檔案設定狀態列 UI
  */
-function setFileStatusBar(statusBarItem: vscode.StatusBarItem, info: FileInfo) {
+function renderFileMetadata(statusBarItem: vscode.StatusBarItem, info: FileMetadata) {
   const { fileName, createdDate, modifiedDate, fileSize } = info;
 
   const createdCompact = formatDateCompact(createdDate);
@@ -76,61 +60,4 @@ function setFileStatusBar(statusBarItem: vscode.StatusBarItem, info: FileInfo) {
   statusBarItem.show();
 }
 
-// ---------------------------------------------------------------------------------
-
-/**
- * 提供檔案元資料狀態欄的管理功能
- */
-const FileMetadataProvider = (context: vscode.ExtensionContext) => {
-  const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
-  context.subscriptions.push(statusBarItem);
-
-  /**
-   * 根據給定的 URI 更新狀態列顯示
-   */
-  async function updateStatusBarFromUri(uri: vscode.Uri | undefined) {
-    if (!uri || uri.scheme !== "file") {
-      statusBarItem.hide();
-      return;
-    }
-
-    const info = await handleGetFileMetadata(uri.fsPath);
-    if (!info) {
-      statusBarItem.hide();
-      return;
-    }
-
-    if ("width" in info && "height" in info) setImageStatusBar(statusBarItem, info);
-    else setFileStatusBar(statusBarItem, info);
-  }
-
-  /**
-   * 從目前活動的分頁更新狀態列顯示
-   */
-  async function updateFromActiveTab() {
-    const activeTab = vscode.window.tabGroups.activeTabGroup?.activeTab;
-    if (!activeTab) {
-      statusBarItem.hide();
-      return;
-    }
-
-    // 根據實測，不管是可以打開的 *.js, *.ts，還是不可能打開的 *.blend, *.fbx，又或是處在中間的 *.png, *.jpg等
-    // 也就是任何檔案類型的 Tab input 都必定包含 uri 屬性
-    // 而像是 Thunder client 頁面, 歡迎頁面等則沒有
-    // 這剛好符合需求: 對任意檔案顯示其元資料，對非檔案則不顯示
-    const input = activeTab.input;
-    if (input && typeof input === "object") {
-      if ("uri" in input && input.uri instanceof vscode.Uri) {
-        await updateStatusBarFromUri(input.uri);
-        return;
-      }
-    }
-
-    statusBarItem.hide();
-  }
-
-  return { updateFromActiveTab };
-};
-
-export { FileMetadataProvider };
-export type { FileInfo, ImageInfo };
+export { renderImageMetadata, renderFileMetadata };
