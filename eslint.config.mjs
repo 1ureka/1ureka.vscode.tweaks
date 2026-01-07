@@ -59,7 +59,7 @@ export default defineConfig([
   // 特殊規則 - 禁止直接使用某些 API，必須透過 utils 中的輔助函數來使用
   {
     files: ["**/*.ts", "**/*.tsx"],
-    ignores: ["src/utils/vscode/**"],
+    ignores: ["src/utils/vscode/**", "src/utils/message/**"],
     rules: {
       "no-restricted-syntax": [
         "error",

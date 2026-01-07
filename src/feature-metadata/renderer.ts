@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { formatDateCompact, formatDateFull, formatFileSize } from "@/utils/shared/formatter";
-import type { FileMetadata, ImageMetadata } from "@/feature-metadata/metadata";
+import type { FileMetadata, ImageMetadata } from "@/feature-metadata/handlers";
 
 /**
  * 為圖片檔案設定狀態列 UI

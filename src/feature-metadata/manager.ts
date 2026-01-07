@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { getMetadata } from "@/feature-metadata/metadata";
+import { getMetadata } from "@/feature-metadata/handlers";
 import { renderFileMetadata, renderImageMetadata } from "@/feature-metadata/renderer";
 
 /**
