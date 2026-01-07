@@ -8,7 +8,7 @@ import { readDirectory, inspectDirectory, resolvePath } from "@/utils/system";
 import { isRootDirectory, pathToArray, toParentPath, shortenPath } from "@/utils/system";
 import { openImages } from "@/utils/image";
 
-import type { ReadResourceResult } from "@/providers/explorerProvider";
+import type { ReadResourceResult } from "@/feature-explorer/provider";
 import type { WithProgress } from "@/utils/type";
 
 /**

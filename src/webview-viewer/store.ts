@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { ReadImageResult, ImageViewerAPI } from "@/providers/imageViewerProvider";
+import type { ReadImageResult, ImageViewerAPI } from "@/feature-viewer/provider";
 import { createInvoke, getInitialData } from "@/utils-vscode/message/client";
 
 /**

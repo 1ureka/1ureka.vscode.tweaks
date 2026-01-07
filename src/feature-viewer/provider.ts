@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 import * as path from "path";
 import type { CustomDocument, CustomDocumentOpenContext, WebviewPanel, CancellationToken } from "vscode";
 
-import { handleCopyImage } from "@/handlers/imageViewerHandler";
+import { handleCopyImage } from "@/feature-viewer/handlers";
 import { createWebviewPanelManager } from "@/utils-vscode/webview";
 import { registerInvokeEvents } from "@/utils-vscode/message/host";
 import { exportImage, openImage } from "@/utils/image";

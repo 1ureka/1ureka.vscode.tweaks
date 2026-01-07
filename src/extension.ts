@@ -1,23 +1,19 @@
 import * as vscode from "vscode";
-import { registerImageViewerCommands } from "@/commands/imageViewerCommands";
-import { registerExplorerCommands } from "@/commands/explorerCommands";
-
 import FileMetadataDisplay from "@/feature-metadata";
 import CustomStylesPatch from "@/feature-styles";
 import GeneralTweaks from "@/feature-tweaks";
+import SystemExplorer from "@/feature-explorer";
+import ImageViewer from "@/feature-viewer";
 
 /**
  * ?
  */
-const features = [FileMetadataDisplay, CustomStylesPatch, GeneralTweaks];
+const features = [FileMetadataDisplay, CustomStylesPatch, GeneralTweaks, SystemExplorer, ImageViewer];
 
 /**
  * ?
  */
 export function activate(context: vscode.ExtensionContext) {
-  registerImageViewerCommands(context);
-  registerExplorerCommands(context);
-
   for (const feature of features) {
     try {
       feature.activate(context);

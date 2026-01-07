@@ -8,7 +8,7 @@ import { invoke } from "@explorer/store/init";
 import { getInitialData } from "@/utils-vscode/message/client";
 import type { InspectDirectoryEntry } from "@/utils/system";
 import type { ImageMetadata } from "@/utils/image";
-import type { ReadResourceResult } from "@/providers/explorerProvider";
+import type { ReadResourceResult } from "@/feature-explorer/provider";
 import type { SystemFolder, VolumeInfo } from "@/utils/system-windows";
 
 const initialData = getInitialData<ReadResourceResult>();

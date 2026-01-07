@@ -2,9 +2,9 @@ import * as vscode from "vscode";
 
 import { registerInvokeEvents } from "@/utils-vscode/message/host";
 import { createWebviewPanelManager } from "@/utils-vscode/webview";
-import { handleDelete, handleInitialData, handlePaste, handleRename } from "@/handlers/explorerHandlers";
-import { handleCreateFile, handleCreateDir } from "@/handlers/explorerHandlers";
-import { handleReadDirectory, handleReadImages } from "@/handlers/explorerHandlers";
+import { handleDelete, handleInitialData, handlePaste, handleRename } from "@/feature-explorer/handlers";
+import { handleCreateFile, handleCreateDir } from "@/feature-explorer/handlers";
+import { handleReadDirectory, handleReadImages } from "@/feature-explorer/handlers";
 
 import { generateThumbnail, type ImageMetadata } from "@/utils/image";
 import { listSystemFolders, listVolumes } from "@/utils/system-windows";

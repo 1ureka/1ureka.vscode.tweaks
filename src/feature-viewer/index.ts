@@ -1,10 +1,11 @@
 import * as vscode from "vscode";
-import { ImageViewerEditorProvider } from "@/providers/imageViewerProvider";
+import type { ExtensionFeature } from "@/utils-vscode";
+import { ImageViewerEditorProvider } from "@/feature-viewer/provider";
 
 /**
- * 註冊圖片檢視器相關命令與編輯器
+ * ?
  */
-function registerImageViewerCommands(context: vscode.ExtensionContext) {
+function activate(context: vscode.ExtensionContext) {
   const provider = new ImageViewerEditorProvider(context);
   const providerRegistration = vscode.window.registerCustomEditorProvider("1ureka.imageViewer", provider, {
     webviewOptions: { retainContextWhenHidden: true },
@@ -14,4 +15,11 @@ function registerImageViewerCommands(context: vscode.ExtensionContext) {
   context.subscriptions.push(providerRegistration);
 }
 
-export { registerImageViewerCommands };
+/**
+ * ?
+ */
+const feature: ExtensionFeature = {
+  activate,
+};
+
+export default feature;

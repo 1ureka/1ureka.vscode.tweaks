@@ -1,11 +1,12 @@
 import * as vscode from "vscode";
-import { createExplorerProvider } from "@/providers/explorerProvider";
+import type { ExtensionFeature } from "@/utils-vscode";
 import { createCommandManager } from "@/utils-vscode/command";
+import { createExplorerProvider } from "@/feature-explorer/provider";
 
 /**
- * 註冊系統瀏覽器相關命令與面板
+ * ?
  */
-export function registerExplorerCommands(context: vscode.ExtensionContext) {
+function activate(context: vscode.ExtensionContext) {
   const explorerProvider = createExplorerProvider(context);
   const commandManager = createCommandManager(context);
 
@@ -36,3 +37,12 @@ export function registerExplorerCommands(context: vscode.ExtensionContext) {
     else explorerProvider.createPanel(folders[0].fsPath);
   });
 }
+
+/**
+ * ?
+ */
+const feature: ExtensionFeature = {
+  activate,
+};
+
+export default feature;
