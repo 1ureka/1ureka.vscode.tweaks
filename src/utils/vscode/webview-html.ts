@@ -15,7 +15,7 @@ function serializeForHtml(data: any): string {
 }
 
 type generateReactHtmlParams = {
-  webviewType: string;
+  bundleName: string;
   webview: vscode.Webview;
   extensionUri: vscode.Uri;
   initialData?: any; // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -24,8 +24,8 @@ type generateReactHtmlParams = {
 /**
  * 生成 React WebView 的 HTML 模板
  */
-function generateReactHtml({ webviewType, webview, extensionUri, initialData }: generateReactHtmlParams) {
-  const webviewJS = vscode.Uri.joinPath(extensionUri, "dist", "webviews", `${webviewType}.js`);
+function generateReactHtml({ bundleName, webview, extensionUri, initialData }: generateReactHtmlParams) {
+  const webviewJS = vscode.Uri.joinPath(extensionUri, "dist", "webviews", `${bundleName}.js`);
   const jsWebviewUri = webview.asWebviewUri(webviewJS);
   const codiconsCss = vscode.Uri.joinPath(extensionUri, "node_modules", "@vscode/codicons", "dist", "codicon.css");
   const codiconsUri = webview.asWebviewUri(codiconsCss);
@@ -47,7 +47,7 @@ function generateReactHtml({ webviewType, webview, extensionUri, initialData }: 
   const htmlMeta = `<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">`;
   const htmlCSP = `<meta http-equiv="Content-Security-Policy" content="${csp.join(" ")}">`;
   const htmlCSS = `<style>${webviewCSS}</style>`;
-  const htmlTitle = `<title>${webviewType}</title>`;
+  const htmlTitle = `<title>${bundleName}</title>`;
   const htmlCodicons = `<link href="${codiconsUri}" rel="stylesheet" />`;
 
   const htmlHead = `<head>${htmlMeta}${htmlCSP}${htmlCSS}${htmlTitle}${htmlCodicons}${initialDataScript}</head>`;

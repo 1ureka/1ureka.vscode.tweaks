@@ -1,4 +1,4 @@
-import type { ExplorerAPI } from "@/feature-explorer/provider";
+import type { ExplorerAPI } from "@/feature-explorer/service";
 import { createInvoke } from "@/utils/message/client";
 import { dataStore, navigationExternalStore } from "@explorer/store/data";
 import { requestQueue } from "@explorer/store/queue";

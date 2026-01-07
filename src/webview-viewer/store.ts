@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { ReadImageResult, ImageViewerAPI } from "@/feature-viewer/provider";
+import type { ReadImageResult, ImageViewerAPI } from "@/feature-viewer/service";
 import { createInvoke, getInitialData } from "@/utils/message/client";
 
 /**

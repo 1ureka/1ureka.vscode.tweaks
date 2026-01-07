@@ -1,13 +1,13 @@
 import * as vscode from "vscode";
 import type { ExtensionFeature } from "@/utils/vscode";
 import { createCommandManager } from "@/utils/vscode/command";
-import { createExplorerProvider } from "@/feature-explorer/provider";
+import { ExplorerWebviewPanelProvider } from "@/feature-explorer/provider";
 
 /**
  * ?
  */
 function activate(context: vscode.ExtensionContext) {
-  const explorerProvider = createExplorerProvider(context);
+  const explorerProvider = new ExplorerWebviewPanelProvider(context);
   const commandManager = createCommandManager(context);
 
   commandManager.register("1ureka.explorer.openFromPath", async (params: vscode.Uri | string | undefined) => {
