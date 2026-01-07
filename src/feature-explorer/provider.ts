@@ -6,10 +6,10 @@ import { handleDelete, handleInitialData, handlePaste, handleRename } from "@/fe
 import { handleCreateFile, handleCreateDir } from "@/feature-explorer/handlers";
 import { handleReadDirectory, handleReadImages } from "@/feature-explorer/handlers";
 
-import { generateThumbnail, type ImageMetadata } from "@/utils/image";
-import { listSystemFolders, listVolumes } from "@/utils/system-windows";
-import type { InspectDirectoryEntry } from "@/utils/system";
-import type { OneOf, Prettify, WithProgress } from "@/utils/type";
+import { generateThumbnail, type ImageMetadata } from "@/utils/host/image";
+import { listSystemFolders, listVolumes } from "@/utils/host/system-windows";
+import type { InspectDirectoryEntry } from "@/utils/host/system";
+import type { OneOf, Prettify, WithProgress } from "@/utils/shared/type";
 
 import explorerIconLight from "@/assets/explorer-light.svg";
 import explorerIconDark from "@/assets/explorer-dark.svg";

@@ -5,8 +5,8 @@ import type { CustomDocument, CustomDocumentOpenContext, WebviewPanel, Cancellat
 import { handleCopyImage } from "@/feature-viewer/handlers";
 import { createWebviewPanelManager } from "@/utils-vscode/webview";
 import { registerInvokeEvents } from "@/utils-vscode/message/host";
-import { exportImage, openImage } from "@/utils/image";
-import type { ExportFormat, ImageMetadata } from "@/utils/image";
+import { exportImage, openImage } from "@/utils/host/image";
+import type { ExportFormat, ImageMetadata } from "@/utils/host/image";
 
 // ---------------------------------------------------------------------------------
 

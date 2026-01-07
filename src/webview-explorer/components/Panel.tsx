@@ -1,6 +1,6 @@
 import { Accordion, AccordionDetails, AccordionSummary, Box, Typography } from "@mui/material";
 import type { SxProps } from "@mui/system";
-import { centerTextSx } from "@/utils/ui";
+import { centerTextSx } from "@/utils/client/ui";
 
 const accordionSummarySx: SxProps = {
   p: 0,

@@ -1,9 +1,9 @@
 import { memo } from "react";
 import { ButtonBase, Typography } from "@mui/material";
 
-import { formatFileSize, formatFileType, formatFixedLengthDateTime } from "@/utils/formatter";
+import { formatFileSize, formatFileType, formatFixedLengthDateTime } from "@/utils/shared/formatter";
 import { extensionIconMap } from "@/assets/fileExtMap";
-import type { InspectDirectoryEntry } from "@/utils/system";
+import type { InspectDirectoryEntry } from "@/utils/host/system";
 
 import type { TableColumn } from "@explorer/layout-table/config";
 import { tableColumns, tableClass } from "@explorer/layout-table/config";

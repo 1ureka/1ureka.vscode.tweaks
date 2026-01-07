@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { formatDateCompact, formatDateFull, formatFileSize } from "@/utils/formatter";
+import { formatDateCompact, formatDateFull, formatFileSize } from "@/utils/shared/formatter";
 import type { FileMetadata, ImageMetadata } from "@/feature-metadata/metadata";
 
 /**

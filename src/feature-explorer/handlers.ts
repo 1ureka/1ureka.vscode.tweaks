@@ -1,15 +1,14 @@
 import fs from "fs-extra";
 import * as path from "path";
 
-import { tryCatch } from "@/utils";
-import { generateErrorMessage } from "@/utils/formatter";
-
-import { readDirectory, inspectDirectory, resolvePath } from "@/utils/system";
-import { isRootDirectory, pathToArray, toParentPath, shortenPath } from "@/utils/system";
-import { openImages } from "@/utils/image";
+import { tryCatch } from "@/utils/shared";
+import { generateErrorMessage } from "@/utils/shared/formatter";
+import { readDirectory, inspectDirectory, resolvePath } from "@/utils/host/system";
+import { isRootDirectory, pathToArray, toParentPath, shortenPath } from "@/utils/host/system";
+import { openImages } from "@/utils/host/image";
 
 import type { ReadResourceResult } from "@/feature-explorer/provider";
-import type { WithProgress } from "@/utils/type";
+import type { WithProgress } from "@/utils/shared/type";
 
 /**
  * 處理初始資料注入

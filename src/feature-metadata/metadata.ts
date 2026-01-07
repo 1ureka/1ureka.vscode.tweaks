@@ -1,6 +1,6 @@
 import fs from "fs-extra";
 import * as path from "path";
-import { openImage } from "@/utils/image";
+import { openImage } from "@/utils/host/image";
 
 /**
  * ?

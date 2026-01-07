@@ -5,7 +5,7 @@ import { List, type ListItem } from "@explorer/components/List";
 import { ActionButton, ActionDropdown, ActionDropdownButton, ActionGroup } from "@explorer/components/Action";
 import { navigateHistoryStore, navigationExternalStore, navigationStore } from "@explorer/store/data";
 import { navigateToFolder, readDrives } from "@explorer/action/navigation";
-import { formatFileSize } from "@/utils/formatter";
+import { formatFileSize } from "@/utils/shared/formatter";
 
 const fakeBookmarkItems: ListItem[] = [
   {

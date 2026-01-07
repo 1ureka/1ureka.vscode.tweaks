@@ -3,7 +3,7 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Box, SxProps, Typography } from "@mui/material";
 import { ActionButton, ActionGroup, ActionInput, actionSize } from "@explorer/components/Action";
 import { Tooltip } from "@explorer/components/Tooltip";
-import { colorMix } from "@/utils/ui";
+import { colorMix } from "@/utils/client/ui";
 
 /**
  * 列表元件中，每一列的高度

@@ -1,5 +1,5 @@
-import type { InspectDirectoryEntry } from "@/utils/system";
-import { colorMix } from "@/utils/ui";
+import type { InspectDirectoryEntry } from "@/utils/host/system";
+import { colorMix } from "@/utils/client/ui";
 
 /** 表格單元格的對齊方式 */
 type TableCellAlign = "left" | "right" | "center";

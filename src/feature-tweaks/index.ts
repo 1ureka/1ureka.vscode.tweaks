@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import type { ExtensionFeature } from "@/utils-vscode";
 import { createCommandManager } from "@/utils-vscode/command";
-import { openWithDefaultApp } from "@/utils/system";
+import { openWithDefaultApp } from "@/utils/host/system";
 import { openNavigationMenu } from "@/feature-tweaks/navigation";
 
 /**

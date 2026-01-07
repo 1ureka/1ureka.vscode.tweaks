@@ -1,4 +1,4 @@
-import type { InspectDirectoryEntry } from "@/utils/system";
+import type { InspectDirectoryEntry } from "@/utils/host/system";
 import { invoke } from "@explorer/store/init";
 import { clipboardStore, dataStore, selectionStore, viewDataStore } from "@explorer/store/data";
 import { requestQueue } from "@explorer/store/queue";

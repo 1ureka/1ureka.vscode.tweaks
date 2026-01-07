@@ -1,5 +1,5 @@
-import { copyImageBinaryToSystem } from "@/utils/system-windows";
-import { generateBase64 } from "@/utils/image";
+import { copyImageBinaryToSystem } from "@/utils/host/system-windows";
+import { generateBase64 } from "@/utils/host/image";
 
 /**
  * 處理複製圖片到剪貼簿的請求

@@ -6,10 +6,10 @@
 import { create } from "zustand";
 import { invoke } from "@explorer/store/init";
 import { getInitialData } from "@/utils-vscode/message/client";
-import type { InspectDirectoryEntry } from "@/utils/system";
-import type { ImageMetadata } from "@/utils/image";
+import type { InspectDirectoryEntry } from "@/utils/host/system";
+import type { ImageMetadata } from "@/utils/host/image";
 import type { ReadResourceResult } from "@/feature-explorer/provider";
-import type { SystemFolder, VolumeInfo } from "@/utils/system-windows";
+import type { SystemFolder, VolumeInfo } from "@/utils/host/system-windows";
 
 const initialData = getInitialData<ReadResourceResult>();
 if (!initialData) {

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { defer } from "@/utils";
-import type { Promised } from "@/utils/type";
+import { defer } from "@/utils/shared";
+import type { Promised } from "@/utils/shared/type";
 import type { API, InvokeResponseMessage } from "@/utils-vscode/message/host";
 
 /**
