@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { generateReactHtml } from "@/utils-vscode/webview-html";
+import { generateReactHtml } from "@/utils/vscode/webview-html";
 import { randomUUID } from "crypto";
 import type { OneOf } from "@/utils/shared/type";
 import type { WebviewId } from "@/contribute";

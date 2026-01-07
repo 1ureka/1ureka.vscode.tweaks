@@ -2,7 +2,7 @@
 
 import { defer } from "@/utils/shared";
 import type { Promised } from "@/utils/shared/type";
-import type { API, InvokeResponseMessage } from "@/utils-vscode/message/host";
+import type { API, InvokeResponseMessage } from "@/utils/vscode/message/host";
 
 /**
  * 獲取初始數據（從 HTML 中的 script 標籤提取）

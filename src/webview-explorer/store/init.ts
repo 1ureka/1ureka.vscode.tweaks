@@ -1,5 +1,5 @@
 import type { ExplorerAPI } from "@/feature-explorer/provider";
-import { createInvoke } from "@/utils-vscode/message/client";
+import { createInvoke } from "@/utils/vscode/message/client";
 import { dataStore, navigationExternalStore } from "@explorer/store/data";
 import { requestQueue } from "@explorer/store/queue";
 

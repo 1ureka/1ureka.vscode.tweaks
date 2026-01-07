@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
-import type { ExtensionFeature } from "@/utils-vscode";
-import { createCommandManager } from "@/utils-vscode/command";
+import type { ExtensionFeature } from "@/utils/vscode";
+import { createCommandManager } from "@/utils/vscode/command";
 import { injectStyles, restoreAndReinjectStyles, restoreStyles } from "@/feature-styles/service";
 
 /**

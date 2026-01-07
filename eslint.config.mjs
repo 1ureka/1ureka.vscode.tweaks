@@ -59,29 +59,29 @@ export default defineConfig([
   // 特殊規則 - 禁止直接使用某些 API，必須透過 utils 中的輔助函數來使用
   {
     files: ["**/*.ts", "**/*.tsx"],
-    ignores: ["src/utils-vscode/**"],
+    ignores: ["src/utils/vscode/**"],
     rules: {
       "no-restricted-syntax": [
         "error",
         {
           selector: "CallExpression[callee.property.name='registerCommand'][callee.object.property.name='commands']",
-          message: "請使用 @/utils/command.ts 中的輔助函數來確保命令資源會正確釋放。",
+          message: "請使用 @/utils/vscode 中的輔助函數來確保命令資源會正確釋放。",
         },
         {
           selector: "CallExpression[callee.property.name='getConfiguration'][callee.object.property.name='workspace']",
-          message: "請使用 @/utils/command.ts 中的輔助函數來確保統一獲取使用者配置的途徑。",
+          message: "請使用 @/utils/vscode 中的輔助函數來確保統一獲取使用者配置的途徑。",
         },
         {
           selector: "CallExpression[callee.property.name='postMessage']",
-          message: "請使用 @/utils-vscode 處理與 VSCode API 的訊息傳遞機制",
+          message: "請使用 @/utils/vscode 處理與 VSCode API 的訊息傳遞機制",
         },
         {
           selector: "CallExpression[callee.property.name='onDidReceiveMessage']",
-          message: "請使用 @/utils-vscode 處理與 VSCode API 的訊息傳遞機制",
+          message: "請使用 @/utils/vscode 處理與 VSCode API 的訊息傳遞機制",
         },
         {
           selector: "CallExpression[callee.property.name='addEventListener'][arguments.0.value='message']",
-          message: "請使用 @/utils-vscode 處理與 VSCode API 的訊息傳遞機制",
+          message: "請使用 @/utils/vscode 處理與 VSCode API 的訊息傳遞機制",
         },
       ],
     },

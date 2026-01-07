@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import type { ExtensionFeature } from "@/utils-vscode";
+import type { ExtensionFeature } from "@/utils/vscode";
 import { createStatusBarManager } from "@/feature-metadata/manager";
 
 /**

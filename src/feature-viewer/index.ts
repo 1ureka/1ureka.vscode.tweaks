@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import type { ExtensionFeature } from "@/utils-vscode";
+import type { ExtensionFeature } from "@/utils/vscode";
 import { ImageViewerEditorProvider } from "@/feature-viewer/provider";
 
 /**
