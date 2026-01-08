@@ -6,7 +6,7 @@ import { handleCreateFile, handleCreateDir } from "@/feature-explorer/handlers";
 import { handleReadDirectory, handleReadImages } from "@/feature-explorer/handlers";
 
 import { generateThumbnail } from "@/utils/host/image";
-import { listSystemFolders, listVolumes } from "@/utils/host/system-windows";
+import { listSystemFolders, listVolumes, getFileAttributes } from "@/utils/host/system-windows";
 import type { WithProgress } from "@/utils/shared/type";
 
 /**
@@ -58,6 +58,13 @@ const readImages = ({ dirPath }: { dirPath: string }) => {
  */
 const readThumbnail = (params: { filePath: string }) => {
   return generateThumbnail(params.filePath);
+};
+
+/**
+ * 讀取指定檔案的 Windows 屬性
+ */
+const readFileAttributes = (params: { filePath: string }) => {
+  return getFileAttributes(params.filePath);
 };
 
 /**
@@ -164,6 +171,7 @@ export const explorerService = {
   "system.read.volumes": readSystemVolumes,
   "system.read.images": readImages,
   "system.read.thumbnail": readThumbnail,
+  "system.read.file.attributes": readFileAttributes,
   "system.open.file": openFile,
   "system.open.dir": openTarget,
   "system.create.file": runCreateFileWorkflow,
