@@ -2,7 +2,7 @@
 
 import { defer } from "@/utils/shared";
 import type { Promised } from "@/utils/shared/type";
-import type { API, InvokeMessage, InvokeResponseMessage } from "@/utils/message/type";
+import type { Service, InvokeMessage, InvokeResponseMessage } from "@/utils/message/type";
 
 /**
  * 獲取初始數據（從 HTML 中的 script 標籤提取）
@@ -27,11 +27,11 @@ function getInitialData<T = any>(): T | null {
 const vscode = acquireVsCodeApi();
 
 /**
- * 建立一個用於調用擴展主機處理函式的介面
+ * 建立一個用於調用擴展主機服務的介面
  * @param options 可選的設定參數，例如超時時間
  * @returns 包含 invoke 和 close 方法的物件
  */
-function createInvoke<T extends API>() {
+function createInvoke<T extends Service>() {
   /**
    * 使用 Map 管理 pending 中的請求，key 是 requestId
    */
@@ -56,11 +56,11 @@ function createInvoke<T extends API>() {
    * @param id 處理函式的識別碼
    * @param params 傳遞給處理函式的參數
    */
-  function invoke<ID extends keyof T & string>(id: ID, params: Parameters<T[ID]>[0]): Promised<T[ID]> {
+  function invoke<ID extends keyof T & string>(serviceId: ID, params: Parameters<T[ID]>[0]): Promised<T[ID]> {
     const { promise, resolve } = defer<Awaited<ReturnType<T[ID]>>>();
 
     const requestId = crypto.randomUUID();
-    const message: InvokeMessage = { type: "1ureka.invoke", requestId, handlerId: id, params };
+    const message: InvokeMessage = { type: "1ureka.invoke", requestId, serviceId, params };
 
     pendingRequests.set(requestId, { resolve });
     vscode.postMessage(message);

@@ -35,7 +35,7 @@ const readClipboard = async () => {
   const srcList = clipboardList.map((entry) => entry.filePath);
   const { currentPath } = dataStore.getState();
 
-  const result = await requestQueue.add(() => invoke("system.create.paste", { srcList, destDir: currentPath }));
+  const result = await requestQueue.add(() => invoke("system.paste", { srcList, destDir: currentPath }));
   if (!result) return;
 
   clipboardStore.setState({ entries: {} });

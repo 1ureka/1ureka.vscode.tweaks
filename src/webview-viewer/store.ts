@@ -1,11 +1,12 @@
 import { create } from "zustand";
-import type { ReadImageResult, ImageViewerAPI } from "@/feature-viewer/service";
+import type { imageViewerService } from "@/feature-viewer/service";
+import type { ReadImageResult } from "@/feature-viewer/provider";
 import { createInvoke, getInitialData } from "@/utils/message/client";
 
 /**
  * 建立用於調用延伸主機 API 的函式
  */
-const { invoke } = createInvoke<ImageViewerAPI>();
+const { invoke } = createInvoke<typeof imageViewerService>();
 
 const initialData = getInitialData<ReadImageResult>();
 if (!initialData || !initialData.metadata) {

@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 
+import { pasteOptions, pastePickOptions } from "@/feature-explorer/config";
 import { handleDelete, handlePaste, handleRename } from "@/feature-explorer/handlers";
 import { handleCreateFile, handleCreateDir } from "@/feature-explorer/handlers";
 import { handleReadDirectory, handleReadImages } from "@/feature-explorer/handlers";
@@ -8,29 +9,96 @@ import { generateThumbnail } from "@/utils/host/image";
 import { listSystemFolders, listVolumes } from "@/utils/host/system-windows";
 import type { WithProgress } from "@/utils/shared/type";
 
-// ---------------------------------------------------------------------------------
-
+/**
+ * 顯示一般資訊提示訊息
+ */
 const showInfo = (message: string) => {
   vscode.window.showInformationMessage(message);
 };
 
+/**
+ * 顯示錯誤警告訊息
+ */
 const showError = (message: string) => {
   vscode.window.showErrorMessage(message);
 };
 
-const showErrorReport = async (content: string) => {
-  const doc = await vscode.workspace.openTextDocument({ content, language: "markdown" });
-  vscode.window.showTextDocument(doc, { preview: false });
-};
-
-const showCreateInputBox = async (prompt: string, placeHolder: string) => {
-  return await vscode.window.showInputBox({ prompt, placeHolder });
-};
-
+/**
+ * 將文字寫入系統剪貼簿
+ */
 const writeClipboard = async (text: string) => {
   await vscode.env.clipboard.writeText(text);
 };
 
+/**
+ * 讀取系統預設的使用者路徑 (如：桌面、文件、下載等)
+ */
+const readUserPaths = async () => {
+  if (process.platform !== "win32") return [];
+  return await listSystemFolders();
+};
+
+/**
+ * 讀取系統磁碟機清單
+ */
+const readSystemVolumes = async () => {
+  if (process.platform !== "win32") return [];
+  return await listVolumes();
+};
+
+/**
+ * 讀取指定目錄下的所有圖片及其元數據
+ */
+const readImages = ({ dirPath }: { dirPath: string }) => {
+  return handleReadImages(dirPath, withProgress);
+};
+
+/**
+ * 獲取圖片檔案的縮圖路徑
+ */
+const readThumbnail = (params: { filePath: string }) => {
+  return generateThumbnail(params.filePath);
+};
+
+/**
+ * 使用 VS Code 預設編輯器開啟檔案
+ */
+const openFile = (filePath: string) => {
+  vscode.commands.executeCommand("vscode.open", vscode.Uri.file(filePath), vscode.ViewColumn.Active);
+};
+
+/**
+ * 開啟目標目錄：可選擇開啟為新工作區或在終端機開啟
+ */
+const openTarget = ({ dirPath, target }: { dirPath: string; target: "workspace" | "terminal" }) => {
+  if (target === "workspace") {
+    vscode.commands.executeCommand("vscode.openFolder", vscode.Uri.file(dirPath), true);
+  } else if (target === "terminal") {
+    vscode.window.createTerminal({ cwd: dirPath }).show();
+  }
+};
+
+/**
+ * [工作流] 執行建立檔案：包含輸入框 UI 與實作
+ */
+const runCreateFileWorkflow = async ({ dirPath }: { dirPath: string }) => {
+  const fileName = await vscode.window.showInputBox({ prompt: "輸入新檔案名稱", placeHolder: "檔案名稱" });
+  if (!fileName) return null;
+  return handleCreateFile({ dirPath, fileName, showError, openFile });
+};
+
+/**
+ * [工作流] 執行建立資料夾：包含輸入框 UI 與實作
+ */
+const runCreateDirWorkflow = async ({ dirPath }: { dirPath: string }) => {
+  const folderName = await vscode.window.showInputBox({ prompt: "輸入新資料夾名稱", placeHolder: "資料夾名稱" });
+  if (!folderName) return null;
+  return handleCreateDir({ dirPath, folderName, showError });
+};
+
+/**
+ * 包裝帶有進度條的任務執行函式
+ */
 const withProgress: WithProgress = async (taskName, taskFn) => {
   const progressOptions: vscode.ProgressOptions = {
     title: taskName,
@@ -44,129 +112,63 @@ const withProgress: WithProgress = async (taskName, taskFn) => {
   });
 };
 
-const openTarget = ({ dirPath, target }: { dirPath: string; target: "workspace" | "terminal" }) => {
-  if (target === "workspace") {
-    vscode.commands.executeCommand("vscode.openFolder", vscode.Uri.file(dirPath), true);
-  } else if (target === "terminal") {
-    vscode.window.createTerminal({ cwd: dirPath }).show();
-  }
+/**
+ * [工作流] 執行貼上操作：包含選項選擇 UI 與實作
+ */
+const runPasteWorkflow = async ({ srcList, destDir }: { srcList: string[]; destDir: string }) => {
+  const pick = await vscode.window.showQuickPick(pasteOptions, pastePickOptions);
+  if (!pick || !pick.type || pick.overwrite === undefined) return null;
+
+  const { type, overwrite } = pick;
+  const showErrorReport = async (content: string) => {
+    const doc = await vscode.workspace.openTextDocument({ content, language: "markdown" });
+    vscode.window.showTextDocument(doc, { preview: false });
+  };
+
+  return handlePaste({ srcList, destDir, type, overwrite, withProgress, showErrorReport });
 };
 
-const openFile = (filePath: string) => {
-  vscode.commands.executeCommand("vscode.open", vscode.Uri.file(filePath), vscode.ViewColumn.Active);
+/**
+ * [工作流] 執行刪除操作：包含確認提示 UI 與實作
+ */
+const runDeleteWorkflow = async (params: { itemList: string[]; dirPath: string }) => {
+  const confirmationMessage = `確定要刪除所選的 ${params.itemList.length} 個項目嗎？此操作無法復原！`;
+
+  const confirm = await vscode.window.showWarningMessage(confirmationMessage, { modal: true }, "確定");
+  if (confirm !== "確定") return handleReadDirectory({ dirPath: params.dirPath });
+
+  const showErrorReport = async (content: string) => {
+    const doc = await vscode.workspace.openTextDocument({ content, language: "markdown" });
+    vscode.window.showTextDocument(doc, { preview: false });
+  };
+
+  return handleDelete({ ...params, showErrorReport, withProgress });
 };
 
-// ---------------------------------------------------------------------------------
-
-/** 使用者選擇要對剪貼簿中的項目執行的操作時的標題 */
-const pastePickOptions: vscode.QuickPickOptions = {
-  title: "對於每個項目...",
-  placeHolder: "請選擇對於剪貼簿的每個項目，要執行的操作",
+/**
+ * [工作流] 執行重新命名
+ */
+const runRenameWorkflow = (params: { name: string; newName: string; dirPath: string }) => {
+  return handleRename({ ...params, showError });
 };
 
-/** 使用者選擇要對剪貼簿中的項目執行的操作時的選項 */
-const pasteOptions: (vscode.QuickPickItem & { type?: "copy" | "move"; overwrite?: boolean })[] = [
-  {
-    label: "複製",
-    kind: vscode.QuickPickItemKind.Separator,
-  },
-  {
-    iconPath: new vscode.ThemeIcon("copy"),
-    label: "複製",
-    description: "不覆蓋",
-    detail:
-      "對於單一項目，若為檔案且目標有相同名稱，則跳過；若為資料夾且目標有相同名稱，則將來源內容合併至目標，不覆蓋目標中已存在的檔案。",
-    type: "copy",
-    overwrite: false,
-  },
-  {
-    iconPath: new vscode.ThemeIcon("copy"),
-    label: "複製",
-    description: "$(warning) 覆蓋",
-    detail: "如果目標位置已有相同項目，會直接以來源項目取代，原有內容將被覆蓋。",
-    type: "copy",
-    overwrite: true,
-  },
-  {
-    label: "移動",
-    kind: vscode.QuickPickItemKind.Separator,
-  },
-  {
-    iconPath: new vscode.ThemeIcon("go-to-file"),
-    label: "移動",
-    description: "不覆蓋",
-    detail: "對於單一項目，只要目標位置已存在相同項目或該項目的部分內容，就會跳過執行該項目的移動操作。",
-    type: "move",
-    overwrite: false,
-  },
-  {
-    iconPath: new vscode.ThemeIcon("go-to-file"),
-    label: "移動",
-    description: "$(warning) 覆蓋",
-    detail: "如果目標位置已有相同項目，會直接以來源項目取代，原有內容將被覆蓋。",
-    type: "move",
-    overwrite: true,
-  },
-];
-
-// ---------------------------------------------------------------------------------
-
-const explorerAPI = {
+/**
+ * Explorer 核心服務，封裝了 UI 交互、系統操作與業務邏輯
+ */
+export const explorerService = {
   "show.info": showInfo,
   "show.error": showError,
   "clipboard.write": writeClipboard,
-
   "system.read.dir": handleReadDirectory,
-  "system.read.system.folders": () => {
-    if (process.platform !== "win32") return Promise.resolve([]);
-    return listSystemFolders();
-  },
-  "system.read.volumes": () => {
-    if (process.platform !== "win32") return Promise.resolve([]);
-    return listVolumes();
-  },
-  "system.read.images": ({ dirPath }: { dirPath: string }) => {
-    return handleReadImages(dirPath, withProgress);
-  },
-
-  "system.generate.thumbnail": (params: { filePath: string }) => {
-    return generateThumbnail(params.filePath);
-  },
-
+  "system.read.user.paths": readUserPaths,
+  "system.read.volumes": readSystemVolumes,
+  "system.read.images": readImages,
+  "system.read.thumbnail": readThumbnail,
   "system.open.file": openFile,
   "system.open.dir": openTarget,
-
-  "system.create.file": async ({ dirPath }: { dirPath: string }) => {
-    const fileName = await showCreateInputBox("輸入新檔案名稱", "檔案名稱");
-    if (!fileName) return null;
-    return handleCreateFile({ dirPath, fileName, showError, openFile });
-  },
-  "system.create.dir": async ({ dirPath }: { dirPath: string }) => {
-    const folderName = await showCreateInputBox("輸入新資料夾名稱", "資料夾名稱");
-    if (!folderName) return null;
-    return handleCreateDir({ dirPath, folderName, showError });
-  },
-  "system.create.paste": async ({ srcList, destDir }: { srcList: string[]; destDir: string }) => {
-    const pick = await vscode.window.showQuickPick(pasteOptions, pastePickOptions);
-    if (!pick || !pick.type || pick.overwrite === undefined) return null;
-
-    const { type, overwrite } = pick;
-    return handlePaste({ srcList, destDir, type, overwrite, withProgress, showErrorReport });
-  },
-  "system.delete": async (params: { itemList: string[]; dirPath: string }) => {
-    const confirmationMessage = `確定要刪除所選的 ${params.itemList.length} 個項目嗎？此操作無法復原！`;
-
-    const confirm = await vscode.window.showWarningMessage(confirmationMessage, { modal: true }, "確定");
-    if (confirm !== "確定") return handleReadDirectory({ dirPath: params.dirPath });
-
-    return handleDelete({ ...params, showErrorReport, withProgress });
-  },
-  "system.update.rename": (params: { name: string; newName: string; dirPath: string }) => {
-    return handleRename({ ...params, showError });
-  },
-};
-
-type ExplorerAPI = typeof explorerAPI;
-
-export { explorerAPI };
-export type { ExplorerAPI };
+  "system.create.file": runCreateFileWorkflow,
+  "system.create.dir": runCreateDirWorkflow,
+  "system.paste": runPasteWorkflow,
+  "system.delete": runDeleteWorkflow,
+  "system.rename": runRenameWorkflow,
+} as const;

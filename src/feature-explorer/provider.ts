@@ -3,7 +3,7 @@ import * as vscode from "vscode";
 import { registerInvokeEvents } from "@/utils/message/host";
 import { createWebviewPanel } from "@/utils/vscode/webview";
 import { handleInitialData, type ReadResourceResult } from "@/feature-explorer/handlers";
-import { explorerAPI } from "@/feature-explorer/service";
+import { explorerService } from "@/feature-explorer/service";
 
 import explorerIconLight from "@/assets/explorer-light.svg";
 import explorerIconDark from "@/assets/explorer-dark.svg";
@@ -37,7 +37,7 @@ class ExplorerWebviewPanelProvider {
       panelIcon: { light: vscode.Uri.parse(explorerIconLight), dark: vscode.Uri.parse(explorerIconDark) },
     });
 
-    registerInvokeEvents(panel, explorerAPI);
+    registerInvokeEvents(panel, explorerService);
   }
 }
 

@@ -4,8 +4,13 @@ import type { CustomDocument, CustomDocumentOpenContext, WebviewPanel, Cancellat
 
 import { createWebviewPanel } from "@/utils/vscode/webview";
 import { registerInvokeEvents } from "@/utils/message/host";
-import { openImage } from "@/utils/host/image";
-import { imageViewerAPI, type ReadImageResult } from "@/feature-viewer/service";
+import { openImage, type ImageMetadata } from "@/utils/host/image";
+import { imageViewerService } from "@/feature-viewer/service";
+
+/**
+ * 圖片檢視器的延伸主機讀取初始資料型別
+ */
+export type ReadImageResult = { uri: string; metadata: ImageMetadata };
 
 /**
  * 圖片檢視器自訂編輯器提供者
@@ -56,7 +61,7 @@ class ImageViewerEditorProvider implements vscode.CustomReadonlyEditorProvider {
       panelResources: [vscode.Uri.file(path.dirname(document.uri.fsPath))],
     });
 
-    registerInvokeEvents(initializedPanel, imageViewerAPI);
+    registerInvokeEvents(initializedPanel, imageViewerService);
   }
 }
 

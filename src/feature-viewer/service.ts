@@ -1,74 +1,28 @@
 import * as vscode from "vscode";
 import * as path from "path";
+
+import { formatOptions, generateProgressOptions } from "@/feature-viewer/config";
 import { handleCopyImage } from "@/feature-viewer/handlers";
 import { exportImage } from "@/utils/host/image";
-import type { ExportFormat, ImageMetadata } from "@/utils/host/image";
 
 /**
- * 圖片檢視器的延伸主機讀取初始資料型別
+ * ?
  */
-type ReadImageResult = { uri: string; metadata: ImageMetadata };
-
-export type { ReadImageResult };
-
-// ---------------------------------------------------------------------------------
-
 const showInfo = (message: string) => {
   vscode.window.showInformationMessage(message);
 };
 
+/**
+ * ?
+ */
 const showError = (message: string) => {
   vscode.window.showErrorMessage(message);
 };
 
-const writeClipboard = async (text: string) => {
-  await vscode.env.clipboard.writeText(text);
-};
-
-/** 產生 withProgress 選項 */
-const generateProgressOptions = (title: string) => {
-  return { title, location: vscode.ProgressLocation.Notification, cancellable: false };
-};
-
-/** 格式選項介面 */
-type FormatOption = vscode.QuickPickItem & { format: ExportFormat; extension: string };
-
-/** 導出圖片時可供選擇的格式選項 */
-const formatOptions: FormatOption[] = [
-  {
-    label: "PNG",
-    description: "無損壓縮，支援透明度",
-    detail: "適合需要透明背景的圖片",
-    format: "png",
-    extension: ".png",
-  },
-  {
-    label: "JPEG",
-    description: "有損壓縮，檔案較小",
-    detail: "適合相片或不需要透明度的圖片",
-    format: "jpeg",
-    extension: ".jpg",
-  },
-  {
-    label: "WebP",
-    description: "現代格式，壓縮率高",
-    detail: "有損壓縮，品質優於 JPEG ，且支援透明度",
-    format: "webp",
-    extension: ".webp",
-  },
-  {
-    label: "WebP (無損)",
-    description: "無損壓縮，支援透明度",
-    detail: "若應用程式支援，相比 PNG 其檔案通常更小但品質相同",
-    format: "webp-lossless",
-    extension: ".webp",
-  },
-];
-
-// ---------------------------------------------------------------------------------
-
-/** 處理複製圖片到剪貼簿的流程 */
-async function copyImage(filePath: string) {
+/**
+ * 複製圖片到剪貼簿的流程
+ */
+async function runCopyWorkflow(filePath: string) {
   if (process.platform !== "win32") {
     await vscode.env.clipboard.writeText(filePath);
     vscode.window.showInformationMessage(`已複製圖片路徑: ${filePath}`);
@@ -86,8 +40,10 @@ async function copyImage(filePath: string) {
   });
 }
 
-/** 處理導出圖片的流程 */
-async function executeExportWorkflow(filePath: string) {
+/**
+ * 導出圖片的流程
+ */
+async function runExportWorkflow(filePath: string) {
   const formatOption = await vscode.window.showQuickPick(formatOptions, {
     placeHolder: "選擇導出格式",
     title: "圖片導出格式",
@@ -127,20 +83,21 @@ async function executeExportWorkflow(filePath: string) {
   });
 }
 
-// ---------------------------------------------------------------------------------
+/**
+ * ?
+ */
+async function runCopyColorWorkflow(color: string) {
+  await vscode.env.clipboard.writeText(color);
+  vscode.window.showInformationMessage(`選取的顏色 ${color} 已複製到剪貼簿`);
+}
 
-const imageViewerAPI = {
+/**
+ * ?
+ */
+export const imageViewerService = {
   "show.info": showInfo,
   "show.error": showError,
-
-  "image.copy": copyImage,
-  "image.export": executeExportWorkflow,
-  "image.copyColor": async (color: string) => {
-    await writeClipboard(color);
-    vscode.window.showInformationMessage(`選取的顏色 ${color} 已複製到剪貼簿`);
-  },
+  "image.export": runExportWorkflow,
+  "image.copy": runCopyWorkflow,
+  "image.copyColor": runCopyColorWorkflow,
 };
-
-type ImageViewerAPI = typeof imageViewerAPI;
-
-export { imageViewerAPI, type ImageViewerAPI };
