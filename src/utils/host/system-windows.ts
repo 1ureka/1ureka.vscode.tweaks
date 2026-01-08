@@ -36,6 +36,27 @@ export interface VolumeInfo {
   DriveType: DriveType;
 }
 
+/**
+ * 根據 [System.IO.FileAttributes] 官方枚舉定義的型別
+ */
+export type FileAttribute =
+  | "ReadOnly"
+  | "Hidden"
+  | "System"
+  | "Directory"
+  | "Archive"
+  | "Device"
+  | "Normal"
+  | "Temporary"
+  | "SparseFile"
+  | "ReparsePoint"
+  | "Compressed"
+  | "Offline"
+  | "NotContentIndexed"
+  | "Encrypted"
+  | "IntegrityStream"
+  | "NoScrubData";
+
 // --- 核心邏輯 (Core) ------------------------------------------------------------------------
 
 /** 執行 PowerShell 指令並回傳 stdout（字串），假設 windows 系統是繁體中文環境 (使用 big5 編碼輸出) */
@@ -107,16 +128,42 @@ $data = Get-CimInstance Win32_LogicalDisk | ForEach-Object {
 @($data) | ConvertTo-Json
 `;
 
+const getFileAttrScript = `
+$path = [Console]::In.ReadLine()
+try {
+    if (Test-Path -LiteralPath $path -PathType Leaf) {
+        $attr = [System.IO.File]::GetAttributes($path)
+
+        # 取得所有標準枚舉名稱
+        $standardNames = [System.Enum]::GetNames([System.IO.FileAttributes])
+        $result = @()
+
+        # 逐一檢查該檔案是否具備這些標準屬性
+        foreach ($name in $standardNames) {
+            $enumVal = [System.IO.FileAttributes]::$name
+            if (($attr.value__ -band $enumVal.value__) -eq $enumVal.value__) {
+                $result += $name
+            }
+        }
+
+        $result | ConvertTo-Json
+    } else { "null" }
+} catch { "null" }
+`;
+
 // --- 導出的 API (Exported APIs) ------------------------------------------------------------
 
-/** * 將圖片 Base64 字串複製到系統剪貼簿
+/**
+ * 將圖片 Base64 字串複製到系統剪貼簿
  * @param base64 純 Base64 字串 (不含 data:image/... 前綴)
  */
 export async function copyImageBinaryToSystem(base64: string): Promise<void> {
   await runPowerShell(copyImagePowerShellScript, base64);
 }
 
-/** 列出系統關鍵資料夾（包含本機硬碟與 OneDrive） */
+/**
+ * 列出系統關鍵資料夾（包含本機硬碟與 OneDrive）
+ */
 export async function listSystemFolders(): Promise<SystemFolder[]> {
   const stdout = await runPowerShell(listSystemFoldersScript);
   if (!stdout || stdout.trim() === "") return [];
@@ -124,10 +171,25 @@ export async function listSystemFolders(): Promise<SystemFolder[]> {
   return Array.isArray(result) ? result : [result];
 }
 
-/** 列出所有邏輯磁碟機的詳細硬體資訊（容量單位為 Bytes） */
+/**
+ * 列出所有邏輯磁碟機的詳細硬體資訊（容量單位為 Bytes）
+ */
 export async function listVolumes(): Promise<VolumeInfo[]> {
   const stdout = await runPowerShell(listVolumesScript);
   if (!stdout || stdout.trim() === "") return [];
   const result = JSON.parse(stdout);
+  return Array.isArray(result) ? result : [result];
+}
+
+/**
+ * 取得檔案的 Windows 屬性
+ * @param filePath 檔案的完整路徑
+ * @returns 如果是檔案則回傳屬性陣列，若路徑無效或為資料夾則回傳 null
+ */
+export async function getFileAttributes(filePath: string): Promise<FileAttribute[] | null> {
+  const stdout = await runPowerShell(getFileAttrScript, filePath);
+  const trimmed = stdout.trim();
+  if (!trimmed || trimmed === "null") return null;
+  const result = JSON.parse(trimmed);
   return Array.isArray(result) ? result : [result];
 }
