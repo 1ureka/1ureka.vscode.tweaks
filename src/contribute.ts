@@ -1,4 +1,4 @@
-import type { OneOf } from "@/utils/type";
+import type { OneOf } from "@/utils/shared/type";
 
 // ============================================================================
 // Command IDs and Webview IDs

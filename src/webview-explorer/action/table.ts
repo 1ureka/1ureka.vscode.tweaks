@@ -5,7 +5,7 @@ import { navigateToFolder } from "@explorer/action/navigation";
 import { openFile, startFileDrag } from "@explorer/action/operation";
 import { selectRow } from "@explorer/action/selection";
 import { selectionStore, viewDataStore } from "@explorer/store/data";
-import { clamp } from "@/utils";
+import { clamp } from "@/utils/shared";
 
 /**
  * 根據事件獲取對應的資料列索引

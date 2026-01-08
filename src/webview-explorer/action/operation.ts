@@ -88,7 +88,7 @@ const renameItem = async () => {
   }
 
   const result = await requestQueue.add(() =>
-    invoke("system.update.rename", { dirPath: currentPath, name: srcName, newName: destName })
+    invoke("system.rename", { dirPath: currentPath, name: srcName, newName: destName })
   );
 
   dataStore.setState({ ...result });

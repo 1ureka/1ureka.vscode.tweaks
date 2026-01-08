@@ -1,4 +1,4 @@
-import { startReactApp } from "@/utils/ui";
+import { startReactApp } from "@/utils/client/ui";
 
 import { readInitData } from "@explorer/store/init";
 import { appStateStore } from "@explorer/store/data";

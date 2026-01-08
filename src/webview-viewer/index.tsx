@@ -1,4 +1,4 @@
-import { startReactApp } from "@/utils/ui";
+import { startReactApp } from "@/utils/client/ui";
 import { handleCopy } from "@viewer/action";
 import { ImageViewer, ContextMenu } from "@viewer/ImageViewer";
 import { contextMenuStore } from "@viewer/store";

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll } from "vitest";
-import { listSystemFolders, listVolumes, DriveType, type SystemFolder } from "@/utils/system-windows";
+import { listSystemFolders, listVolumes, DriveType, type SystemFolder } from "@/utils/host/system-windows";
 
 describe("system_windows", () => {
   describe("listSystemFolders", () => {

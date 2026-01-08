@@ -23,7 +23,7 @@ const vscodeImportRestriction = {
   paths: [
     {
       name: "vscode",
-      message: "只能在 src/providers, src/commands, src/utils 相關的檔案中使用 'import \"vscode\"'。",
+      message: "只能在執行環境為延伸主機的程式碼中使用 'import \"vscode\"'。",
     },
   ],
   ...commonImportRestrictions,
@@ -52,37 +52,36 @@ export default defineConfig([
     rules: { "no-restricted-imports": ["error", commonImportRestrictions] },
   },
   {
-    files: ["**/*.ts", "**/*.tsx"],
-    ignores: ["src/providers/**", "src/commands/**", "src/utils-vscode/**", "src/extension.ts"],
+    files: ["src/webview-*/**/*.ts", "src/webview-*/**/*.tsx"],
     rules: { "no-restricted-imports": ["error", vscodeImportRestriction] },
   },
 
   // 特殊規則 - 禁止直接使用某些 API，必須透過 utils 中的輔助函數來使用
   {
     files: ["**/*.ts", "**/*.tsx"],
-    ignores: ["src/utils-vscode/**"],
+    ignores: ["src/utils/vscode/**", "src/utils/message/**"],
     rules: {
       "no-restricted-syntax": [
         "error",
         {
           selector: "CallExpression[callee.property.name='registerCommand'][callee.object.property.name='commands']",
-          message: "請使用 @/utils/command.ts 中的輔助函數來確保命令資源會正確釋放。",
+          message: "請使用 @/utils/vscode 中的輔助函數來確保命令資源會正確釋放。",
         },
         {
           selector: "CallExpression[callee.property.name='getConfiguration'][callee.object.property.name='workspace']",
-          message: "請使用 @/utils/command.ts 中的輔助函數來確保統一獲取使用者配置的途徑。",
+          message: "請使用 @/utils/vscode 中的輔助函數來確保統一獲取使用者配置的途徑。",
         },
         {
           selector: "CallExpression[callee.property.name='postMessage']",
-          message: "請使用 @/utils/message_client.ts 處理前端發送，或使用 @/utils/message_host.ts 處理延伸主機發送。",
+          message: "請使用 @/utils/vscode 處理與 VSCode API 的訊息傳遞機制",
         },
         {
           selector: "CallExpression[callee.property.name='onDidReceiveMessage']",
-          message: "請使用 @/utils/message_host.ts 中的所提供的訊息處理機制來處理訊息",
+          message: "請使用 @/utils/vscode 處理與 VSCode API 的訊息傳遞機制",
         },
         {
           selector: "CallExpression[callee.property.name='addEventListener'][arguments.0.value='message']",
-          message: "請使用 @/utils/message_client.ts 中的所提供的訊息處理機制來接收訊息",
+          message: "請使用 @/utils/vscode 處理與 VSCode API 的訊息傳遞機制",
         },
       ],
     },

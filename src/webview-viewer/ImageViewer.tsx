@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Box, ButtonBase, Container, Divider, Popover, Skeleton, SxProps, Typography } from "@mui/material";
 import { TransformWrapper, TransformComponent, useControls } from "react-zoom-pan-pinch";
 
-import { centerTextSx, colorMix } from "@/utils/ui";
+import { centerTextSx, colorMix } from "@/utils/client/ui";
 import { resetTransformRef } from "@viewer/action";
 import { handleResetTransform, handleEyeDropper, handleExportImage } from "@viewer/action";
 import { useDecodeImage } from "@viewer/hooks";

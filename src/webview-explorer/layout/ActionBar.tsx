@@ -1,12 +1,12 @@
-import { memo } from "react";
+import { memo, useState } from "react";
 import { Box } from "@mui/material";
 import { ActionButton, ActionGroup, ActionInput } from "@explorer/components/Action";
-import { ActionDropdown, ActionDropdownButton } from "@explorer/components/Action";
 import { clipboardStore, renameStore, selectionStore, viewDataStore } from "@explorer/store/data";
 
 import { deleteItems, renameItem, renameItemTemp } from "@explorer/action/operation";
-import { readClipboard, writeClipboard, writeSystemClipboard } from "@explorer/action/clipboard";
+import { readClipboard, writeClipboard } from "@explorer/action/clipboard";
 import { selectAll, selectInvert, selectNone } from "@explorer/action/selection";
+import { PropertyDialog } from "@/webview-explorer/layout/PropertyDialog";
 
 /**
  * 針對單一選取項目所顯示的操作群組 (最後選取的單一項目)
@@ -14,6 +14,10 @@ import { selectAll, selectInvert, selectNone } from "@explorer/action/selection"
 const ActionGroupForSingleItem = memo(() => {
   const destName = renameStore((state) => state.destName);
   const lastSelectedIndex = selectionStore((state) => state.lastSelectedIndex);
+
+  const [open, setOpen] = useState(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
 
   return (
     <ActionGroup>
@@ -30,22 +34,14 @@ const ActionGroupForSingleItem = memo(() => {
         disabled={destName === "" || lastSelectedIndex === null}
         onClick={renameItem}
       />
-      <ActionDropdown actionName="更多操作" actionDetail="更多對於最後選取項目的操作" menuPlacement="top">
-        <ActionDropdownButton
-          actionIcon="codicon codicon-copy"
-          actionName="複製項目名稱"
-          actionDetail="複製該檔案或資料夾的名稱到系統剪貼簿"
-          disabled={lastSelectedIndex === null}
-          onClick={() => writeSystemClipboard("name")}
-        />
-        <ActionDropdownButton
-          actionIcon="codicon codicon-copy"
-          actionName="複製項目路徑"
-          actionDetail="複製該檔案或資料夾的完整路徑到系統剪貼簿"
-          disabled={lastSelectedIndex === null}
-          onClick={() => writeSystemClipboard("path")}
-        />
-      </ActionDropdown>
+      <ActionButton
+        actionIcon="codicon codicon-inspect"
+        actionName="內容"
+        actionDetail="檢視檔案或資料夾的詳細資訊"
+        disabled={lastSelectedIndex === null}
+        onClick={handleOpen}
+      />
+      <PropertyDialog open={open} onClose={handleClose} />
     </ActionGroup>
   );
 });

@@ -1,5 +1,5 @@
 import { memo, useState } from "react";
-import { centerTextSx, colorMix } from "@/utils/ui";
+import { centerTextSx, colorMix } from "@/utils/client/ui";
 import { Box, ButtonBase, InputBase, Popover, Typography } from "@mui/material";
 import type { SxProps, PopoverOrigin } from "@mui/material";
 import { Tooltip } from "@explorer/components/Tooltip";

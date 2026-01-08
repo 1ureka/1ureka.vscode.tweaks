@@ -1,12 +1,13 @@
 import * as vscode from "vscode";
-import { createExplorerProvider } from "@/providers/explorerProvider";
-import { createCommandManager } from "@/utils-vscode/command";
+import type { ExtensionFeature } from "@/utils/vscode";
+import { createCommandManager } from "@/utils/vscode/command";
+import { ExplorerWebviewPanelProvider } from "@/feature-explorer/provider";
 
 /**
- * 註冊系統瀏覽器相關命令與面板
+ * ?
  */
-export function registerExplorerCommands(context: vscode.ExtensionContext) {
-  const explorerProvider = createExplorerProvider(context);
+function activate(context: vscode.ExtensionContext) {
+  const explorerProvider = new ExplorerWebviewPanelProvider(context);
   const commandManager = createCommandManager(context);
 
   commandManager.register("1ureka.explorer.openFromPath", async (params: vscode.Uri | string | undefined) => {
@@ -36,3 +37,12 @@ export function registerExplorerCommands(context: vscode.ExtensionContext) {
     else explorerProvider.createPanel(folders[0].fsPath);
   });
 }
+
+/**
+ * ?
+ */
+const feature: ExtensionFeature = {
+  activate,
+};
+
+export default feature;

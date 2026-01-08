@@ -82,7 +82,7 @@ function createCache<T, Args extends Serializable[]>(fetcher: (...args: Args) =>
 // ---------------------------------------------------------------------------------
 
 const thumbnailCache = createCache(async (filePath: string) => {
-  const data = await invoke("system.generate.thumbnail", { filePath });
+  const data = await invoke("system.read.thumbnail", { filePath });
   if (!data) throw new Error("Thumbnail generation failed");
   return `data:image/webp;base64,${data}`;
 }, 200);

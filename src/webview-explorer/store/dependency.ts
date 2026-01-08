@@ -5,7 +5,7 @@
 
 import { clipboardStore, dataStore, navigationStore, viewDataStore, viewStateStore } from "@explorer/store/data";
 import { selectionStore, renameStore } from "@explorer/store/data";
-import type { InspectDirectoryEntry } from "@/utils/system";
+import type { InspectDirectoryEntry } from "@/utils/host/system";
 
 /**
  * 根據目前的篩選條件回傳篩選後的檔案屬性陣列

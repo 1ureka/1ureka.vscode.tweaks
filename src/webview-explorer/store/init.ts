@@ -1,18 +1,18 @@
-import type { ExplorerAPI } from "@/providers/explorerProvider";
-import { createInvoke } from "@/utils-vscode/message/client";
+import type { explorerService } from "@/feature-explorer/service";
+import { createInvoke } from "@/utils/message/client";
 import { dataStore, navigationExternalStore } from "@explorer/store/data";
 import { requestQueue } from "@explorer/store/queue";
 
 /**
  * 建立用於調用延伸主機 API 的函式
  */
-const { invoke } = createInvoke<ExplorerAPI>();
+const { invoke } = createInvoke<typeof explorerService>();
 
 /**
  * 初始化，利用注入的初始資料，來獲取完整資料
  */
 const readInitData = async () => {
-  invoke("system.read.system.folders", undefined).then((folders) => {
+  invoke("system.read.user.paths", undefined).then((folders) => {
     navigationExternalStore.setState({ systemFolders: folders });
   });
   invoke("system.read.volumes", undefined).then((drives) => {
