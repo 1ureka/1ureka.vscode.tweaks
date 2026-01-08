@@ -1,7 +1,41 @@
-import { memo } from "react";
-import { Dialog } from "@explorer/components/Dialog";
+import { memo, Suspense } from "react";
 import { Box, type SxProps } from "@mui/material";
+
+import { Dialog } from "@explorer/components/Dialog";
 import { ActionButton, ActionGroup, ActionInput } from "@explorer/components/Action";
+import { selectionStore, viewDataStore } from "@explorer/store/data";
+import { fileAttributesCache } from "@explorer/store/cache";
+
+import type { InspectDirectoryEntry } from "@/utils/host/system";
+import { formatFileSize, formatFileType, formatFixedLengthDateTime } from "@/utils/shared/formatter";
+import { extensionIconMap } from "@/assets/fileExtMap";
+
+/**
+ * 為項目指派對應的圖示
+ */
+const assignIcon = (entry: InspectDirectoryEntry) => {
+  let icon: `codicon codicon-${string}` = `codicon codicon-${entry.fileType}`;
+
+  if (entry.fileType !== "file") return icon;
+
+  const fileName = entry.fileName.toLowerCase();
+  const extension = fileName.includes(".") ? fileName.split(".").pop() || "" : "";
+
+  return extensionIconMap[extension] ?? icon;
+};
+
+/**
+ * ?
+ */
+const useLastSelectedItem = () => {
+  const lastSelectedIndex = selectionStore((state) => state.lastSelectedIndex);
+  const rows = viewDataStore((state) => state.entries);
+  const selectedItem = lastSelectedIndex !== null ? rows[lastSelectedIndex] : null;
+
+  return selectedItem;
+};
+
+// ---------------------------------------------------------------------------------
 
 const rowHeight = 32;
 
@@ -36,9 +70,8 @@ const propertyDialogSx: SxProps = {
   },
 
   [`& > hr.${className.divider}`]: {
-    border: "none",
-    height: "1px",
-    bgcolor: "divider",
+    borderTop: "1px solid",
+    borderColor: "divider",
     opacity: 0.75,
     my: 1,
     width: 1,
@@ -68,21 +101,67 @@ const propertyDialogSx: SxProps = {
   },
 };
 
-const PropertyDialog = memo((props: { open: boolean; onClose: () => void }) => {
-  const { open, onClose } = props;
+const FileAttributes = () => {
+  const selectedItem = useLastSelectedItem();
+
+  if (!selectedItem) {
+    return null;
+  }
+
+  const attributes = fileAttributesCache.get(selectedItem.filePath).read();
+  let displayAttributes = "無法取得屬性";
+  if (attributes) {
+    displayAttributes = attributes.join(", ");
+  }
+
+  return <p className={className.groupValue}>{displayAttributes}</p>;
+};
+
+const FileProps = () => {
+  const selectedItem = useLastSelectedItem();
+
+  if (!selectedItem) {
+    return null;
+  }
+
+  return (
+    <div className={className.groupContainer}>
+      <p className={className.groupLabel}>檔案大小:</p>
+      <p className={className.groupValue} style={{ whiteSpace: "normal" }}>
+        {formatFileSize(selectedItem.size)}
+      </p>
+
+      <p className={className.groupLabel}>檔案屬性:</p>
+      <Suspense fallback={<p className={className.groupValue}>載入中...</p>}>
+        <FileAttributes />
+      </Suspense>
+    </div>
+  );
+};
+
+const PropertyDialog = memo(({ open, onClose }: { open: boolean; onClose: () => void }) => {
+  const selectedItem = useLastSelectedItem();
+
+  if (!selectedItem) {
+    return null;
+  }
+
+  let type: "file" | "dir" | "other" = "other";
+  if (selectedItem.fileType === "file") type = "file";
+  if (selectedItem.fileType === "folder") type = "dir";
 
   return (
     <Dialog open={open} onClose={onClose}>
       <Box sx={propertyDialogSx}>
         <div className={className.header}>
-          <i className="codicon codicon-info" />
+          <i className={assignIcon(selectedItem)} />
 
           <div className={className.groupContainer}>
             <p className={className.groupLabel}>名稱:</p>
-            <p className={className.groupValue}>1ureka-vscode-extension-0.5.22.vsix</p>
+            <p className={className.groupValue}>{selectedItem.fileName}</p>
 
             <p className={className.groupLabel}>類型:</p>
-            <p className={className.groupValue}>VSIX 檔案</p>
+            <p className={className.groupValue}>{formatFileType(selectedItem)}</p>
           </div>
         </div>
 
@@ -91,11 +170,7 @@ const PropertyDialog = memo((props: { open: boolean; onClose: () => void }) => {
         <div className={className.groupContainer}>
           <p className={className.groupLabel}>路徑:</p>
           <ActionGroup>
-            <ActionInput
-              readOnly
-              actionName="檔案路徑"
-              value="C:\Users\Summe\Desktop\npm projects\1ureka.vscode.extension\1ureka-vscode-extension-0.5.22.vsix"
-            />
+            <ActionInput readOnly actionName="檔案路徑" value={selectedItem.filePath} />
             <ActionButton
               actionIcon="codicon codicon-copy"
               actionName="複製路徑"
@@ -105,11 +180,23 @@ const PropertyDialog = memo((props: { open: boolean; onClose: () => void }) => {
           </ActionGroup>
 
           <p className={className.groupLabel}>建立時間:</p>
-          <p className={className.groupValue}>2024/06/15 14:30:00</p>
+          <p className={className.groupValue}>{formatFixedLengthDateTime(new Date(selectedItem.ctime))}</p>
 
           <p className={className.groupLabel}>修改時間:</p>
-          <p className={className.groupValue}>2024/06/20 10:15:00</p>
+          <p className={className.groupValue}>{formatFixedLengthDateTime(new Date(selectedItem.mtime))}</p>
         </div>
+
+        {type !== "other" && <hr className={className.divider} />}
+
+        {type === "file" && <FileProps />}
+
+        {type === "dir" && <></>}
+      </Box>
+
+      <Box sx={{ position: "absolute", inset: "0px 0px auto auto", p: 1.5 }}>
+        <ActionGroup size="small">
+          <ActionButton actionIcon="codicon codicon-close" actionName="關閉" onClick={onClose} />
+        </ActionGroup>
       </Box>
     </Dialog>
   );
