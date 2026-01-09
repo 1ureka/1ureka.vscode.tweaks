@@ -36,9 +36,7 @@ export interface VolumeInfo {
   DriveType: DriveType;
 }
 
-/**
- * 根據 [System.IO.FileAttributes] 官方枚舉定義的型別
- */
+/** 根據 [System.IO.FileAttributes] 官方枚舉定義的型別 */
 export type FileAttribute =
   | "ReadOnly"
   | "Hidden"
@@ -57,10 +55,15 @@ export type FileAttribute =
   | "IntegrityStream"
   | "NoScrubData";
 
-/**
- * 檔案可用性狀態
- */
+/** 檔案可用性狀態 */
 export type FileAvailability = "Normal" | "OnlineOnly" | "AlwaysAvailable" | "LocallyAvailable";
+
+/** 資料夾統計資訊 */
+export interface DirectorySizeInfo {
+  Path: string;
+  FileCount: number;
+  TotalSize: number; // Bytes
+}
 
 // --- 核心邏輯 (Core) ------------------------------------------------------------------------
 
@@ -184,6 +187,29 @@ try {
 } catch { "null" }
 `;
 
+const getFolderSizeScript = `
+$path = [Console]::In.ReadLine()
+try {
+    if (Test-Path -LiteralPath $path -PathType Container) {
+        $dirInfo = New-Object System.IO.DirectoryInfo($path)
+        $files = $dirInfo.EnumerateFiles("*", [System.IO.SearchOption]::AllDirectories)
+
+        $count = 0
+        $size = 0
+        foreach ($f in $files) {
+            $count++
+            $size += $f.Length
+        }
+
+        [PSCustomObject]@{
+            Path = $path
+            FileCount = $count
+            TotalSize = $size
+        } | ConvertTo-Json
+    } else { "null" }
+} catch { "null" }
+`;
+
 // --- 導出的 API (Exported APIs) ------------------------------------------------------------
 
 /**
@@ -241,4 +267,17 @@ export async function getFileAvailability(filePath: string): Promise<FileAvailab
   } else {
     return null;
   }
+}
+
+/**
+ * 取得資料夾的總檔案數與總大小（包含子目錄）
+ * @param folderPath 資料夾的完整路徑
+ * @returns 資料夾大小資訊，若路徑無效則回傳 null
+ */
+export async function getDirectorySizeInfo(folderPath: string): Promise<DirectorySizeInfo | null> {
+  const stdout = await runPowerShell(getFolderSizeScript, folderPath);
+  const trimmed = stdout.trim();
+  if (!trimmed || trimmed === "null") return null;
+  const result = JSON.parse(trimmed);
+  return result;
 }
