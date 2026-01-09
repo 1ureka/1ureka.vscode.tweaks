@@ -1,10 +1,12 @@
 import { memo, Suspense } from "react";
-import { Box, type SxProps } from "@mui/material";
+import { Box } from "@mui/material";
 
 import { Dialog } from "@explorer/components/Dialog";
+import { propertyDialogSx, propertyDialogClassName, rowHeight } from "@explorer/layout-dialog/config";
 import { ActionButton, ActionGroup, ActionInput } from "@explorer/components/Action";
 import { selectionStore, viewDataStore } from "@explorer/store/data";
 import { fileAttributesCache, fileAvailabilityCache } from "@explorer/store/cache";
+import { writeSystemClipboard } from "@explorer/action/clipboard";
 
 import type { InspectDirectoryEntry } from "@/utils/host/system";
 import { formatFileSize, formatFileType, formatFixedLengthDateTime } from "@/utils/shared/formatter";
@@ -37,74 +39,10 @@ const useLastSelectedItem = () => {
 
 // ---------------------------------------------------------------------------------
 
-/** ? */
-const rowHeight = 32;
-
-/** ? */
-const className = {
-  header: "property-dialog-header",
-  divider: "property-dialog-divider",
-  groupContainer: "property-dialog-group-container",
-  groupLabel: "property-dialog-group-label",
-  groupValue: "property-dialog-group-value",
-} as const;
-
 /**
  * ?
  */
-const propertyDialogSx: SxProps = {
-  display: "flex",
-  flexDirection: "column",
-  p: 2,
-
-  [`& > .${className.header}`]: {
-    height: 2 * rowHeight,
-    display: "grid",
-    gridTemplateColumns: "auto 1fr",
-  },
-
-  [`& > .${className.header} > .codicon[class*='codicon-']`]: {
-    display: "grid",
-    placeItems: "center",
-    height: 2 * rowHeight,
-    aspectRatio: "1 / 1",
-    fontSize: rowHeight,
-    mr: 1,
-    bgcolor: "background.paper",
-    borderRadius: 1,
-  },
-
-  [`& > hr.${className.divider}`]: {
-    borderTop: "1px solid",
-    borderColor: "divider",
-    opacity: 0.75,
-    my: 1,
-    width: 1,
-  },
-
-  [`& .${className.groupContainer}`]: {
-    display: "grid",
-    gridTemplateColumns: "auto 1fr",
-    alignItems: "center",
-    columnGap: 1,
-  },
-
-  [`& p`]: {
-    typography: "body2",
-    height: rowHeight,
-    lineHeight: `${rowHeight}px`,
-    minWidth: 0,
-    overflow: "hidden",
-    whiteSpace: "pre",
-    textOverflow: "ellipsis",
-    m: 0,
-  },
-
-  [`& p.${className.groupLabel}`]: {
-    color: "text.secondary",
-    minWidth: "max-content",
-  },
-};
+const className = propertyDialogClassName;
 
 /**
  * ?
@@ -150,7 +88,7 @@ const FileAvailability = () => {
 /**
  * ?
  */
-const FileProps = () => {
+const FileProps = memo(() => {
   const selectedItem = useLastSelectedItem();
   if (!selectedItem) return null;
 
@@ -171,7 +109,9 @@ const FileProps = () => {
       </Suspense>
     </div>
   );
-};
+});
+
+// ---------------------------------------------------------------------------------
 
 /**
  * ?
@@ -179,9 +119,7 @@ const FileProps = () => {
 const PropertyDialog = memo(({ open, onClose }: { open: boolean; onClose: () => void }) => {
   const selectedItem = useLastSelectedItem();
 
-  if (!selectedItem) {
-    return null;
-  }
+  if (!selectedItem) return null;
 
   let type: "file" | "dir" | "other" = "other";
   if (selectedItem.fileType === "file") type = "file";
@@ -212,7 +150,7 @@ const PropertyDialog = memo(({ open, onClose }: { open: boolean; onClose: () => 
               actionIcon="codicon codicon-copy"
               actionName="複製路徑"
               actionDetail="將檔案路徑複製到剪貼簿"
-              onClick={() => {}}
+              onClick={() => writeSystemClipboard("path")}
             />
           </ActionGroup>
 
