@@ -10,7 +10,13 @@ const propertyDialogClassName = {
   groupContainer: "property-dialog-group-container",
   groupLabel: "property-dialog-group-label",
   groupValue: "property-dialog-group-value",
+  groupValueLoading: "property-dialog-group-value-loading",
 } as const;
+
+/** 骨架屏背景顏色 */
+const skeletonBgColor = "var(--mui-palette-background-paper)";
+const skeletonHighlightColor =
+  "color-mix(in srgb, var(--mui-palette-background-paper) 80%, var(--mui-palette-text-primary) 20%)";
 
 /**
  * 屬性對話框的樣式設定
@@ -66,6 +72,31 @@ const propertyDialogSx: SxProps = {
   [`& p.${propertyDialogClassName.groupLabel}`]: {
     color: "text.secondary",
     minWidth: "max-content",
+  },
+
+  [`& .${propertyDialogClassName.groupValueLoading}`]: {
+    display: "flex",
+    alignItems: "center",
+    height: rowHeight,
+    "&:before": {
+      content: '""',
+      display: "inline-block",
+      width: 0.35,
+      height: "1rem",
+      borderRadius: 0.5,
+      background: `linear-gradient(90deg, ${skeletonBgColor} 25%, ${skeletonHighlightColor} 50%, ${skeletonBgColor} 75%)`,
+      backgroundSize: "200% 100%",
+      animation: "shimmer 2s ease infinite",
+    },
+  },
+
+  "@keyframes shimmer": {
+    "0%": {
+      backgroundPosition: "200% 0",
+    },
+    "100%": {
+      backgroundPosition: "-200% 0",
+    },
   },
 };
 

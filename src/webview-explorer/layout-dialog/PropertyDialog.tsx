@@ -100,11 +100,11 @@ const FileProps = memo(() => {
       </p>
 
       <p className={className.groupLabel}>檔案屬性:</p>
-      <Suspense fallback={<p className={className.groupValue}>載入中...</p>}>
+      <Suspense fallback={<div className={className.groupValueLoading} />}>
         <FileAttributes />
       </Suspense>
       <p className={className.groupLabel}>可用性狀態:</p>
-      <Suspense fallback={<p className={className.groupValue}>載入中...</p>}>
+      <Suspense fallback={<div className={className.groupValueLoading} />}>
         <FileAvailability />
       </Suspense>
     </div>
@@ -155,12 +155,12 @@ const DirProps = memo(() => {
   return (
     <div className={className.groupContainer}>
       <p className={className.groupLabel}>包含:</p>
-      <Suspense fallback={<p className={className.groupValue}>載入中...</p>}>
+      <Suspense fallback={<div className={className.groupValueLoading} />}>
         <DirFileCount />
       </Suspense>
 
       <p className={className.groupLabel}>大小:</p>
-      <Suspense fallback={<p className={className.groupValue}>載入中...</p>}>
+      <Suspense fallback={<div className={className.groupValueLoading} />}>
         <DirTotalSize />
       </Suspense>
     </div>
