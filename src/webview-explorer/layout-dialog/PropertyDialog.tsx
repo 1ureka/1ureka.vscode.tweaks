@@ -122,7 +122,7 @@ const DirFileCount = () => {
 
   const sizeInfo = directorySizeInfoCache.get(selectedItem.filePath).read();
   let displayCount = "--";
-  if (sizeInfo) displayCount = `${sizeInfo.FileCount} 個檔案`;
+  if (sizeInfo) displayCount = `${sizeInfo.FileCount} 個檔案, ${sizeInfo.FolderCount} 個資料夾`;
 
   return <p className={className.groupValue}>{displayCount}</p>;
 };
@@ -201,11 +201,11 @@ const PropertyDialog = memo(({ open, onClose }: { open: boolean; onClose: () => 
         <div className={className.groupContainer}>
           <p className={className.groupLabel}>路徑:</p>
           <ActionGroup>
-            <ActionInput readOnly actionName="檔案路徑" value={selectedItem.filePath} />
+            <ActionInput readOnly actionName="路徑" value={selectedItem.filePath} />
             <ActionButton
               actionIcon="codicon codicon-copy"
               actionName="複製路徑"
-              actionDetail="將檔案路徑複製到剪貼簿"
+              actionDetail="將路徑複製到剪貼簿"
               onClick={() => writeSystemClipboard("path")}
             />
           </ActionGroup>

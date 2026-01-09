@@ -62,6 +62,7 @@ export type FileAvailability = "Normal" | "OnlineOnly" | "AlwaysAvailable" | "Lo
 export interface DirectorySizeInfo {
   Path: string;
   FileCount: number;
+  FolderCount: number;
   TotalSize: number; // Bytes
 }
 
@@ -192,18 +193,25 @@ $path = [Console]::In.ReadLine()
 try {
     if (Test-Path -LiteralPath $path -PathType Container) {
         $dirInfo = New-Object System.IO.DirectoryInfo($path)
-        $files = $dirInfo.EnumerateFiles("*", [System.IO.SearchOption]::AllDirectories)
+        $items = $dirInfo.EnumerateFileSystemInfos("*", [System.IO.SearchOption]::AllDirectories)
 
-        $count = 0
+        $fileCount = 0
+        $folderCount = 0
         $size = 0
-        foreach ($f in $files) {
-            $count++
-            $size += $f.Length
+
+        foreach ($item in $items) {
+            if ($item.Attributes -band [System.IO.FileAttributes]::Directory) {
+                $folderCount++
+            } else {
+                $fileCount++
+                $size += $item.Length
+            }
         }
 
         [PSCustomObject]@{
             Path = $path
-            FileCount = $count
+            FileCount = $fileCount
+            FolderCount = $folderCount
             TotalSize = $size
         } | ConvertTo-Json
     } else { "null" }
