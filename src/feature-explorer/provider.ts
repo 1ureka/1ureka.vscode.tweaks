@@ -9,7 +9,7 @@ import explorerIconLight from "@/assets/explorer-light.svg";
 import explorerIconDark from "@/assets/explorer-dark.svg";
 
 /**
- * ?
+ * 系統檔案瀏覽器 Webview 面板管理器，負責建立和管理瀏覽器面板
  */
 class ExplorerWebviewPanelProvider {
   /**

@@ -27,7 +27,7 @@ const assignIcon = (entry: InspectDirectoryEntry) => {
 };
 
 /**
- * ?
+ * 取得最後一個被選取的項目
  */
 const useLastSelectedItem = () => {
   const lastSelectedIndex = selectionStore((state) => state.lastSelectedIndex);
@@ -40,12 +40,12 @@ const useLastSelectedItem = () => {
 // ---------------------------------------------------------------------------------
 
 /**
- * ?
+ * 屬性對話框的 CSS 類別名稱常數
  */
 const className = propertyDialogClassName;
 
 /**
- * ?
+ * 顯示檔案屬性（唯讀、隱藏等）
  */
 const FileAttributes = () => {
   const selectedItem = useLastSelectedItem();
@@ -59,7 +59,7 @@ const FileAttributes = () => {
 };
 
 /**
- * ?
+ * 顯示檔案可用性狀態（本地、線上等）
  */
 const FileAvailability = () => {
   const selectedItem = useLastSelectedItem();
@@ -86,7 +86,7 @@ const FileAvailability = () => {
 };
 
 /**
- * ?
+ * 顯示檔案相關屬性（大小、屬性、可用性）
  */
 const FileProps = memo(() => {
   const selectedItem = useLastSelectedItem();
@@ -114,7 +114,7 @@ const FileProps = memo(() => {
 // ---------------------------------------------------------------------------------
 
 /**
- * ?
+ * 顯示資料夾中的檔案和子資料夾數量
  */
 const DirFileCount = () => {
   const selectedItem = useLastSelectedItem();
@@ -128,7 +128,7 @@ const DirFileCount = () => {
 };
 
 /**
- * ?
+ * 顯示資料夾總大小
  */
 const DirTotalSize = () => {
   const selectedItem = useLastSelectedItem();
@@ -146,7 +146,7 @@ const DirTotalSize = () => {
 };
 
 /**
- * ?
+ * 顯示資料夾相關屬性（包含項目數量和總大小）
  */
 const DirProps = memo(() => {
   const selectedItem = useLastSelectedItem();
@@ -170,7 +170,7 @@ const DirProps = memo(() => {
 // ---------------------------------------------------------------------------------
 
 /**
- * ?
+ * 屬性對話框元件，顯示選取項目的詳細資訊
  */
 const PropertyDialog = memo(({ open, onClose }: { open: boolean; onClose: () => void }) => {
   const selectedItem = useLastSelectedItem();

@@ -4,7 +4,7 @@ import { createCommandManager } from "@/utils/vscode/command";
 import { ExplorerWebviewPanelProvider } from "@/feature-explorer/provider";
 
 /**
- * ?
+ * 啟動系統檔案瀏覽器功能，註冊相關命令
  */
 function activate(context: vscode.ExtensionContext) {
   const explorerProvider = new ExplorerWebviewPanelProvider(context);
@@ -39,7 +39,7 @@ function activate(context: vscode.ExtensionContext) {
 }
 
 /**
- * ?
+ * 系統檔案瀏覽器功能模組
  */
 const feature: ExtensionFeature = {
   activate,

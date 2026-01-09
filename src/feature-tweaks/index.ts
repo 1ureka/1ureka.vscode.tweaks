@@ -38,7 +38,7 @@ function registerExternalAppCommands(context: vscode.ExtensionContext) {
 }
 
 /**
- * ?
+ * 啟動通用調整功能，註冊導航和外部應用程式相關命令
  */
 function activate(context: vscode.ExtensionContext) {
   registerExternalAppCommands(context);
@@ -46,7 +46,7 @@ function activate(context: vscode.ExtensionContext) {
 }
 
 /**
- * ?
+ * 通用調整功能模組
  */
 const feature: ExtensionFeature = {
   activate,

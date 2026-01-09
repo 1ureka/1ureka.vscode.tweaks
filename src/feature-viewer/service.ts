@@ -6,14 +6,14 @@ import { handleCopyImage } from "@/feature-viewer/handlers";
 import { exportImage } from "@/utils/host/image";
 
 /**
- * ?
+ * 顯示資訊提示訊息
  */
 const showInfo = (message: string) => {
   vscode.window.showInformationMessage(message);
 };
 
 /**
- * ?
+ * 顯示錯誤警告訊息
  */
 const showError = (message: string) => {
   vscode.window.showErrorMessage(message);
@@ -84,7 +84,7 @@ async function runExportWorkflow(filePath: string) {
 }
 
 /**
- * ?
+ * 複製顏色值至剪貼簿的流程
  */
 async function runCopyColorWorkflow(color: string) {
   await vscode.env.clipboard.writeText(color);
@@ -92,7 +92,7 @@ async function runCopyColorWorkflow(color: string) {
 }
 
 /**
- * ?
+ * 圖片檢視器核心服務，封裝了 UI 交互與圖片操作相關功能
  */
 export const imageViewerService = {
   "show.info": showInfo,

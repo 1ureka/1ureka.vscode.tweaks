@@ -1,9 +1,9 @@
 import type { SxProps } from "@mui/material";
 
-/** ? */
+/** 屬性對話框中每列的高度 */
 const rowHeight = 32;
 
-/** ? */
+/** 屬性對話框的 CSS 類別名稱常數 */
 const propertyDialogClassName = {
   header: "property-dialog-header",
   divider: "property-dialog-divider",
@@ -13,7 +13,7 @@ const propertyDialogClassName = {
 } as const;
 
 /**
- * ?
+ * 屬性對話框的樣式設定
  */
 const propertyDialogSx: SxProps = {
   display: "flex",

@@ -89,7 +89,7 @@ function modifyWorkbenchHtml(htmlContent: string) {
 }
 
 /**
- * ?
+ * 取得備份檔案路徑
  */
 function getBackupPath(htmlPath: string) {
   return htmlPath + ".bak";

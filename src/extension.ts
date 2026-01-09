@@ -6,12 +6,12 @@ import SystemExplorer from "@/feature-explorer";
 import ImageViewer from "@/feature-viewer";
 
 /**
- * ?
+ * 擴展功能模組清單，包含所有需要啟動的功能
  */
 const features = [FileMetadataDisplay, CustomStylesPatch, GeneralTweaks, SystemExplorer, ImageViewer];
 
 /**
- * ?
+ * 擴展啟動函數，依序啟動所有功能模組
  */
 export function activate(context: vscode.ExtensionContext) {
   for (const feature of features) {
@@ -24,7 +24,7 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 /**
- * ?
+ * 擴展停用函數，依序停用所有功能模組
  */
 export function deactivate() {
   for (const feature of features) {
