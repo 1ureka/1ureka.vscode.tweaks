@@ -3,7 +3,7 @@ import type { ExtensionFeature } from "@/utils/vscode";
 import { createStatusBarManager } from "@/feature-metadata/manager";
 
 /**
- * ?
+ * 啟動檔案元資料顯示功能，監聽 tab 變化事件
  */
 function activate(context: vscode.ExtensionContext) {
   const statusBarManager = createStatusBarManager(context);
@@ -23,7 +23,7 @@ function activate(context: vscode.ExtensionContext) {
 }
 
 /**
- * ?
+ * 檔案元資料顯示功能模組
  */
 const feature: ExtensionFeature = {
   activate,

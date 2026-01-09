@@ -7,6 +7,7 @@ import { handleReadDirectory, handleReadImages } from "@/feature-explorer/handle
 
 import { generateThumbnail } from "@/utils/host/image";
 import { listSystemFolders, listVolumes } from "@/utils/host/system-windows";
+import { getFileAttributes, getFileAvailability, getDirectorySizeInfo } from "@/utils/host/system-windows";
 import type { WithProgress } from "@/utils/shared/type";
 
 /**
@@ -58,6 +59,30 @@ const readImages = ({ dirPath }: { dirPath: string }) => {
  */
 const readThumbnail = (params: { filePath: string }) => {
   return generateThumbnail(params.filePath);
+};
+
+/**
+ * 讀取指定檔案的 Windows 屬性
+ */
+const readFileAttributes = (params: { filePath: string }) => {
+  if (process.platform !== "win32") return null;
+  return getFileAttributes(params.filePath);
+};
+
+/**
+ * 讀取指定檔案的可用性狀態
+ */
+const readFileAvailability = (params: { filePath: string }) => {
+  if (process.platform !== "win32") return null;
+  return getFileAvailability(params.filePath);
+};
+
+/**
+ * 讀取指定資料夾的總檔案數與總大小
+ */
+const readDirectorySizeInfo = (params: { dirPath: string }) => {
+  if (process.platform !== "win32") return null;
+  return getDirectorySizeInfo(params.dirPath);
 };
 
 /**
@@ -164,6 +189,9 @@ export const explorerService = {
   "system.read.volumes": readSystemVolumes,
   "system.read.images": readImages,
   "system.read.thumbnail": readThumbnail,
+  "system.read.file.attributes": readFileAttributes,
+  "system.read.file.availability": readFileAvailability,
+  "system.read.dir.sizeinfo": readDirectorySizeInfo,
   "system.open.file": openFile,
   "system.open.dir": openTarget,
   "system.create.file": runCreateFileWorkflow,

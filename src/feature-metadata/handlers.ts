@@ -3,7 +3,7 @@ import * as path from "path";
 import { openImage } from "@/utils/host/image";
 
 /**
- * ?
+ * 檔案基本元資料
  */
 type FileMetadata = {
   fileName: string;
@@ -13,7 +13,7 @@ type FileMetadata = {
 };
 
 /**
- * ?
+ * 圖片檔案元資料，包含圖片特有屬性
  */
 type ImageMetadata = FileMetadata & {
   width?: number;

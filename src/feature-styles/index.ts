@@ -14,7 +14,7 @@ async function promptRestart(action: string) {
 }
 
 /**
- * ?
+ * 啟動自訂樣式功能，註冊樣式注入相關命令
  */
 function activate(context: vscode.ExtensionContext) {
   const commandManager = createCommandManager(context);
@@ -51,7 +51,7 @@ function activate(context: vscode.ExtensionContext) {
 }
 
 /**
- * ?
+ * 自訂樣式功能模組
  */
 const feature: ExtensionFeature = {
   activate,
