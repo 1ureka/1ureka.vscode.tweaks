@@ -167,12 +167,15 @@ try {
         $RECALL_ON_DATA_ACCESS = 0x00400000
         $PINNED                = 0x00080000
         $UNPINNED              = 0x00100000
+        $REPARSE_POINT         = 0x00000400
 
         if ($attr -band $RECALL_ON_DATA_ACCESS) {
             "OnlineOnly"
         } elseif ($attr -band $PINNED) {
             "AlwaysAvailable"
         } elseif ($attr -band $UNPINNED) {
+            "LocallyAvailable"
+        } elseif ($attr -band $REPARSE_POINT) {
             "LocallyAvailable"
         } else {
             "Normal"
