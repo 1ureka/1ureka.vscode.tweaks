@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import * as path from "path";
 import type { ExtensionFeature } from "@/utils/vscode";
 import { createCommandManager } from "@/utils/vscode/command";
 import { ExplorerWebviewPanelProvider } from "@/feature-explorer/provider";
@@ -35,6 +36,30 @@ function activate(context: vscode.ExtensionContext) {
 
     if (!folders || folders.length === 0) return;
     else explorerProvider.createPanel(folders[0].fsPath);
+  });
+
+  commandManager.register("1ureka.explorer.openFromFile", async (params: vscode.Uri | string | undefined) => {
+    let filePath: string | undefined;
+
+    if (params instanceof vscode.Uri) {
+      filePath = params.fsPath;
+    } else if (typeof params === "string") {
+      filePath = params;
+    } else {
+      // 如果沒有提供參數，嘗試使用當前活動編輯器的檔案
+      const activeEditor = vscode.window.activeTextEditor;
+      if (activeEditor?.document.uri.scheme === "file") {
+        filePath = activeEditor.document.uri.fsPath;
+      }
+    }
+
+    if (filePath) {
+      // 從檔案路徑取得所在資料夾路徑
+      const folderPath = path.dirname(filePath);
+      explorerProvider.createPanel(folderPath);
+    } else {
+      vscode.window.showErrorMessage("請先選擇一個檔案");
+    }
   });
 }
 
