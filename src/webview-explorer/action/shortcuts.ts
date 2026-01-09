@@ -57,6 +57,7 @@ const registerAllShortcuts = () => {
 
     // Ctrl + C: 將選取內容寫入剪貼簿
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "c") {
+      if (window.getSelection()?.type === "Range") return; // 有文字選取時不觸發複製檔案
       e.preventDefault();
       e.stopPropagation();
       writeClipboard();
