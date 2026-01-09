@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeAll } from "vitest";
-import { listSystemFolders, listVolumes, getFileAttributes } from "@/utils/host/system-windows";
+import { listSystemFolders, listVolumes } from "@/utils/host/system-windows";
+import { getFileAttributes, getFileAvailability, getDirectorySizeInfo } from "@/utils/host/system-windows";
 import { DriveType, SystemFolder } from "@/utils/host/system-windows";
 import * as path from "path";
 
@@ -201,6 +202,81 @@ describe("system_windows", () => {
       if (attributes) {
         // 一般檔案通常會有 Archive 屬性
         expect(attributes).toContain("Archive");
+      }
+    });
+  });
+
+  describe("getFileAvailability", () => {
+    const packageJsonPath = path.resolve(__dirname, "..", "package.json");
+    const srcDirPath = path.resolve(__dirname, "..", "src");
+
+    it("應該為一般檔案返回 Normal", async () => {
+      const availability = await getFileAvailability(packageJsonPath);
+      expect(availability).toBe("Normal");
+    });
+
+    it("應該為資料夾路徑返回 null", async () => {
+      const availability = await getFileAvailability(srcDirPath);
+      expect(availability).toBeNull();
+    });
+
+    it("應該為無效路徑返回 null", async () => {
+      const invalidPath = path.resolve(__dirname, "..", "non-existent-file.txt");
+      const availability = await getFileAvailability(invalidPath);
+      expect(availability).toBeNull();
+    });
+  });
+
+  describe("getDirectorySizeInfo", () => {
+    const testsDirPath = path.resolve(__dirname);
+    const packageJsonPath = path.resolve(__dirname, "..", "package.json");
+
+    it("應該為有效資料夾返回統計資訊", async () => {
+      const sizeInfo = await getDirectorySizeInfo(testsDirPath);
+
+      expect(sizeInfo).not.toBeNull();
+
+      if (sizeInfo) {
+        expect(sizeInfo).toHaveProperty("Path");
+        expect(sizeInfo).toHaveProperty("FileCount");
+        expect(sizeInfo).toHaveProperty("TotalSize");
+
+        expect(sizeInfo.Path).toBe(testsDirPath);
+        expect(typeof sizeInfo.FileCount).toBe("number");
+        expect(typeof sizeInfo.TotalSize).toBe("number");
+
+        // tests 資料夾應該至少有一些檔案
+        expect(sizeInfo.FileCount).toBeGreaterThan(0);
+        expect(sizeInfo.TotalSize).toBeGreaterThan(0);
+      }
+    });
+
+    it("應該為檔案路徑返回 null", async () => {
+      const sizeInfo = await getDirectorySizeInfo(packageJsonPath);
+      expect(sizeInfo).toBeNull();
+    });
+
+    it("應該為無效路徑返回 null", async () => {
+      const invalidPath = path.resolve(__dirname, "..", "non-existent-folder");
+      const sizeInfo = await getDirectorySizeInfo(invalidPath);
+      expect(sizeInfo).toBeNull();
+    });
+
+    it("FileCount 和 TotalSize 應該是合理的數值", async () => {
+      const sizeInfo = await getDirectorySizeInfo(testsDirPath);
+
+      if (sizeInfo) {
+        // 檔案數量應該是非負整數
+        expect(sizeInfo.FileCount).toBeGreaterThanOrEqual(0);
+        expect(Number.isInteger(sizeInfo.FileCount)).toBe(true);
+
+        // 總大小應該是非負數
+        expect(sizeInfo.TotalSize).toBeGreaterThanOrEqual(0);
+
+        // 如果有檔案，總大小應該大於 0
+        if (sizeInfo.FileCount > 0) {
+          expect(sizeInfo.TotalSize).toBeGreaterThan(0);
+        }
       }
     });
   });
