@@ -4,6 +4,7 @@ import { readInitData } from "@explorer/store/init";
 import { appStateStore } from "@explorer/store/data";
 import { setupDependencyChain } from "@explorer/store/dependency";
 import { registerAllShortcuts } from "@explorer/action/shortcuts";
+import { registerContextMenu } from "@explorer/action/contextmenu";
 
 import { Box, type SxProps } from "@mui/material";
 import { LoadingDisplay } from "@explorer/layout/LoadingDisplay";
@@ -99,14 +100,6 @@ startReactApp({
     setupDependencyChain();
     readInitData();
     registerAllShortcuts();
-
-    window.addEventListener(
-      "contextmenu",
-      (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-      },
-      true
-    );
+    registerContextMenu();
   },
 });
