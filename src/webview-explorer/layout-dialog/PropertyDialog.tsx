@@ -5,7 +5,7 @@ import { Dialog } from "@explorer/components/Dialog";
 import { propertyDialogSx, propertyDialogClassName, rowHeight } from "@explorer/layout-dialog/config";
 import { ActionButton, ActionGroup, ActionInput } from "@explorer/components/Action";
 import { selectionStore, viewDataStore } from "@explorer/store/data";
-import { fileAttributesCache, fileAvailabilityCache } from "@explorer/store/cache";
+import { directorySizeInfoCache, fileAttributesCache, fileAvailabilityCache } from "@explorer/store/cache";
 import { writeSystemClipboard } from "@explorer/action/clipboard";
 
 import type { InspectDirectoryEntry } from "@/utils/host/system";
@@ -116,6 +116,62 @@ const FileProps = memo(() => {
 /**
  * ?
  */
+const DirFileCount = () => {
+  const selectedItem = useLastSelectedItem();
+  if (!selectedItem) return null;
+
+  const sizeInfo = directorySizeInfoCache.get(selectedItem.filePath).read();
+  let displayCount = "--";
+  if (sizeInfo) displayCount = `${sizeInfo.FileCount} 個檔案`;
+
+  return <p className={className.groupValue}>{displayCount}</p>;
+};
+
+/**
+ * ?
+ */
+const DirTotalSize = () => {
+  const selectedItem = useLastSelectedItem();
+  if (!selectedItem) return null;
+
+  const sizeInfo = directorySizeInfoCache.get(selectedItem.filePath).read();
+  let displaySize = "--";
+  if (sizeInfo) displaySize = formatFileSize(sizeInfo.TotalSize);
+
+  return (
+    <p className={className.groupValue} style={{ whiteSpace: "normal" }}>
+      {displaySize}
+    </p>
+  );
+};
+
+/**
+ * ?
+ */
+const DirProps = memo(() => {
+  const selectedItem = useLastSelectedItem();
+  if (!selectedItem) return null;
+
+  return (
+    <div className={className.groupContainer}>
+      <p className={className.groupLabel}>包含:</p>
+      <Suspense fallback={<p className={className.groupValue}>載入中...</p>}>
+        <DirFileCount />
+      </Suspense>
+
+      <p className={className.groupLabel}>大小:</p>
+      <Suspense fallback={<p className={className.groupValue}>載入中...</p>}>
+        <DirTotalSize />
+      </Suspense>
+    </div>
+  );
+});
+
+// ---------------------------------------------------------------------------------
+
+/**
+ * ?
+ */
 const PropertyDialog = memo(({ open, onClose }: { open: boolean; onClose: () => void }) => {
   const selectedItem = useLastSelectedItem();
 
@@ -164,8 +220,7 @@ const PropertyDialog = memo(({ open, onClose }: { open: boolean; onClose: () => 
         {type !== "other" && <hr className={className.divider} />}
 
         {type === "file" && <FileProps />}
-
-        {type === "dir" && <></>}
+        {type === "dir" && <DirProps />}
       </Box>
 
       <Box sx={{ position: "absolute", inset: "0px 0px auto auto", p: 1.5 }}>

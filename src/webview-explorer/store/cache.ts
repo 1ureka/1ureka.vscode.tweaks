@@ -35,4 +35,15 @@ const fileAvailabilityCache = createTTLCache(
   { ttl: 100 } // 立刻過期
 );
 
-export { thumbnailCache, fileAttributesCache, fileAvailabilityCache };
+/**
+ * 用於快取目錄大小資訊的資源管理器
+ */
+const directorySizeInfoCache = createTTLCache(
+  async (dirPath: string) => {
+    const info = await invoke("system.read.dir.sizeinfo", { dirPath });
+    return info;
+  },
+  { ttl: 100 } // 立刻過期
+);
+
+export { thumbnailCache, fileAttributesCache, fileAvailabilityCache, directorySizeInfoCache };
