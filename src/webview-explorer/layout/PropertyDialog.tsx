@@ -4,7 +4,7 @@ import { Box, type SxProps } from "@mui/material";
 import { Dialog } from "@explorer/components/Dialog";
 import { ActionButton, ActionGroup, ActionInput } from "@explorer/components/Action";
 import { selectionStore, viewDataStore } from "@explorer/store/data";
-import { fileAttributesCache } from "@explorer/store/cache";
+import { fileAttributesCache, fileAvailabilityCache } from "@explorer/store/cache";
 
 import type { InspectDirectoryEntry } from "@/utils/host/system";
 import { formatFileSize, formatFileType, formatFixedLengthDateTime } from "@/utils/shared/formatter";
@@ -37,8 +37,10 @@ const useLastSelectedItem = () => {
 
 // ---------------------------------------------------------------------------------
 
+/** ? */
 const rowHeight = 32;
 
+/** ? */
 const className = {
   header: "property-dialog-header",
   divider: "property-dialog-divider",
@@ -47,6 +49,9 @@ const className = {
   groupValue: "property-dialog-group-value",
 } as const;
 
+/**
+ * ?
+ */
 const propertyDialogSx: SxProps = {
   display: "flex",
   flexDirection: "column",
@@ -101,28 +106,53 @@ const propertyDialogSx: SxProps = {
   },
 };
 
+/**
+ * ?
+ */
 const FileAttributes = () => {
   const selectedItem = useLastSelectedItem();
-
-  if (!selectedItem) {
-    return null;
-  }
+  if (!selectedItem) return null;
 
   const attributes = fileAttributesCache.get(selectedItem.filePath).read();
   let displayAttributes = "無法取得屬性";
-  if (attributes) {
-    displayAttributes = attributes.join(", ");
-  }
+  if (attributes) displayAttributes = attributes.join(", ");
 
   return <p className={className.groupValue}>{displayAttributes}</p>;
 };
 
+/**
+ * ?
+ */
+const FileAvailability = () => {
+  const selectedItem = useLastSelectedItem();
+  if (!selectedItem) return null;
+
+  const availability = fileAvailabilityCache.get(selectedItem.filePath).read();
+  let displayAvailability = "無法取得狀態";
+  if (availability === "Normal") displayAvailability = "本機可用";
+  if (availability === "OnlineOnly") displayAvailability = "連線時可用";
+  if (availability === "AlwaysAvailable") displayAvailability = "在此裝置上永遠可用";
+  if (availability === "LocallyAvailable") displayAvailability = "在此裝置上可用";
+
+  let icon: `codicon codicon-${string}` | null = null;
+  if (availability === "OnlineOnly") icon = "codicon codicon-cloud";
+  if (availability === "AlwaysAvailable") icon = "codicon codicon-pass-filled";
+  if (availability === "LocallyAvailable") icon = "codicon codicon-pass";
+
+  return (
+    <p className={className.groupValue} style={{ display: "flex", alignItems: "center" }}>
+      {icon && <i className={icon} style={{ marginRight: 4, lineHeight: `${rowHeight}px` }} />}
+      {displayAvailability}
+    </p>
+  );
+};
+
+/**
+ * ?
+ */
 const FileProps = () => {
   const selectedItem = useLastSelectedItem();
-
-  if (!selectedItem) {
-    return null;
-  }
+  if (!selectedItem) return null;
 
   return (
     <div className={className.groupContainer}>
@@ -135,10 +165,17 @@ const FileProps = () => {
       <Suspense fallback={<p className={className.groupValue}>載入中...</p>}>
         <FileAttributes />
       </Suspense>
+      <p className={className.groupLabel}>可用性狀態:</p>
+      <Suspense fallback={<p className={className.groupValue}>載入中...</p>}>
+        <FileAvailability />
+      </Suspense>
     </div>
   );
 };
 
+/**
+ * ?
+ */
 const PropertyDialog = memo(({ open, onClose }: { open: boolean; onClose: () => void }) => {
   const selectedItem = useLastSelectedItem();
 

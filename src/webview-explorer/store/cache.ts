@@ -24,4 +24,15 @@ const fileAttributesCache = createTTLCache(
   { ttl: 100 } // 立刻過期
 );
 
-export { thumbnailCache, fileAttributesCache };
+/**
+ * 用於快取檔案可用性狀態的資源管理器
+ */
+const fileAvailabilityCache = createTTLCache(
+  async (filePath: string) => {
+    const status = await invoke("system.read.file.availability", { filePath });
+    return status;
+  },
+  { ttl: 100 } // 立刻過期
+);
+
+export { thumbnailCache, fileAttributesCache, fileAvailabilityCache };

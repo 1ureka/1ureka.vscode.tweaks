@@ -57,6 +57,11 @@ export type FileAttribute =
   | "IntegrityStream"
   | "NoScrubData";
 
+/**
+ * 檔案可用性狀態
+ */
+export type FileAvailability = "Normal" | "OnlineOnly" | "AlwaysAvailable" | "LocallyAvailable";
+
 // --- 核心邏輯 (Core) ------------------------------------------------------------------------
 
 /** 執行 PowerShell 指令並回傳 stdout（字串），假設 windows 系統是繁體中文環境 (使用 big5 編碼輸出) */
@@ -151,6 +156,31 @@ try {
 } catch { "null" }
 `;
 
+const getFileAvailabilityScript = `
+$path = [Console]::In.ReadLine()
+try {
+    if (Test-Path -LiteralPath $path -PathType Leaf) {
+        $item = Get-Item -LiteralPath $path
+        $attr = [int]$item.Attributes
+
+        # Windows API File Attribute Constants
+        $RECALL_ON_DATA_ACCESS = 0x00400000
+        $PINNED                = 0x00080000
+        $UNPINNED              = 0x00100000
+
+        if ($attr -band $RECALL_ON_DATA_ACCESS) {
+            "OnlineOnly"
+        } elseif ($attr -band $PINNED) {
+            "AlwaysAvailable"
+        } elseif ($attr -band $UNPINNED) {
+            "LocallyAvailable"
+        } else {
+            "Normal"
+        }
+    } else { "null" }
+} catch { "null" }
+`;
+
 // --- 導出的 API (Exported APIs) ------------------------------------------------------------
 
 /**
@@ -192,4 +222,20 @@ export async function getFileAttributes(filePath: string): Promise<FileAttribute
   if (!trimmed || trimmed === "null") return null;
   const result = JSON.parse(trimmed);
   return Array.isArray(result) ? result : [result];
+}
+
+/**
+ * 取得檔案的可用性狀態
+ * @param filePath 檔案的完整路徑
+ * @returns `Normal`、`OnlineOnly`、`AlwaysAvailable`、`LocallyAvailable` 或 `Unknown`
+ */
+export async function getFileAvailability(filePath: string): Promise<FileAvailability | null> {
+  const stdout = await runPowerShell(getFileAvailabilityScript, filePath);
+  const trimmed = stdout.trim();
+  if (!trimmed) return null;
+  if (["Normal", "OnlineOnly", "AlwaysAvailable", "LocallyAvailable"].includes(trimmed)) {
+    return trimmed as FileAvailability;
+  } else {
+    return null;
+  }
 }
