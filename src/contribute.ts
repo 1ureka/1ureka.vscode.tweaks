@@ -8,6 +8,7 @@ type CommandId =
   | "1ureka.main.openNavigation"
   | "1ureka.explorer.openFromPath"
   | "1ureka.explorer.openFromDialog"
+  | "1ureka.explorer.openFromFile"
   | "1ureka.vscode.openWithSystemDefaultApp"
   | "1ureka.vscode.injectStyles"
   | "1ureka.vscode.restoreStyles"
@@ -95,7 +96,13 @@ const explorerContextMenuEntries: ContextMenuEntries = [
     id: "1ureka.explorer.openFromPath",
     title: "在系統瀏覽器中顯示",
     when: "explorerResourceIsFolder",
-    group: "extension@100",
+    group: "navigation@100",
+  },
+  {
+    id: "1ureka.explorer.openFromFile",
+    title: "在系統瀏覽器中顯示",
+    when: "!explorerResourceIsFolder",
+    group: "navigation@100",
   },
 ];
 
@@ -103,6 +110,12 @@ const editorTitleContextMenuEntries: ContextMenuEntries = [
   {
     id: "1ureka.vscode.openWithSystemDefaultApp",
     title: "以預設應用程式開啟",
+    when: "resourceScheme == file",
+    group: "navigation@100",
+  },
+  {
+    id: "1ureka.explorer.openFromFile",
+    title: "在系統瀏覽器中顯示",
     when: "resourceScheme == file",
     group: "navigation@100",
   },

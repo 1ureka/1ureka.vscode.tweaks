@@ -55,6 +55,7 @@ const initialViewState: ViewState = {
 
 type AppState = {
   showLeftPanel: boolean;
+  contextMenuAnchor: { x: number; y: number } | null;
 };
 
 type NavigationState = {
@@ -113,7 +114,7 @@ type RenameState = {
 /**
  * 建立用於儲存應用程式狀態的容器
  */
-const appStateStore = create<AppState>(() => ({ showLeftPanel: true }));
+const appStateStore = create<AppState>(() => ({ showLeftPanel: true, contextMenuAnchor: null }));
 
 /**
  * 建立前端用於儲存檔案系統資料的容器

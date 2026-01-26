@@ -4,7 +4,7 @@ import { Panel } from "@explorer/components/Panel";
 import { List, type ListItem } from "@explorer/components/List";
 import { ActionButton, ActionDropdown, ActionDropdownButton, ActionGroup } from "@explorer/components/Action";
 import { navigateHistoryStore, navigationExternalStore, navigationStore } from "@explorer/store/data";
-import { navigateToFolder, readDrives } from "@explorer/action/navigation";
+import { clearNavigationHistory, navigateToFolder, readDrives } from "@explorer/action/navigation";
 import { formatFileSize } from "@/utils/shared/formatter";
 
 const fakeBookmarkItems: ListItem[] = [
@@ -171,33 +171,45 @@ const HistoryPanel = () => {
           scrollToTopOnItemsChange={mode === "recent"}
         />
 
-        <ActionGroup orientation="vertical" size="small">
-          <ActionButton
-            actionIcon="codicon codicon-issue-reopened"
-            actionName="最近瀏覽"
-            actionDetail="以時間順序顯示最近瀏覽的資料夾"
-            active={mode === "recent"}
-            onClick={() => setMode("recent")}
-          />
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+          <ActionGroup orientation="vertical" size="small">
+            <ActionButton
+              actionIcon="codicon codicon-issue-reopened"
+              actionName="最近瀏覽"
+              actionDetail="以時間順序顯示最近瀏覽的資料夾"
+              active={mode === "recent"}
+              onClick={() => setMode("recent")}
+            />
 
-          <ActionDropdown actionName="更多模式" actionDetail="選擇其他瀏覽方式" tooltipPlacement="right">
-            <ActionDropdownButton
-              actionIcon="codicon codicon-history"
-              actionName="歷史紀錄"
-              actionDetail="以歷史順序顯示最近瀏覽的資料夾"
+            <ActionDropdown actionName="更多模式" actionDetail="選擇其他瀏覽方式" tooltipPlacement="right">
+              <ActionDropdownButton
+                actionIcon="codicon codicon-history"
+                actionName="歷史紀錄"
+                actionDetail="以歷史順序顯示最近瀏覽的資料夾"
+                tooltipPlacement="right"
+                active={mode === "history"}
+                onClick={() => setMode("history")}
+              />
+              <ActionDropdownButton
+                actionIcon="codicon codicon-graph-left"
+                actionName="最常瀏覽"
+                actionDetail="以瀏覽次數排序顯示最常瀏覽的資料夾"
+                active={mode === "frequent"}
+                onClick={() => setMode("frequent")}
+              />
+            </ActionDropdown>
+          </ActionGroup>
+
+          <ActionGroup orientation="vertical" size="small">
+            <ActionButton
+              actionIcon="codicon codicon-trash"
+              actionName="清除記錄"
+              actionDetail="清除所有瀏覽記錄"
               tooltipPlacement="right"
-              active={mode === "history"}
-              onClick={() => setMode("history")}
+              onClick={clearNavigationHistory}
             />
-            <ActionDropdownButton
-              actionIcon="codicon codicon-graph-left"
-              actionName="最常瀏覽"
-              actionDetail="以瀏覽次數排序顯示最常瀏覽的資料夾"
-              active={mode === "frequent"}
-              onClick={() => setMode("frequent")}
-            />
-          </ActionDropdown>
-        </ActionGroup>
+          </ActionGroup>
+        </Box>
       </Box>
     </Panel>
   );

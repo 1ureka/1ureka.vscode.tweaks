@@ -40,6 +40,23 @@ const readDrives = async () => {
   navigationExternalStore.setState({ systemDrives: drives });
 };
 
+/**
+ * 清空導航歷史紀錄
+ */
+const clearNavigationHistory = () => {
+  const currentPath = dataStore.getState().currentPath;
+
+  const pathHeatmap = new Map<string, number>();
+  pathHeatmap.set(currentPath, 1);
+
+  navigateHistoryStore.setState({ history: [currentPath], currentIndex: 0 });
+  navigationStore.setState({
+    pathHeatmap,
+    recentlyVisitedPaths: [currentPath],
+    mostFrequentPaths: [currentPath],
+  });
+};
+
 // ---------------------------------------------------------------------------
 
 /**
@@ -138,3 +155,4 @@ const navigateToImageGridView = () => {
 
 export { stageDestinationPath, openInEnvironment, refresh, readDrives, navigateToImageGridView };
 export { navigateGotoFolder, navigateToFolder, navigateUp, navigateToPreviousFolder, navigateToNextFolder };
+export { clearNavigationHistory };
