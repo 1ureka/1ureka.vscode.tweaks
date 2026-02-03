@@ -18,6 +18,8 @@ type InspectDirectoryEntry = Prettify<
     size: number; // 若為資料夾則為 0
     mtime: number;
     ctime: number;
+    /** 若為符號連結，則存放其指向的真實絕對路徑 */
+    realPath?: string;
   }
 >;
 
@@ -72,6 +74,8 @@ async function inspectDirectory(entries: ReadDirectoryEntry[]): Promise<InspectD
     const { data: target } = await tryCatch(() => fs.stat(filePath));
     if (!target) return null;
 
+    const { data: realPath } = await tryCatch(() => fs.realpath(filePath));
+
     let fileType: InspectDirectoryEntry["fileType"];
     if (target.isDirectory()) fileType = "file-symlink-directory";
     else if (target.isFile()) fileType = "file-symlink-file";
@@ -79,7 +83,7 @@ async function inspectDirectory(entries: ReadDirectoryEntry[]): Promise<InspectD
 
     const size = fileType === "file-symlink-directory" ? 0 : target.size;
     const date = { mtime: self.mtime.getTime(), ctime: self.ctime.getTime() };
-    return { fileName, filePath, fileType, size, ...date };
+    return { fileName, filePath, fileType, size, ...date, realPath: realPath ?? undefined };
   };
 
   const promises = entries.map(async (entry) => {

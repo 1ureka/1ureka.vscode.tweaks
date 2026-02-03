@@ -45,7 +45,7 @@ const readClipboard = async () => {
 /**
  * 將最後選擇的項目的路徑或名稱寫入系統剪貼簿
  */
-const writeSystemClipboard = (type: "path" | "name") => {
+const writeSystemClipboard = (type: "path" | "realPath" | "name") => {
   const { lastSelectedIndex } = selectionStore.getState();
   if (!lastSelectedIndex) return;
 
@@ -53,7 +53,15 @@ const writeSystemClipboard = (type: "path" | "name") => {
   const item = entries[lastSelectedIndex];
   if (!item) return;
 
-  const text = type === "name" ? item.fileName : item.filePath;
+  let text: string;
+  if (type === "name") {
+    text = item.fileName;
+  } else if (type === "realPath") {
+    text = item.realPath || item.filePath;
+  } else {
+    text = item.filePath;
+  }
+
   return invoke("clipboard.write", text);
 };
 

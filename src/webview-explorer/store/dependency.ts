@@ -5,6 +5,7 @@
 
 import { clipboardStore, dataStore, navigationStore, viewDataStore, viewStateStore } from "@explorer/store/data";
 import { selectionStore, renameStore } from "@explorer/store/data";
+import { sortCompare } from "@/utils/shared/collator";
 import type { InspectDirectoryEntry } from "@/utils/host/system";
 
 /**
@@ -52,7 +53,7 @@ const sortEntries = (entries: InspectDirectoryEntry[]) => {
 
     let compareResult: number;
     if (typeof valA === "string" && typeof valB === "string") {
-      compareResult = valA.localeCompare(valB);
+      compareResult = sortCompare(valA, valB);
     } else {
       compareResult = Number(valA) - Number(valB);
     }
@@ -82,7 +83,7 @@ function createWeightBasedLayout<T extends { width: number; height: number }>(pa
     // 找到目前最短的軌道
     const columnIndex = columnHeights.reduce(
       (minIdx, currentY, currentIdx, arr) => (currentY < arr[minIdx] ? currentIdx : minIdx),
-      0
+      0,
     );
 
     const yStart = columnHeights[columnIndex]; // 權重起點

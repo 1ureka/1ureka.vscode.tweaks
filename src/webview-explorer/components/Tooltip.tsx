@@ -56,7 +56,7 @@ const TooltipShortcutDisplay = ({ actionShortcut }: { actionShortcut: string[] }
 
 const Tooltip = ({ children, actionName, actionDetail, actionShortcut, placement }: TooltipProps) => (
   <MuiTooltip
-    enterNextDelay={100}
+    enterNextDelay={250}
     disableInteractive
     placement={placement}
     slotProps={{ popper: { sx: { [tooltipContainerSelector]: tooltipContainerSx } } }}

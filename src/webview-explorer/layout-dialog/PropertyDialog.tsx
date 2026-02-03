@@ -210,6 +210,21 @@ const PropertyDialog = memo(({ open, onClose }: { open: boolean; onClose: () => 
             />
           </ActionGroup>
 
+          {selectedItem.realPath && (
+            <>
+              <p className={className.groupLabel}>實際路徑:</p>
+              <ActionGroup>
+                <ActionInput readOnly actionName="實際路徑" value={selectedItem.realPath} />
+                <ActionButton
+                  actionIcon="codicon codicon-copy"
+                  actionName="複製實際路徑"
+                  actionDetail="將實際路徑複製到剪貼簿"
+                  onClick={() => writeSystemClipboard("realPath")}
+                />
+              </ActionGroup>
+            </>
+          )}
+
           <p className={className.groupLabel}>建立時間:</p>
           <p className={className.groupValue}>{formatFixedLengthDateTime(new Date(selectedItem.ctime))}</p>
 

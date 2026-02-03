@@ -1,12 +1,13 @@
 @import url("https://fonts.googleapis.com/css2?family=Noto+Sans+TC&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+JP&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Geist+Mono&display=swap");
 
 .windows:lang(zh-Hant) {
-  font-family: "Geist Mono", "Noto Sans TC", monospace, codicon !important;
+  font-family: "Geist Mono", "Noto Sans TC", "Noto Sans JP", monospace, codicon !important;
 }
 
 * {
-  font-family: "Geist Mono", "Noto Sans TC", monospace, codicon !important;
+  font-family: "Geist Mono", "Noto Sans TC", "Noto Sans JP", monospace, codicon !important;
   outline: none !important;
 }
 
