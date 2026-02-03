@@ -122,4 +122,11 @@ const clamp = (params: { value: number; interval: [number, number] }) => {
   return Math.min(Math.max(value, min), max);
 };
 
-export { tryCatch, defer, setSchedule, clamp };
+/**
+ * 取得物件的型別安全鍵陣列
+ */
+const typedKeys = <T extends object>(obj: T) => {
+  return Object.keys(obj) as Array<keyof T>;
+};
+
+export { tryCatch, typedKeys, defer, setSchedule, clamp };
