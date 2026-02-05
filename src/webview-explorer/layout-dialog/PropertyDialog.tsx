@@ -4,7 +4,7 @@ import { Box } from "@mui/material";
 import { Dialog } from "@explorer/components/Dialog";
 import { propertyDialogSx, propertyDialogClassName, rowHeight } from "@explorer/layout-dialog/config";
 import { ActionButton, ActionGroup, ActionInput } from "@explorer/components/Action";
-import { selectionStore, viewDataStore } from "@explorer/store/data";
+import { useLastSelectedItem } from "@explorer/layout-dialog/hooks";
 import { directorySizeInfoCache, fileAttributesCache, fileAvailabilityCache } from "@explorer/store/cache";
 import { writeSystemClipboard } from "@explorer/action/clipboard";
 
@@ -24,17 +24,6 @@ const assignIcon = (entry: FileMetadata) => {
   const extension = fileName.includes(".") ? fileName.split(".").pop() || "" : "";
 
   return extensionIconMap[extension] ?? icon;
-};
-
-/**
- * 取得最後一個被選取的項目
- */
-const useLastSelectedItem = () => {
-  const lastSelectedIndex = selectionStore((state) => state.lastSelectedIndex);
-  const rows = viewDataStore((state) => state.entries);
-  const selectedItem = lastSelectedIndex !== null ? rows[lastSelectedIndex] : null;
-
-  return selectedItem;
 };
 
 // ---------------------------------------------------------------------------------
