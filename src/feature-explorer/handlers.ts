@@ -180,7 +180,8 @@ const handlePaste = async (params: {
   const { srcList, destDir, type, overwrite, withProgress, showErrorReport } = params;
 
   const itemCount = srcList.length;
-  const itemFailures: Record<string, string> = {};
+  const itemSuccesses: string[] = []; // 成功的項目列表
+  const itemFailures: Record<string, string> = {}; // key: source path, value: error message
   const progressPerItem = 100 / itemCount;
 
   await withProgress(type === "copy" ? "正在複製..." : "正在移動...", async (report) => {
@@ -194,6 +195,7 @@ const handlePaste = async (params: {
         } else if (type === "move") {
           await fs.move(src, dest, { overwrite });
         }
+        itemSuccesses.push(dest);
       } catch (error) {
         itemFailures[src] = error instanceof Error ? error.message : "未知錯誤";
       } finally {
@@ -202,7 +204,9 @@ const handlePaste = async (params: {
     }
   });
 
-  if (Object.keys(itemFailures).length <= 0) return handleReadDirectory({ dirPath: destDir });
+  if (Object.keys(itemFailures).length <= 0) {
+    return handleReadDirectory({ dirPath: destDir, selectedPaths: itemSuccesses });
+  }
 
   const sideEffectKey = `${type}-${overwrite ? "overwrite" : "no-overwrite"}` as keyof typeof sideEffectMap;
 
@@ -214,7 +218,7 @@ const handlePaste = async (params: {
   });
 
   showErrorReport(errorContent);
-  return handleReadDirectory({ dirPath: destDir });
+  return handleReadDirectory({ dirPath: destDir, selectedPaths: itemSuccesses });
 };
 
 // ----------------------------------------------------------------------------
@@ -245,7 +249,7 @@ const handleRename = async (params: {
     showError(`無法重新命名: ${error instanceof Error ? error.message : "未知錯誤"}`);
   }
 
-  return handleReadDirectory({ dirPath: path.dirname(dest) });
+  return handleReadDirectory({ dirPath: path.dirname(dest), selectedPaths: [dest] });
 };
 
 /**
