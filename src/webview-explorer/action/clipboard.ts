@@ -39,6 +39,7 @@ const readClipboard = async () => {
   if (!result) return;
 
   clipboardStore.setState({ entries: {} });
+  selectionStore.setState({ dirty: false });
   dataStore.setState({ ...result });
 };
 

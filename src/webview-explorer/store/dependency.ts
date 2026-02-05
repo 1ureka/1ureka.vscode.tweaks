@@ -151,14 +151,20 @@ const handleViewDataUpdate = () => {
 };
 
 /**
- * 當檢視資料更新時，清空選取狀態
+ * 當檢視資料更新時，根據 dirty 決定要清空選取狀態還是根據預設選取條件重新計算選取狀態
  */
 const handleSelectionUpdate = () => {
   const entries = viewDataStore.getState().entries;
+  const dirty = selectionStore.getState().dirty;
 
-  const selected = Array<0 | 1>(entries.length).fill(0);
-
-  selectionStore.setState({ selected, lastSelectedIndex: null });
+  if (!dirty) {
+    // 若使用者尚未對新資料進行任何選取操作
+    const selected = entries.map((item) => (item.defaultSelected ? 1 : 0));
+    selectionStore.setState({ selected, lastSelectedIndex: null });
+  } else {
+    const selected = Array<0 | 1>(entries.length).fill(0);
+    selectionStore.setState({ selected, lastSelectedIndex: null });
+  }
 };
 
 /**

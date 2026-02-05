@@ -1,6 +1,8 @@
 import { invoke } from "@explorer/store/init";
-import { dataStore, navigationStore, navigateHistoryStore, navigationExternalStore } from "@explorer/store/data";
+import { navigationStore, navigateHistoryStore, navigationExternalStore } from "@explorer/store/data";
+import { dataStore, selectionStore } from "@explorer/store/data";
 import { requestQueue } from "@explorer/store/queue";
+import type { ReadDirectoryParams } from "@/feature-explorer/types";
 
 /**
  * 重新整理
@@ -10,9 +12,11 @@ const refresh = async () => {
 
   if (mode === "directory") {
     const result = await requestQueue.add(() => invoke("system.read.dir", { dirPath: currentPath }));
+    selectionStore.setState({ dirty: false });
     dataStore.setState({ ...result });
   } else if (mode === "images") {
     const result = await requestQueue.add(() => invoke("system.read.images", { dirPath: currentPath }));
+    selectionStore.setState({ dirty: false });
     dataStore.setState({ ...result });
   }
 };
@@ -62,8 +66,8 @@ const clearNavigationHistory = () => {
 /**
  * 請求切換資料夾
  */
-const navigateToFolder = async ({ dirPath, depthOffset }: { dirPath: string; depthOffset?: number }) => {
-  const result = await requestQueue.add(() => invoke("system.read.dir", { dirPath, depthOffset }));
+const navigateToFolder = async (params: ReadDirectoryParams) => {
+  const result = await requestQueue.add(() => invoke("system.read.dir", { ...params }));
 
   const { history, currentIndex } = navigateHistoryStore.getState();
   if (history[currentIndex] !== result.currentPath) {
@@ -72,6 +76,7 @@ const navigateToFolder = async ({ dirPath, depthOffset }: { dirPath: string; dep
     navigateHistoryStore.setState({ history: newHistory, currentIndex: newHistory.length - 1 });
   }
 
+  selectionStore.setState({ dirty: false });
   dataStore.setState({ ...result });
 };
 
@@ -88,6 +93,7 @@ const navigateToImages = async ({ dirPath }: { dirPath: string }) => {
     navigateHistoryStore.setState({ history: newHistory, currentIndex: newHistory.length - 1 });
   }
 
+  selectionStore.setState({ dirty: false });
   dataStore.setState({ ...result });
 };
 
@@ -111,7 +117,7 @@ const navigateGotoFolder = () => {
 const navigateUp = async () => {
   const { isCurrentRoot, currentPath } = dataStore.getState();
   if (isCurrentRoot) return; // 已經在根目錄
-  return navigateToFolder({ dirPath: currentPath, depthOffset: -1 });
+  return navigateToFolder({ dirPath: currentPath, depthOffset: -1, selectedPaths: [currentPath] });
 };
 
 /**
@@ -125,7 +131,7 @@ const navigateToPreviousFolder = async () => {
   const result = await requestQueue.add(() => invoke("system.read.dir", { dirPath: prevPath }));
 
   navigateHistoryStore.setState({ history, currentIndex: currentIndex - 1 });
-
+  selectionStore.setState({ dirty: false });
   dataStore.setState({ ...result });
 };
 
@@ -140,7 +146,7 @@ const navigateToNextFolder = async () => {
   const result = await requestQueue.add(() => invoke("system.read.dir", { dirPath: nextPath }));
 
   navigateHistoryStore.setState({ history, currentIndex: currentIndex + 1 });
-
+  selectionStore.setState({ dirty: false });
   dataStore.setState({ ...result });
 };
 
