@@ -5,7 +5,7 @@ import { handleDelete, handlePaste, handleRename } from "@/feature-explorer/hand
 import { handleCreateFile, handleCreateDir } from "@/feature-explorer/handlers";
 import { handleReadDirectory, handleReadImages } from "@/feature-explorer/handlers";
 
-import { generateThumbnail } from "@/utils/host/image";
+import { generateThumbnail, openImage } from "@/utils/host/image";
 import { listSystemFolders, listVolumes } from "@/utils/host/system-windows";
 import { getFileAttributes, getFileAvailability, getDirectorySizeInfo } from "@/utils/host/system-windows";
 import type { WithProgress } from "@/utils/shared/type";
@@ -45,6 +45,13 @@ const readUserPaths = async () => {
 const readSystemVolumes = async () => {
   if (process.platform !== "win32") return [];
   return await listVolumes();
+};
+
+/**
+ * 讀取指定路徑的圖片元數據
+ */
+const readImageMetadata = async ({ filePath }: { filePath: string }) => {
+  return openImage(filePath);
 };
 
 /**
@@ -188,6 +195,7 @@ export const explorerService = {
   "system.read.user.paths": readUserPaths,
   "system.read.volumes": readSystemVolumes,
   "system.read.images": readImages,
+  "system.read.image.metadata": readImageMetadata,
   "system.read.thumbnail": readThumbnail,
   "system.read.file.attributes": readFileAttributes,
   "system.read.file.availability": readFileAvailability,
