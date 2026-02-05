@@ -159,8 +159,18 @@ const handleSelectionUpdate = () => {
 
   if (!dirty) {
     // 若使用者尚未對新資料進行任何選取操作
-    const selected = entries.map((item) => (item.defaultSelected ? 1 : 0));
-    selectionStore.setState({ selected, lastSelectedIndex: null });
+    let lastIdx: number | null = null;
+
+    const selected = entries.map((item, i) => {
+      if (item.defaultSelected) {
+        lastIdx = i;
+        return 1;
+      } else {
+        return 0;
+      }
+    });
+
+    selectionStore.setState({ selected, lastSelectedIndex: lastIdx });
   } else {
     const selected = Array<0 | 1>(entries.length).fill(0);
     selectionStore.setState({ selected, lastSelectedIndex: null });
