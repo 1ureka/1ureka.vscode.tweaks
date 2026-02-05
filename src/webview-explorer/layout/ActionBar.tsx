@@ -26,6 +26,7 @@ const ActionGroupForSingleItem = memo(() => {
         actionDetail="重新命名最後選取的項目"
         value={destName}
         onChange={renameItemTemp}
+        onEnter={renameItem}
       />
       <ActionButton
         actionIcon="codicon codicon-rename"
