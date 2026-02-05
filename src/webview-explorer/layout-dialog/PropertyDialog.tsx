@@ -7,6 +7,7 @@ import { ActionButton, ActionGroup, ActionInput } from "@explorer/components/Act
 import { useLastSelectedItem } from "@explorer/layout-dialog/hooks";
 import { directorySizeInfoCache, fileAttributesCache, fileAvailabilityCache } from "@explorer/store/cache";
 import { writeSystemClipboard } from "@explorer/action/clipboard";
+import { ImageDetailProps, isImageFile } from "@explorer/layout-dialog/ImageDetail";
 
 import type { FileMetadata } from "@/feature-explorer/types";
 import { formatFileSize, formatFileType, formatFixedLengthDateTime } from "@/utils/shared/formatter";
@@ -170,6 +171,11 @@ const PropertyDialog = memo(({ open, onClose }: { open: boolean; onClose: () => 
   if (selectedItem.fileType === "file") type = "file";
   if (selectedItem.fileType === "folder") type = "dir";
 
+  let isImage = false;
+  if (type === "file") {
+    isImage = isImageFile(selectedItem.fileName);
+  }
+
   return (
     <Dialog open={open} onClose={onClose}>
       <Box sx={propertyDialogSx}>
@@ -224,6 +230,7 @@ const PropertyDialog = memo(({ open, onClose }: { open: boolean; onClose: () => 
         {type !== "other" && <hr className={className.divider} />}
 
         {type === "file" && <FileProps />}
+        {isImage && <ImageDetailProps />}
         {type === "dir" && <DirProps />}
       </Box>
 
