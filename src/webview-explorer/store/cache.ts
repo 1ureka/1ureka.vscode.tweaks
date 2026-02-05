@@ -10,7 +10,7 @@ const thumbnailCache = createLRUCache(
     if (!data) throw new Error("Thumbnail generation failed");
     return `data:image/webp;base64,${data}`;
   },
-  { limit: 200 }
+  { limit: 200 },
 );
 
 /**
@@ -21,7 +21,7 @@ const fileAttributesCache = createTTLCache(
     const attrs = await invoke("system.read.file.attributes", { filePath });
     return attrs;
   },
-  { ttl: 100 } // 立刻過期
+  { ttl: 100 }, // 立刻過期
 );
 
 /**
@@ -32,7 +32,7 @@ const fileAvailabilityCache = createTTLCache(
     const status = await invoke("system.read.file.availability", { filePath });
     return status;
   },
-  { ttl: 100 } // 立刻過期
+  { ttl: 100 }, // 立刻過期
 );
 
 /**
@@ -43,7 +43,18 @@ const directorySizeInfoCache = createTTLCache(
     const info = await invoke("system.read.dir.sizeinfo", { dirPath });
     return info;
   },
-  { ttl: 100 } // 立刻過期
+  { ttl: 100 }, // 立刻過期
 );
 
-export { thumbnailCache, fileAttributesCache, fileAvailabilityCache, directorySizeInfoCache };
+/**
+ * 用於快取圖片詳細資訊的資源管理器
+ */
+const imageMetadataCache = createTTLCache(
+  async (filePath: string) => {
+    const detail = await invoke("system.read.image.metadata", { filePath });
+    return detail;
+  },
+  { ttl: 60000 }, // 1 分鐘，因為圖片元數據通常不會頻繁變更
+);
+
+export { thumbnailCache, fileAttributesCache, fileAvailabilityCache, directorySizeInfoCache, imageMetadataCache };
