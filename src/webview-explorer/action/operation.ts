@@ -17,6 +17,7 @@ const deleteItems = async () => {
   const itemList = entries.filter((_, index) => Boolean(selected[index])).map((entry) => entry.fileName);
 
   const result = await requestQueue.add(() => invoke("system.delete", { itemList, dirPath: currentPath }));
+  selectionStore.setState({ dirty: false });
   dataStore.setState({ ...result });
 };
 
@@ -36,6 +37,7 @@ const createNewFolder = async () => {
   const result = await requestQueue.add(() => invoke("system.create.dir", { dirPath: currentPath }));
   if (!result) return;
 
+  selectionStore.setState({ dirty: false });
   dataStore.setState({ ...result });
 };
 
@@ -48,6 +50,7 @@ const createNewFile = async () => {
   const result = await requestQueue.add(() => invoke("system.create.file", { dirPath: currentPath }));
   if (!result) return;
 
+  selectionStore.setState({ dirty: false });
   dataStore.setState({ ...result });
 };
 
@@ -88,9 +91,10 @@ const renameItem = async () => {
   }
 
   const result = await requestQueue.add(() =>
-    invoke("system.rename", { dirPath: currentPath, name: srcName, newName: destName })
+    invoke("system.rename", { dirPath: currentPath, name: srcName, newName: destName }),
   );
 
+  selectionStore.setState({ dirty: false });
   dataStore.setState({ ...result });
 };
 

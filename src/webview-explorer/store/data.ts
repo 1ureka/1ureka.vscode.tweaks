@@ -6,10 +6,9 @@
 import { create } from "zustand";
 import { invoke } from "@explorer/store/init";
 import { getInitialData } from "@/utils/message/client";
-import type { InspectDirectoryEntry } from "@/utils/host/system";
 import type { ImageMetadata } from "@/utils/host/image";
-import type { ReadResourceResult } from "@/feature-explorer/handlers";
 import type { SystemFolder, VolumeInfo } from "@/utils/host/system-windows";
+import type { FileMetadata, ReadResourceResult } from "@/feature-explorer/types";
 
 const initialData = getInitialData<ReadResourceResult>();
 if (!initialData) {
@@ -78,7 +77,7 @@ type NavigationExternalState = {
 };
 
 type ViewState = {
-  sortField: keyof Pick<InspectDirectoryEntry, "fileName" | "mtime" | "ctime" | "size">;
+  sortField: keyof Pick<FileMetadata, "fileName" | "mtime" | "ctime" | "size">;
   sortOrder: "asc" | "desc";
   filter: boolean;
   filterOption: "file" | "folder" | "clipboard";
@@ -88,7 +87,7 @@ type ViewState = {
 
 type ViewDataState = {
   viewMode: typeof initialData.mode;
-  entries: InspectDirectoryEntry[];
+  entries: FileMetadata[];
   imageEntries: {
     tracks: { item: ImageMetadata; yStart: number; yEnd: number }[][];
     yMax: number;
@@ -96,12 +95,13 @@ type ViewDataState = {
 };
 
 type SelectionState = {
+  dirty: boolean; // 是否在上次請求延伸主機時，使用者改變了選取狀態
   selected: (0 | 1)[];
   lastSelectedIndex: number | null;
 };
 
 type ClipboardState = {
-  entries: { [filePath: string]: InspectDirectoryEntry };
+  entries: { [filePath: string]: FileMetadata };
 };
 
 type RenameState = {
@@ -149,7 +149,7 @@ const viewDataStore = create<ViewDataState>(() => ({ ...initialViewDataState }))
 /**
  * 建立用於儲存選取狀態的容器
  */
-const selectionStore = create<SelectionState>(() => ({ selected: [], lastSelectedIndex: null }));
+const selectionStore = create<SelectionState>(() => ({ dirty: false, selected: [], lastSelectedIndex: null }));
 
 /**
  * 建立用於儲存剪貼簿資料的容器

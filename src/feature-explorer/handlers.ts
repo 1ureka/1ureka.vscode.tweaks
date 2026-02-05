@@ -5,63 +5,17 @@ import { tryCatch } from "@/utils/shared";
 import { generateErrorMessage } from "@/utils/shared/formatter";
 import { readDirectory, inspectDirectory, resolvePath } from "@/utils/host/system";
 import { isRootDirectory, pathToArray, toParentPath, shortenPath } from "@/utils/host/system";
-import { openImages, type ImageMetadata } from "@/utils/host/image";
+import { openImages } from "@/utils/host/image";
 
-import type { InspectDirectoryEntry } from "@/utils/host/system";
-import type { OneOf, Prettify, WithProgress } from "@/utils/shared/type";
-
-/**
- * 延伸主機讀取結果必定包含的基礎資料型別
- */
-type ReadBase = {
-  // 有關當前目錄的資訊
-  currentPath: string;
-  shortenedPath: string;
-  currentPathParts: string[];
-  isCurrentRoot: boolean;
-  fileCount: number;
-  folderCount: number;
-  // 最後更新的時間戳記
-  timestamp: number;
-};
-
-/**
- * 當 mode 為 "directory" 時，延伸主機讀取結果的型別
- */
-type ReadDirectoryResult = Prettify<
-  ReadBase & {
-    mode: "directory";
-    entries: InspectDirectoryEntry[];
-    imageEntries: never[];
-  }
->;
-
-/**
- * 當 mode 為 "images" 時，延伸主機讀取結果的型別
- */
-type ReadImagesResult = Prettify<
-  ReadBase & {
-    mode: "images";
-    entries: never[];
-    imageEntries: ImageMetadata[];
-  }
->;
-
-/**
- * 延伸主機讀取後的統一回傳型別
- *
- * 實際的回傳資料，根據請求的 mode 會有不同的內容，但必定保證有一個會是空陣列
- */
-type ReadResourceResult = OneOf<[ReadDirectoryResult, ReadImagesResult]>;
-
-export type { ReadResourceResult };
+import type { WithProgress } from "@/utils/shared/type";
+import type { ReadDirectoryParams, ReadResourceResult } from "@/feature-explorer/types";
 
 // ---------------------------------------------------------------------------------
 
 /**
  * 處理初始資料注入
  */
-const handleInitialData = (params: { dirPath: string }): ReadResourceResult => {
+const handleInitialData = (params: Pick<ReadDirectoryParams, "dirPath">): ReadResourceResult => {
   const currentPath = resolvePath(params.dirPath);
   const shortenedPath = shortenPath(currentPath, 40);
   const currentPathParts = pathToArray(currentPath);
@@ -76,8 +30,9 @@ const handleInitialData = (params: { dirPath: string }): ReadResourceResult => {
  * 掃描資料夾內容，讀取檔案系統資訊並回傳
  * 其中，depthOffset 可以是正數、零或負數，但都視作向上移動目錄層級來處理。
  */
-const handleReadDirectory = async (params: { dirPath: string; depthOffset?: number }): Promise<ReadResourceResult> => {
-  const { dirPath, depthOffset = 0 } = params;
+const handleReadDirectory = async (params: ReadDirectoryParams): Promise<ReadResourceResult> => {
+  const { dirPath, depthOffset = 0, selectedPaths = [] } = params;
+  const selected = new Set(selectedPaths.map(resolvePath));
 
   const currentPath = resolvePath(toParentPath(dirPath, depthOffset));
   const shortenedPath = shortenPath(currentPath, 40);
@@ -87,18 +42,24 @@ const handleReadDirectory = async (params: { dirPath: string; depthOffset?: numb
   const baseInfo = { mode: "directory", currentPath, shortenedPath, currentPathParts, isCurrentRoot } as const;
   const counts = { folderCount: 0, fileCount: 0 };
 
-  const entries = await readDirectory(currentPath);
-  if (!entries) {
+  const rawEntries = await readDirectory(currentPath);
+  if (!rawEntries) {
     return { ...baseInfo, entries: [], imageEntries: [], ...counts, timestamp: Date.now() };
   }
 
-  const inspectedEntries = await inspectDirectory(entries);
-  inspectedEntries.forEach(({ fileType }) => {
-    if (fileType === "folder") counts.folderCount++;
-    else if (fileType === "file") counts.fileCount++;
+  const inspectedEntries = await inspectDirectory(rawEntries);
+  const entries = inspectedEntries.map((entry) => {
+    if (entry.fileType === "folder") counts.folderCount++;
+    else if (entry.fileType === "file") counts.fileCount++;
+
+    if (selected.has(resolvePath(entry.filePath))) {
+      return { ...entry, defaultSelected: true };
+    } else {
+      return entry;
+    }
   });
 
-  return { ...baseInfo, entries: inspectedEntries, imageEntries: [], ...counts, timestamp: Date.now() };
+  return { ...baseInfo, entries, imageEntries: [], ...counts, timestamp: Date.now() };
 };
 
 /**
@@ -151,7 +112,7 @@ async function handleCreateFile(params: {
 
   openFile?.(filePath);
 
-  return handleReadDirectory({ dirPath });
+  return handleReadDirectory({ dirPath, selectedPaths: [filePath] });
 }
 
 /**
@@ -166,7 +127,7 @@ const handleCreateDir = async (params: { dirPath: string; folderName: string; sh
     return null;
   }
 
-  return handleReadDirectory({ dirPath });
+  return handleReadDirectory({ dirPath, selectedPaths: [path.join(dirPath, folderName)] });
 };
 
 // ----------------------------------------------------------------------------
@@ -219,7 +180,8 @@ const handlePaste = async (params: {
   const { srcList, destDir, type, overwrite, withProgress, showErrorReport } = params;
 
   const itemCount = srcList.length;
-  const itemFailures: Record<string, string> = {};
+  const itemSuccesses: string[] = []; // 成功的項目列表
+  const itemFailures: Record<string, string> = {}; // key: source path, value: error message
   const progressPerItem = 100 / itemCount;
 
   await withProgress(type === "copy" ? "正在複製..." : "正在移動...", async (report) => {
@@ -233,6 +195,7 @@ const handlePaste = async (params: {
         } else if (type === "move") {
           await fs.move(src, dest, { overwrite });
         }
+        itemSuccesses.push(dest);
       } catch (error) {
         itemFailures[src] = error instanceof Error ? error.message : "未知錯誤";
       } finally {
@@ -241,7 +204,9 @@ const handlePaste = async (params: {
     }
   });
 
-  if (Object.keys(itemFailures).length <= 0) return handleReadDirectory({ dirPath: destDir });
+  if (Object.keys(itemFailures).length <= 0) {
+    return handleReadDirectory({ dirPath: destDir, selectedPaths: itemSuccesses });
+  }
 
   const sideEffectKey = `${type}-${overwrite ? "overwrite" : "no-overwrite"}` as keyof typeof sideEffectMap;
 
@@ -253,7 +218,7 @@ const handlePaste = async (params: {
   });
 
   showErrorReport(errorContent);
-  return handleReadDirectory({ dirPath: destDir });
+  return handleReadDirectory({ dirPath: destDir, selectedPaths: itemSuccesses });
 };
 
 // ----------------------------------------------------------------------------
@@ -284,7 +249,7 @@ const handleRename = async (params: {
     showError(`無法重新命名: ${error instanceof Error ? error.message : "未知錯誤"}`);
   }
 
-  return handleReadDirectory({ dirPath: path.dirname(dest) });
+  return handleReadDirectory({ dirPath: path.dirname(dest), selectedPaths: [dest] });
 };
 
 /**

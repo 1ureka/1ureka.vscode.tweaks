@@ -8,14 +8,14 @@ import { selectionStore, viewDataStore } from "@explorer/store/data";
 import { directorySizeInfoCache, fileAttributesCache, fileAvailabilityCache } from "@explorer/store/cache";
 import { writeSystemClipboard } from "@explorer/action/clipboard";
 
-import type { InspectDirectoryEntry } from "@/utils/host/system";
+import type { FileMetadata } from "@/feature-explorer/types";
 import { formatFileSize, formatFileType, formatFixedLengthDateTime } from "@/utils/shared/formatter";
 import { extensionIconMap } from "@/assets/fileExtMap";
 
 /**
  * 為項目指派對應的圖示
  */
-const assignIcon = (entry: InspectDirectoryEntry) => {
+const assignIcon = (entry: FileMetadata) => {
   let icon: `codicon codicon-${string}` = `codicon codicon-${entry.fileType}`;
 
   if (entry.fileType !== "file") return icon;

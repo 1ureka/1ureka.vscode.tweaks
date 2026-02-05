@@ -1,24 +1,24 @@
 /**
  * @file 依賴鏈
- * @description 該文件負責定義更新鏈/依賴鏈，可參考 README.md 中的說明
+ * @description 該文件負責定義更新鏈/依賴鏈
  */
 
 import { clipboardStore, dataStore, navigationStore, viewDataStore, viewStateStore } from "@explorer/store/data";
 import { selectionStore, renameStore } from "@explorer/store/data";
 import { sortCompare } from "@/utils/shared/collator";
-import type { InspectDirectoryEntry } from "@/utils/host/system";
+import type { FileMetadata } from "@/feature-explorer/types";
 
 /**
  * 根據目前的篩選條件回傳篩選後的檔案屬性陣列
  */
-const filterEntries = (entries: InspectDirectoryEntry[]) => {
+const filterEntries = (entries: FileMetadata[]) => {
   const { filter, filterOption } = viewStateStore.getState();
 
   if (!filter) {
     return [...entries];
   }
 
-  let filteredEntries: InspectDirectoryEntry[] = [];
+  let filteredEntries: FileMetadata[] = [];
 
   if (filterOption === "file") {
     filteredEntries = entries.filter(({ fileType }) => fileType === "file" || fileType === "file-symlink-file");
@@ -39,7 +39,7 @@ const filterEntries = (entries: InspectDirectoryEntry[]) => {
 /**
  * 根據目前的排序欄位與順序回傳排序後的檔案屬性陣列
  */
-const sortEntries = (entries: InspectDirectoryEntry[]) => {
+const sortEntries = (entries: FileMetadata[]) => {
   const { sortField, sortOrder } = viewStateStore.getState();
 
   const sortedEntries = [...entries];
@@ -151,14 +151,20 @@ const handleViewDataUpdate = () => {
 };
 
 /**
- * 當檢視資料更新時，清空選取狀態
+ * 當檢視資料更新時，根據 dirty 決定要清空選取狀態還是根據預設選取條件重新計算選取狀態
  */
 const handleSelectionUpdate = () => {
   const entries = viewDataStore.getState().entries;
+  const dirty = selectionStore.getState().dirty;
 
-  const selected = Array<0 | 1>(entries.length).fill(0);
-
-  selectionStore.setState({ selected, lastSelectedIndex: null });
+  if (!dirty) {
+    // 若使用者尚未對新資料進行任何選取操作
+    const selected = entries.map((item) => (item.defaultSelected ? 1 : 0));
+    selectionStore.setState({ selected, lastSelectedIndex: null });
+  } else {
+    const selected = Array<0 | 1>(entries.length).fill(0);
+    selectionStore.setState({ selected, lastSelectedIndex: null });
+  }
 };
 
 /**

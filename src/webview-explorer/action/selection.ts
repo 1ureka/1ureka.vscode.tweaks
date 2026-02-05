@@ -43,7 +43,7 @@ const selectRow = (params: { index: number; isAdditive: boolean; isRange: boolea
       for (const index of targetIndices) newSelected[index] = targetState;
     }
 
-    return { selected: newSelected, lastSelectedIndex: currentIndex };
+    return { selected: newSelected, lastSelectedIndex: currentIndex, dirty: true };
   });
 };
 
@@ -51,7 +51,7 @@ const selectRow = (params: { index: number; isAdditive: boolean; isRange: boolea
 const selectAll = () => {
   selectionStore.setState((state) => {
     const newSelected = Array<0 | 1>(state.selected.length).fill(1);
-    return { selected: newSelected, lastSelectedIndex: null };
+    return { selected: newSelected, lastSelectedIndex: null, dirty: true };
   });
 };
 
@@ -59,7 +59,7 @@ const selectAll = () => {
 const selectNone = () => {
   selectionStore.setState((state) => {
     const newSelected = Array<0 | 1>(state.selected.length).fill(0);
-    return { selected: newSelected, lastSelectedIndex: null };
+    return { selected: newSelected, lastSelectedIndex: null, dirty: true };
   });
 };
 
@@ -67,7 +67,7 @@ const selectNone = () => {
 const selectInvert = () => {
   selectionStore.setState((state) => {
     const newSelected = state.selected.map((value) => (1 - value) as 0 | 1);
-    return { selected: newSelected, lastSelectedIndex: null };
+    return { selected: newSelected, lastSelectedIndex: null, dirty: true };
   });
 };
 

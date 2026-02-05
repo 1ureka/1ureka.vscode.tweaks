@@ -2,8 +2,9 @@ import * as vscode from "vscode";
 
 import { registerInvokeEvents } from "@/utils/message/host";
 import { createWebviewPanel } from "@/utils/vscode/webview";
-import { handleInitialData, type ReadResourceResult } from "@/feature-explorer/handlers";
+import { handleInitialData } from "@/feature-explorer/handlers";
 import { explorerService } from "@/feature-explorer/service";
+import type { ReadResourceResult } from "@/feature-explorer/types";
 
 import explorerIconLight from "@/assets/explorer-light.svg";
 import explorerIconDark from "@/assets/explorer-dark.svg";

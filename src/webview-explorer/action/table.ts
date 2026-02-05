@@ -92,7 +92,7 @@ function createHandleCalculateSelection({ rowsContainer, startY }: { rowsContain
     const targetIndex = currentY > startY ? endIndex - 1 : startIndex;
     const lastSelectedIndex = clamp({ value: targetIndex, interval: [0, newSelected.length - 1] });
 
-    selectionStore.setState({ selected: newSelected, lastSelectedIndex });
+    selectionStore.setState({ selected: newSelected, lastSelectedIndex, dirty: true });
   };
 }
 

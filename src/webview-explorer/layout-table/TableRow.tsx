@@ -3,7 +3,7 @@ import { ButtonBase, Typography } from "@mui/material";
 
 import { formatFileSize, formatFileType, formatFixedLengthDateTime } from "@/utils/shared/formatter";
 import { extensionIconMap } from "@/assets/fileExtMap";
-import type { InspectDirectoryEntry } from "@/utils/host/system";
+import type { FileMetadata } from "@/feature-explorer/types";
 
 import type { TableColumn } from "@explorer/layout-table/config";
 import { tableColumns, tableClass } from "@explorer/layout-table/config";
@@ -18,7 +18,7 @@ const tableRowIndexAttr = "data-index";
 /**
  * 為項目指派對應的圖示
  */
-const assignIcon = (entry: InspectDirectoryEntry) => {
+const assignIcon = (entry: FileMetadata) => {
   let icon: `codicon codicon-${string}` = `codicon codicon-${entry.fileType}`;
 
   if (entry.fileType !== "file") return icon;
@@ -34,7 +34,7 @@ const assignIcon = (entry: InspectDirectoryEntry) => {
 /**
  * 用於表格某 row 中的單元格
  */
-const TableCell = ({ column, row }: { column: TableColumn; row: InspectDirectoryEntry }) => {
+const TableCell = ({ column, row }: { column: TableColumn; row: FileMetadata }) => {
   const { fileName, fileType, ctime, mtime, size } = row;
   const { field, align, weight, width } = column;
 
