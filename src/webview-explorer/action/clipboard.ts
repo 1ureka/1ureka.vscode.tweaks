@@ -1,4 +1,4 @@
-import type { InspectDirectoryEntry } from "@/utils/host/system";
+import type { FileMetadata } from "@/feature-explorer/types";
 import { invoke } from "@explorer/store/init";
 import { clipboardStore, dataStore, selectionStore, viewDataStore } from "@explorer/store/data";
 import { requestQueue } from "@explorer/store/queue";
@@ -15,7 +15,7 @@ const writeClipboard = () => {
     return Boolean(isSelected);
   });
 
-  const clipboardEntries: { [filePath: string]: InspectDirectoryEntry } = {};
+  const clipboardEntries: { [filePath: string]: FileMetadata } = {};
 
   entriesToCopy.forEach((entry) => {
     clipboardEntries[entry.filePath] = { ...entry };
