@@ -153,9 +153,12 @@ type ActionInputProps = {
   placeholder?: string;
   readOnly?: boolean;
   value?: string;
+  /** 在非聚焦狀態下展示的格式化數值 */
   displayValue?: string;
   onChange?: (value: string) => void;
   onBlur?: () => void;
+  /** 當按下 Enter 鍵時觸發，注意，若設置了 blurOnEnter，則該事件不會被觸發 */
+  onEnter?: () => void;
   blurOnEnter?: boolean;
   tooltipPlacement?: TooltipPlacement;
 };
@@ -165,13 +168,19 @@ type ActionInputProps = {
  */
 const ActionInput = (props: ActionInputProps) => {
   const { actionIcon, actionName, actionDetail, actionShortcut, placeholder, value, readOnly } = props;
-  const { tooltipPlacement, displayValue, onChange, onBlur, blurOnEnter } = props;
+  const { tooltipPlacement, displayValue, onChange, onBlur, onEnter, blurOnEnter } = props;
 
   const [focus, setFocus] = useState(false);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" && blurOnEnter && !e.nativeEvent.isComposing) {
+    if (e.nativeEvent.isComposing) return; // 忽略正在輸入中文等複合字元時的按鍵事件
+
+    if (e.key !== "Enter") return;
+
+    if (blurOnEnter) {
       e.currentTarget.blur();
+    } else {
+      onEnter?.();
     }
   };
 
@@ -190,7 +199,7 @@ const ActionInput = (props: ActionInputProps) => {
         className={actionInputClassName}
         startAdornment={actionIcon ? <i className={actionIcon} style={{ display: "block" }} /> : undefined}
         placeholder={placeholder}
-        value={focus ? value : displayValue ?? value}
+        value={focus ? value : (displayValue ?? value)}
         onChange={(e) => onChange?.(e.target.value)}
         sx={actionInputSx}
         readOnly={readOnly}

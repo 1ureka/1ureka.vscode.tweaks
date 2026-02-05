@@ -4,9 +4,10 @@ import { Box } from "@mui/material";
 import { Dialog } from "@explorer/components/Dialog";
 import { propertyDialogSx, propertyDialogClassName, rowHeight } from "@explorer/layout-dialog/config";
 import { ActionButton, ActionGroup, ActionInput } from "@explorer/components/Action";
-import { selectionStore, viewDataStore } from "@explorer/store/data";
+import { useLastSelectedItem } from "@explorer/layout-dialog/hooks";
 import { directorySizeInfoCache, fileAttributesCache, fileAvailabilityCache } from "@explorer/store/cache";
 import { writeSystemClipboard } from "@explorer/action/clipboard";
+import { ImageDetailProps, isImageFile } from "@explorer/layout-dialog/ImageDetail";
 
 import type { FileMetadata } from "@/feature-explorer/types";
 import { formatFileSize, formatFileType, formatFixedLengthDateTime } from "@/utils/shared/formatter";
@@ -24,17 +25,6 @@ const assignIcon = (entry: FileMetadata) => {
   const extension = fileName.includes(".") ? fileName.split(".").pop() || "" : "";
 
   return extensionIconMap[extension] ?? icon;
-};
-
-/**
- * 取得最後一個被選取的項目
- */
-const useLastSelectedItem = () => {
-  const lastSelectedIndex = selectionStore((state) => state.lastSelectedIndex);
-  const rows = viewDataStore((state) => state.entries);
-  const selectedItem = lastSelectedIndex !== null ? rows[lastSelectedIndex] : null;
-
-  return selectedItem;
 };
 
 // ---------------------------------------------------------------------------------
@@ -181,6 +171,11 @@ const PropertyDialog = memo(({ open, onClose }: { open: boolean; onClose: () => 
   if (selectedItem.fileType === "file") type = "file";
   if (selectedItem.fileType === "folder") type = "dir";
 
+  let isImage = false;
+  if (type === "file") {
+    isImage = isImageFile(selectedItem.fileName);
+  }
+
   return (
     <Dialog open={open} onClose={onClose}>
       <Box sx={propertyDialogSx}>
@@ -235,6 +230,7 @@ const PropertyDialog = memo(({ open, onClose }: { open: boolean; onClose: () => 
         {type !== "other" && <hr className={className.divider} />}
 
         {type === "file" && <FileProps />}
+        {isImage && <ImageDetailProps />}
         {type === "dir" && <DirProps />}
       </Box>
 

@@ -102,7 +102,10 @@ const navigateToImages = async ({ dirPath }: { dirPath: string }) => {
  */
 const navigateGotoFolder = () => {
   const { mode } = dataStore.getState();
-  const { destPath } = navigationStore.getState();
+  const { currentPath, destPath } = navigationStore.getState();
+
+  if (destPath === currentPath) return; // 目標路徑和當前路徑相同，不需要切換
+  // 補充，切換模式不是該函式的責任，因此只需判斷路徑是否相同即可
 
   if (mode === "directory") {
     return navigateToFolder({ dirPath: destPath });

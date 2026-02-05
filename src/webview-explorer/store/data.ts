@@ -59,6 +59,7 @@ type AppState = {
 
 type NavigationState = {
   currentPath: string;
+  /** 使用者在輸入框打的暫存目標路徑 */
   destPath: string;
   pathHeatmap: Map<string, number>;
   recentlyVisitedPaths: string[];
