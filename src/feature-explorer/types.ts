@@ -51,4 +51,13 @@ type ReadImagesResult = Prettify<
  */
 type ReadResourceResult = OneOf<[ReadDirectoryResult, ReadImagesResult]>;
 
-export type { ReadResourceResult, FileMetadata };
+/**
+ * 讀取目錄內容的參數型別
+ */
+type ReadDirectoryParams = {
+  dirPath: string;
+  depthOffset?: number;
+  selectedPaths?: string[]; // 預設選取的路徑
+};
+
+export type { ReadDirectoryParams, ReadResourceResult, FileMetadata };

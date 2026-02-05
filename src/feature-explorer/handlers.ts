@@ -8,18 +8,9 @@ import { isRootDirectory, pathToArray, toParentPath, shortenPath } from "@/utils
 import { openImages } from "@/utils/host/image";
 
 import type { WithProgress } from "@/utils/shared/type";
-import type { ReadResourceResult } from "@/feature-explorer/types";
+import type { ReadDirectoryParams, ReadResourceResult } from "@/feature-explorer/types";
 
 // ---------------------------------------------------------------------------------
-
-/**
- * 讀取目錄內容的參數型別
- */
-type ReadDirectoryParams = {
-  dirPath: string;
-  depthOffset?: number;
-  selectedPaths?: string[]; // 預設選取的路徑
-};
 
 /**
  * 處理初始資料注入
@@ -41,7 +32,7 @@ const handleInitialData = (params: Pick<ReadDirectoryParams, "dirPath">): ReadRe
  */
 const handleReadDirectory = async (params: ReadDirectoryParams): Promise<ReadResourceResult> => {
   const { dirPath, depthOffset = 0, selectedPaths = [] } = params;
-  const selected = new Set(selectedPaths);
+  const selected = new Set(selectedPaths.map(resolvePath));
 
   const currentPath = resolvePath(toParentPath(dirPath, depthOffset));
   const shortenedPath = shortenPath(currentPath, 40);
@@ -61,7 +52,7 @@ const handleReadDirectory = async (params: ReadDirectoryParams): Promise<ReadRes
     if (entry.fileType === "folder") counts.folderCount++;
     else if (entry.fileType === "file") counts.fileCount++;
 
-    if (selected.has(entry.filePath)) {
+    if (selected.has(resolvePath(entry.filePath))) {
       return { ...entry, defaultSelected: true };
     } else {
       return entry;
@@ -121,7 +112,7 @@ async function handleCreateFile(params: {
 
   openFile?.(filePath);
 
-  return handleReadDirectory({ dirPath });
+  return handleReadDirectory({ dirPath, selectedPaths: [filePath] });
 }
 
 /**
@@ -136,7 +127,7 @@ const handleCreateDir = async (params: { dirPath: string; folderName: string; sh
     return null;
   }
 
-  return handleReadDirectory({ dirPath });
+  return handleReadDirectory({ dirPath, selectedPaths: [path.join(dirPath, folderName)] });
 };
 
 // ----------------------------------------------------------------------------
