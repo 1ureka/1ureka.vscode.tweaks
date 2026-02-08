@@ -101,20 +101,6 @@ function runPowerShell(command: string, stdinData?: string): Promise<string> {
 
 // --- 腳本定義 (Scripts) ---------------------------------------------------------------------
 
-const copyImagePowerShellScript = `
-Add-Type -AssemblyName System.Convert
-Add-Type -AssemblyName System.IO.MemoryStream
-Add-Type -AssemblyName System.Windows.Forms
-Add-Type -AssemblyName System.Drawing
-$base64 = [Console]::In.ReadToEnd()
-$bytes = [System.Convert]::FromBase64String($base64)
-$ms = New-Object System.IO.MemoryStream($bytes, 0, $bytes.Length)
-$img = [System.Drawing.Image]::FromStream($ms)
-[System.Windows.Forms.Clipboard]::SetImage($img)
-$img.Dispose()
-$ms.Dispose()
-`;
-
 const listSystemFoldersScript = `
 $shell = New-Object -ComObject Shell.Application
 $res = @()
@@ -219,14 +205,6 @@ try {
 `;
 
 // --- 導出的 API (Exported APIs) ------------------------------------------------------------
-
-/**
- * 將圖片 Base64 字串複製到系統剪貼簿
- * @param base64 純 Base64 字串 (不含 data:image/... 前綴)
- */
-export async function copyImageBinaryToSystem(base64: string): Promise<void> {
-  await runPowerShell(copyImagePowerShellScript, base64);
-}
 
 /**
  * 列出系統關鍵資料夾（包含本機硬碟與 OneDrive）
