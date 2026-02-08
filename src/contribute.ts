@@ -47,13 +47,6 @@ type SubmenuEntry = {
 type CommandPaletteEntries = CommandEntry[];
 type ContextMenuEntries = OneOf<[CommandEntry, SubmenuEntry]>[];
 
-type CustomEditor = {
-  viewType: string;
-  displayName: string;
-  selector: Array<{ filenamePattern: string }>;
-  priority: "default" | "option";
-};
-
 // ============================================================================
 // Configuration Entries
 // ============================================================================
@@ -134,15 +127,6 @@ const configuration: { title: string; properties: Record<ConfigId, any> } = {
     },
   },
 };
-
-const customEditors: CustomEditor[] = [
-  {
-    viewType: "1ureka.imageViewer",
-    displayName: "圖片檢視器",
-    selector: [{ filenamePattern: "*.{jpg,jpeg,png,gif,bmp,webp,tiff,tif}" }],
-    priority: "default",
-  },
-];
 
 // ============================================================================
 // Generate Contribute Function
@@ -282,5 +266,5 @@ export function generateContribute() {
     ...submenuMenus,
   };
 
-  return { commands, customEditors, menus, submenus, configuration };
+  return { commands, menus, submenus, configuration };
 }

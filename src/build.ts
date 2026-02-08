@@ -87,7 +87,7 @@ async function packageExtension() {
     const vsceProcess = spawn(
       "npx",
       ["vsce", "package", "--out", ".", "--allow-missing-repository", "--skip-license"],
-      { stdio: "inherit", shell: true }
+      { stdio: "inherit", shell: true },
     );
 
     vsceProcess.on("close", (code) => {
@@ -127,11 +127,6 @@ async function main() {
         srcPath: "src/webview-explorer/index.tsx",
         outPath: "dist/webviews/explorer.js",
         alias: { "@explorer": "./src/webview-explorer" },
-      },
-      {
-        srcPath: "src/webview-viewer/index.tsx",
-        outPath: "dist/webviews/imageViewer.js",
-        alias: { "@viewer": "./src/webview-viewer" },
       },
     ] as const;
 

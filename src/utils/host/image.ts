@@ -153,50 +153,5 @@ async function generateThumbnail(filePath: string): Promise<string | null> {
   }
 }
 
-/**
- * 給定一個檔案路徑(假設已經確認是圖片)，產生指定格式的縮圖 base64 字串
- */
-async function generateBase64(filePath: string, format: "png" | "jpeg" | "webp" = "png") {
-  const metadata = await openImage(filePath);
-  if (!metadata) return null;
-  const image = sharp(filePath);
-  return sharpToBase64(image, format);
-}
-
-/**
- * 支援的導出格式
- */
-type ExportFormat = "png" | "jpeg" | "webp" | "webp-lossless";
-
-/**
- * 執行圖片轉換與導出
- */
-async function exportImage(params: {
-  sourcePath: string;
-  savePath: string;
-  format: ExportFormat;
-  report: (params: { message: string; increment: number }) => void;
-}) {
-  const { report, sourcePath, savePath, format } = params;
-
-  report({ message: "讀取原始圖片...", increment: 0 });
-  let image = sharp(sourcePath);
-
-  report({ message: "轉換格式中...", increment: 30 });
-  if (format === "png") {
-    image = image.png();
-  } else if (format === "jpeg") {
-    image = image.jpeg();
-  } else if (format === "webp") {
-    image = image.webp();
-  } else if (format === "webp-lossless") {
-    image = image.webp({ lossless: true });
-  }
-
-  report({ message: "寫入檔案中...", increment: 60 });
-  await image.toFile(savePath);
-  report({ message: "完成", increment: 100 });
-}
-
-export { openImage, openImages, generateThumbnail, generateBase64, exportImage };
-export type { ImageMetadata, ExportFormat };
+export { openImage, openImages, generateThumbnail };
+export type { ImageMetadata };
