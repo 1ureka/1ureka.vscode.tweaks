@@ -1,24 +1,19 @@
 import * as vscode from "vscode";
-import FileMetadataDisplay from "@/feature-metadata";
-import CustomStylesPatch from "@/feature-styles";
-import GeneralTweaks from "@/feature-tweaks";
-import SystemExplorer from "@/feature-explorer";
+import FileMetadataDisplay from "@/metadata-display";
+import CustomStylesPatch from "@/custom-styles";
+import OpenFile from "@/open-file";
 
 /**
  * 擴展功能模組清單，包含所有需要啟動的功能
  */
-const features = [FileMetadataDisplay, CustomStylesPatch, GeneralTweaks, SystemExplorer];
+const features = [FileMetadataDisplay, CustomStylesPatch, OpenFile];
 
 /**
  * 擴展啟動函數，依序啟動所有功能模組
  */
 export function activate(context: vscode.ExtensionContext) {
   for (const feature of features) {
-    try {
-      feature.activate(context);
-    } catch (error) {
-      //TODO: 紀錄錯誤
-    }
+    feature.activate(context);
   }
 }
 
@@ -27,10 +22,6 @@ export function activate(context: vscode.ExtensionContext) {
  */
 export function deactivate() {
   for (const feature of features) {
-    try {
-      feature.deactivate?.();
-    } catch (error) {
-      // TODO: 紀錄錯誤
-    }
+    feature.deactivate?.();
   }
 }

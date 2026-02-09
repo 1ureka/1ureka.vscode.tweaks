@@ -50,7 +50,7 @@ jobs:
         shell: pwsh
         run: |
           $vsixFile = Get-ChildItem -Path "." -Filter "*.vsix" | Select-Object -First 1
-          $newName = "1ureka-vscode-extension-${{ github.event.inputs.version }}.vsix"
+          $newName = "1ureka-vscode-tweaks-${{ github.event.inputs.version }}.vsix"
           Rename-Item -Path $vsixFile.FullName -NewName $newName
           Write-Host "Renamed to: $newName"
 
@@ -59,6 +59,6 @@ jobs:
         with:
           tag_name: ${{ github.event.inputs.version }}
           name: "Release ${{ github.event.inputs.version }}"
-          files: "1ureka-vscode-extension-${{ github.event.inputs.version }}.vsix"
+          files: "1ureka-vscode-tweaks-${{ github.event.inputs.version }}.vsix"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
