@@ -11,7 +11,7 @@ async function buildExtension() {
     bundle: true,
     platform: "node",
     format: "esm",
-    external: ["sharp"],
+    external: ["sharp", "vscode"],
     outfile: "dist/extension.js",
     loader: { ".svg": "dataurl", ".css": "text" },
     minify: true,
