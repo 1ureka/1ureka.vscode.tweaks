@@ -10,7 +10,7 @@ const commonImportRestrictions = {
     },
     {
       group: ["../*", "./*"],
-      message: "請使用絕對路徑導入模組: @/ 代表 src 資料夾, @[feature]/ 代表 src/webview-*/ 資料夾。",
+      message: "請使用絕對路徑導入模組: @/ 代表 src 資料夾。",
     },
   ],
 };
@@ -41,7 +41,7 @@ export default defineConfig([
   // 特殊規則 - 禁止直接使用某些 API，必須透過 utils 中的輔助函數來使用
   {
     files: ["**/*.ts", "**/*.tsx"],
-    ignores: ["src/utils/vscode/**", "src/utils/message/**"],
+    ignores: ["src/vscode/**"],
     rules: {
       "no-restricted-syntax": [
         "error",

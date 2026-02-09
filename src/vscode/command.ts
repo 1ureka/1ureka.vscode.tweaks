@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import type { CommandId } from "@/contribute";
+import type { CommandId } from "@/vscode/type";
 
 /**
  * 提供註冊 VSCode 命令的管理器，自動管理其生命週期，先在 closure 中保存 context，這樣外部代碼無需每次都傳入 context

@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import type { ConfigId } from "@/contribute";
+import type { ConfigId } from "@/vscode/type";
 
 /**
  * 提供獲取配置的工具函數

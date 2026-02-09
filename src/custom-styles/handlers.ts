@@ -1,5 +1,5 @@
 import fs from "fs-extra";
-import { getBackupPath, locateWorkbenchHtml, modifyWorkbenchHtml } from "@/feature-styles/patcher";
+import { getBackupPath, locateWorkbenchHtml, modifyWorkbenchHtml } from "@/custom-styles/patcher";
 
 /**
  * 注入自訂樣式

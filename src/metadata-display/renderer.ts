@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
-import { formatDateCompact, formatDateFull, formatFileSize } from "@/utils/shared/formatter";
-import type { FileMetadata, ImageMetadata } from "@/feature-metadata/handlers";
+import { formatDateCompact, formatDateFull, formatFileSize } from "@/utils/formatter";
+import type { FileMetadata, ImageMetadata } from "@/metadata-display/handlers";
 
 /**
  * 為圖片檔案設定狀態列 UI
@@ -54,7 +54,7 @@ function renderFileMetadata(statusBarItem: vscode.StatusBarItem, info: FileMetad
   const paddingSymbol = "&nbsp;".repeat(2);
   statusBarItem.tooltip = new vscode.MarkdownString(
     `### \`${fileName}\`\n\n- **建立時間:** ${createdFull}${paddingSymbol}\n\n- **修改時間:** ${modifiedFull}` +
-      `\n\n- **檔案大小:** ${formattedFileSize}`
+      `\n\n- **檔案大小:** ${formattedFileSize}`,
   );
 
   statusBarItem.show();

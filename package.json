@@ -12,13 +12,74 @@
   "activationEvents": [
     "onStartupFinished"
   ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "1ureka.vscode.injectStyles",
+        "title": "注入自訂樣式"
+      },
+      {
+        "command": "1ureka.vscode.restoreStyles",
+        "title": "還原樣式設定"
+      },
+      {
+        "command": "1ureka.vscode.reinjectStyles",
+        "title": "還原並重新注入樣式"
+      },
+      {
+        "command": "1ureka.vscode.openWithSystemDefaultApp",
+        "title": "以預設應用程式開啟"
+      }
+    ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "1ureka.vscode.injectStyles"
+        },
+        {
+          "command": "1ureka.vscode.restoreStyles"
+        },
+        {
+          "command": "1ureka.vscode.reinjectStyles"
+        },
+        {
+          "command": "1ureka.vscode.openWithSystemDefaultApp",
+          "when": "false"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "1ureka.vscode.openWithSystemDefaultApp",
+          "when": "!explorerResourceIsFolder",
+          "group": "navigation@100"
+        }
+      ],
+      "editor/title/context": [
+        {
+          "command": "1ureka.vscode.openWithSystemDefaultApp",
+          "when": "resourceScheme == file",
+          "group": "navigation@100"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "1ureka's Extensions",
+      "properties": {
+        "1ureka.vscodeResourcePath": {
+          "type": "string",
+          "scope": "machine",
+          "default": "",
+          "markdownDescription": "設定 VSCode 資源目錄路徑,用於自訂樣式注入功能。\n\n範例: `C:/Users/YourName/AppData/Local/Programs/Microsoft VS Code/resources/app/out/vs`"
+        }
+      }
+    }
+  },
   "scripts": {
     "build": "tsx src/build.ts",
     "compile": "tsc --noEmit",
     "lint": "eslint ."
   },
   "dependencies": {
-    "@vscode/codicons": "^0.0.43",
     "sharp": "^0.34.5"
   },
   "devDependencies": {
@@ -28,6 +89,7 @@
     "@typescript-eslint/eslint-plugin": "^8.48.0",
     "@typescript-eslint/parser": "^8.48.0",
     "@vscode/vsce": "^3.7.0",
+    "dayjs": "^1.11.19",
     "esbuild": "^0.27.0",
     "eslint": "^9.39.1",
     "fs-extra": "^11.3.2",

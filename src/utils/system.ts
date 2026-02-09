@@ -1,6 +1,6 @@
 import open from "open";
 import * as path from "path";
-import { tryCatch } from "@/utils/shared";
+import { tryCatch } from "@/utils";
 
 /**
  * 允許開啟的副檔名白名單

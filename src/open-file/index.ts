@@ -1,12 +1,12 @@
 import * as vscode from "vscode";
-import type { ExtensionFeature } from "@/utils/vscode";
-import { createCommandManager } from "@/utils/vscode/command";
-import { openWithDefaultApp } from "@/utils/host/system";
+import type { ExtensionFeature } from "@/vscode";
+import { createCommandManager } from "@/vscode/command";
+import { openWithDefaultApp } from "@/utils/system";
 
 /**
- * 註冊使用系統預設應用程式開啟檔案的指令事件
+ * 啟動通用調整功能，註冊外部應用程式相關命令
  */
-function registerExternalAppCommands(context: vscode.ExtensionContext) {
+function activate(context: vscode.ExtensionContext) {
   const commandManager = createCommandManager(context);
 
   commandManager.register("1ureka.vscode.openWithSystemDefaultApp", (uri: vscode.Uri) => {
@@ -23,13 +23,6 @@ function registerExternalAppCommands(context: vscode.ExtensionContext) {
       },
     });
   });
-}
-
-/**
- * 啟動通用調整功能，註冊外部應用程式相關命令
- */
-function activate(context: vscode.ExtensionContext) {
-  registerExternalAppCommands(context);
 }
 
 /**

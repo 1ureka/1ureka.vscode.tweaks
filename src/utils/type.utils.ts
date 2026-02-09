@@ -1,14 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-declare global {
-  declare module "*.css" {
-    const value: string;
-    export default value;
-  }
-}
-
-// ------------------------------------------------------------------------------
-
 /**
  * 將型別展開成較易閱讀的形式
  */

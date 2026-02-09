@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
-import type { ExtensionFeature } from "@/utils/vscode";
-import { createStatusBarManager } from "@/feature-metadata/manager";
+import type { ExtensionFeature } from "@/vscode";
+import { createStatusBarManager } from "@/metadata-display/manager";
 
 /**
  * 啟動檔案元資料顯示功能，監聽 tab 變化事件

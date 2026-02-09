@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
-import { getMetadata } from "@/feature-metadata/handlers";
-import { renderFileMetadata, renderImageMetadata } from "@/feature-metadata/renderer";
+import { getMetadata } from "@/metadata-display/handlers";
+import { renderFileMetadata, renderImageMetadata } from "@/metadata-display/renderer";
 
 /**
  * 建立狀態列管理器，用於顯示檔案元資料
