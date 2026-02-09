@@ -1,5 +1,3 @@
-import { extensionTypeMap } from "@/assets/fileExtMap";
-
 /** 格式化日期為 "MM-DD HH:mm" */
 function formatDateCompact(date: Date): string {
   const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -84,81 +82,5 @@ function formatFileSize(size: number): string {
   return `${formattedValue} ${formattedUnit}`;
 }
 
-/** 產生錯誤報告訊息所需的參數 */
-type GenerateErrorParams = {
-  action: string; // 例如 "複製"、"移動"
-  itemCount: number; // 該次操作的項目總數
-  itemFailures: Record<string, string>; // { 項目名稱: 錯誤訊息 }
-  sideEffects: Record<string, { message: string; severity: "safe" | "high" }>; // { 範圍描述: 說明 }
-};
-
-/** 產生錯誤報告訊息 (Markdown 格式) */
-function generateErrorMessage({ action, itemCount, itemFailures, sideEffects }: GenerateErrorParams): string {
-  const failureCount = Object.keys(itemFailures).length;
-  const successCount = itemCount - failureCount;
-  const failureEntries = Object.entries(itemFailures);
-  const sideEffectEntries = Object.entries(sideEffects);
-
-  const now = new Date();
-  const formattedTime = now.toLocaleString();
-
-  const title = `# ${action} 操作中出現錯誤`;
-
-  const summary = [
-    "## 概要",
-    `- 操作類型：**${action}**`,
-    `- 產生時間：${formattedTime}`,
-    `- 總共嘗試操作項目：**${itemCount}**`,
-    `- 成功項目：**${successCount}**`,
-    `- 失敗項目：**${failureCount}**`,
-  ].join("\n");
-
-  const failureDetails = [
-    "## 發生錯誤的項目",
-    "",
-    "下列為每個失敗項目與對應錯誤訊息：",
-    "",
-    ...failureEntries.map(([itemName, msg]) => `- **${itemName}**: ${msg}`),
-  ].join("\n");
-
-  const getSideEffectMessage = ([scope, params]: (typeof sideEffectEntries)[number]) => {
-    const icon = params.severity === "high" ? "⚠" : "✓";
-    return `- ${icon} **${scope}**: ${params.message}`;
-  };
-
-  const sideEffectSection =
-    sideEffectEntries.length === 0
-      ? "## 影響範圍\n\n> 無顯著副作用或影響範圍。\n"
-      : ["## 影響範圍", "", "下列為此操作可能造成的影響：", "", ...sideEffectEntries.map(getSideEffectMessage)].join(
-          "\n"
-        );
-
-  return [title, summary, failureDetails, sideEffectSection].join("\n\n---\n\n");
-}
-
-/** 粗略檔案類型標籤對應表 (fallback) */
-const fileTypeLabels: Record<string, string> = {
-  file: "檔案",
-  folder: "資料夾",
-  "file-symlink-file": "符號連結檔案",
-  "file-symlink-directory": "符號連結資料夾",
-};
-
-/** 格式化為可讀的檔案類型名稱 */
-const formatFileType = (params: { fileName: string; fileType: string }): string => {
-  let label = fileTypeLabels[params.fileType] || "未知類型";
-
-  if (params.fileType !== "file") return label;
-
-  const fileName = params.fileName.toLowerCase();
-  const extension = fileName.includes(".") ? fileName.split(".").pop() || "" : "";
-
-  if (extension in extensionTypeMap) {
-    label = extensionTypeMap[extension];
-  }
-
-  return label;
-};
-
 export { formatFixedLengthDateTime, formatRelativeTime };
-export { formatDateCompact, formatDateFull, formatFileSize, formatFileType, generateErrorMessage };
+export { formatDateCompact, formatDateFull, formatFileSize };

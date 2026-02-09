@@ -27,26 +27,6 @@ async function buildExtension() {
 }
 
 /**
- * 編譯 Webview 前端程式
- */
-async function buildWebview(params: { srcPath: string; outPath: string; alias: Record<string, string> }) {
-  const { srcPath, outPath, alias } = params;
-
-  await build({
-    entryPoints: [srcPath],
-    bundle: true,
-    platform: "browser",
-    format: "iife",
-    outfile: outPath,
-    jsx: "automatic",
-    minify: true,
-    alias: { "@": "./src", ...alias },
-  });
-
-  console.log(`✓ Built WebView bundle: ${path.basename(outPath)}`);
-}
-
-/**
  * 備份 package.json 並注入動態生成的貢獻點設定
  */
 async function backupAndInjectContribute() {
@@ -121,18 +101,6 @@ async function main() {
 
   try {
     await buildExtension();
-
-    const webviewBuilds = [
-      {
-        srcPath: "src/webview-explorer/index.tsx",
-        outPath: "dist/webviews/explorer.js",
-        alias: { "@explorer": "./src/webview-explorer" },
-      },
-    ] as const;
-
-    for (const buildParams of webviewBuilds) {
-      await buildWebview(buildParams);
-    }
   } catch (error) {
     console.error("✗ Bundle compilation failed:", error);
     process.exit(1);

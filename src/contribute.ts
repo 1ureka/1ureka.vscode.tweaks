@@ -5,16 +5,10 @@ import type { OneOf } from "@/utils/shared/type";
 // ============================================================================
 
 type CommandId =
-  | "1ureka.main.openNavigation"
-  | "1ureka.explorer.openFromPath"
-  | "1ureka.explorer.openFromDialog"
-  | "1ureka.explorer.openFromFile"
   | "1ureka.vscode.openWithSystemDefaultApp"
   | "1ureka.vscode.injectStyles"
   | "1ureka.vscode.restoreStyles"
   | "1ureka.vscode.reinjectStyles";
-
-type WebviewId = "1ureka.imageViewer" | "1ureka.explorer";
 
 type ConfigPrefix = "1ureka";
 
@@ -22,7 +16,7 @@ type ConfigKey = "vscodeResourcePath";
 
 type ConfigId = `${ConfigPrefix}.${ConfigKey}`;
 
-export type { CommandId, WebviewId, ConfigId };
+export type { CommandId, ConfigId };
 
 // ============================================================================
 // Type Definitions
@@ -52,30 +46,9 @@ type ContextMenuEntries = OneOf<[CommandEntry, SubmenuEntry]>[];
 // ============================================================================
 
 const commandPaletteEntries: CommandPaletteEntries = [
-  { id: "1ureka.explorer.openFromDialog", title: "開啟系統瀏覽器", icon: "$(folder-library)" },
   { id: "1ureka.vscode.injectStyles", title: "注入自訂樣式" },
   { id: "1ureka.vscode.restoreStyles", title: "還原樣式設定" },
   { id: "1ureka.vscode.reinjectStyles", title: "還原並重新注入樣式" },
-];
-
-const explorerTitleMenuEntries: ContextMenuEntries = [
-  {
-    id: "1ureka.main.openNavigation",
-    title: "1ureka 的擴展插件",
-    when: "view == workbench.explorer.fileView",
-    group: "navigation",
-    icon: "$(sparkle)",
-  },
-];
-
-const editorTitleMenuEntries: ContextMenuEntries = [
-  {
-    id: "1ureka.main.openNavigation",
-    title: "1ureka 的擴展插件",
-    when: "true",
-    group: "navigation",
-    icon: "$(sparkle)",
-  },
 ];
 
 const explorerContextMenuEntries: ContextMenuEntries = [
@@ -85,30 +58,12 @@ const explorerContextMenuEntries: ContextMenuEntries = [
     when: "!explorerResourceIsFolder",
     group: "navigation@100",
   },
-  {
-    id: "1ureka.explorer.openFromPath",
-    title: "在系統瀏覽器中顯示",
-    when: "explorerResourceIsFolder",
-    group: "navigation@100",
-  },
-  {
-    id: "1ureka.explorer.openFromFile",
-    title: "在系統瀏覽器中顯示",
-    when: "!explorerResourceIsFolder",
-    group: "navigation@100",
-  },
 ];
 
 const editorTitleContextMenuEntries: ContextMenuEntries = [
   {
     id: "1ureka.vscode.openWithSystemDefaultApp",
     title: "以預設應用程式開啟",
-    when: "resourceScheme == file",
-    group: "navigation@100",
-  },
-  {
-    id: "1ureka.explorer.openFromFile",
-    title: "在系統瀏覽器中顯示",
     when: "resourceScheme == file",
     group: "navigation@100",
   },
@@ -200,9 +155,7 @@ export function generateContribute() {
 
   // 收集來自各個來源的命令和子選單
   extract(commandPaletteEntries);
-  extract(explorerTitleMenuEntries);
   extract(explorerContextMenuEntries);
-  extract(editorTitleMenuEntries);
   extract(editorTitleContextMenuEntries);
 
   // ---------------------------------------------------------------------------
@@ -249,8 +202,6 @@ export function generateContribute() {
   const commands = generateCommandsRegistration();
   const commandPaletteMenu = generateCommandPaletteRegistration(commandPaletteEntries);
   const explorerContextMenu = generateMenuRegistration(explorerContextMenuEntries);
-  const explorerTitleMenu = generateMenuRegistration(explorerTitleMenuEntries);
-  const editorTitleMenu = generateMenuRegistration(editorTitleMenuEntries);
   const editorTitleContextMenu = generateMenuRegistration(editorTitleContextMenuEntries);
 
   // ---------------------------------------------------------------------------
@@ -261,8 +212,6 @@ export function generateContribute() {
     commandPalette: commandPaletteMenu,
     "explorer/context": explorerContextMenu,
     "editor/title/context": editorTitleContextMenu,
-    "view/title": explorerTitleMenu,
-    "editor/title": editorTitleMenu,
     ...submenuMenus,
   };
 

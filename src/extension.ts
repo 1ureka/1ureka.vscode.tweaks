@@ -2,12 +2,11 @@ import * as vscode from "vscode";
 import FileMetadataDisplay from "@/feature-metadata";
 import CustomStylesPatch from "@/feature-styles";
 import GeneralTweaks from "@/feature-tweaks";
-import SystemExplorer from "@/feature-explorer";
 
 /**
  * 擴展功能模組清單，包含所有需要啟動的功能
  */
-const features = [FileMetadataDisplay, CustomStylesPatch, GeneralTweaks, SystemExplorer];
+const features = [FileMetadataDisplay, CustomStylesPatch, GeneralTweaks];
 
 /**
  * 擴展啟動函數，依序啟動所有功能模組

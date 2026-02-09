@@ -2,18 +2,6 @@ import * as vscode from "vscode";
 import type { ExtensionFeature } from "@/utils/vscode";
 import { createCommandManager } from "@/utils/vscode/command";
 import { openWithDefaultApp } from "@/utils/host/system";
-import { openNavigationMenu } from "@/feature-tweaks/navigation";
-
-/**
- * 註冊主導航相關命令事件
- */
-function registerNavigationCommands(context: vscode.ExtensionContext) {
-  const commandManager = createCommandManager(context);
-
-  commandManager.register("1ureka.main.openNavigation", () => {
-    openNavigationMenu();
-  });
-}
 
 /**
  * 註冊使用系統預設應用程式開啟檔案的指令事件
@@ -38,11 +26,10 @@ function registerExternalAppCommands(context: vscode.ExtensionContext) {
 }
 
 /**
- * 啟動通用調整功能，註冊導航和外部應用程式相關命令
+ * 啟動通用調整功能，註冊外部應用程式相關命令
  */
 function activate(context: vscode.ExtensionContext) {
   registerExternalAppCommands(context);
-  registerNavigationCommands(context);
 }
 
 /**

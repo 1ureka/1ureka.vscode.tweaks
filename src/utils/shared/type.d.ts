@@ -1,52 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import type {} from "@mui/material/styles";
-
-declare module "@mui/material/styles" {
-  interface TypeBackground {
-    default: string;
-    paper: string;
-    content: string;
-    input: string;
-  }
-  interface TypeAction {
-    button: string;
-    dropdown: string;
-    active: string;
-    border: string;
-  }
-  interface Palette {
-    tooltip: {
-      background: string;
-      border: string;
-    };
-  }
-  interface PaletteOptions {
-    tooltip: {
-      background: string;
-      border: string;
-    };
-  }
-}
-
 declare global {
-  declare module "*.svg" {
-    const value: string;
-    export default value;
-  }
-
   declare module "*.css" {
     const value: string;
     export default value;
-  }
-
-  function acquireVsCodeApi(): {
-    postMessage: (message: any) => void;
-  };
-
-  class EyeDropper {
-    constructor();
-    open(): Promise<{ sRGBHex: string }>;
   }
 }
 
@@ -69,7 +26,7 @@ type OnlyFirst<F, S> = F & { [Key in keyof Omit<S, keyof F>]?: never };
  */
 type OneOf<TypesArray extends any[], Res = never, AllProps = MergeTypes<TypesArray>> = TypesArray extends [
   infer Head,
-  ...infer Rem
+  ...infer Rem,
 ]
   ? OneOf<Rem, Res | OnlyFirst<Head, AllProps>, AllProps>
   : Prettify<Res>;
@@ -90,7 +47,7 @@ type Promised<T extends (...args: any) => any> = Promise<Awaited<ReturnType<T>>>
  */
 type WithProgress = <T>(
   taskName: string,
-  taskFn: (report: (params: { increment: number; message?: string }) => void) => Promise<T>
+  taskFn: (report: (params: { increment: number; message?: string }) => void) => Promise<T>,
 ) => Promise<T>;
 
 export type { Prettify, OneOf, Promised, WithProgress };

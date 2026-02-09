@@ -15,7 +15,6 @@
     "paths": {
       "@/*": ["src/*"],
       "@explorer/*": ["src/webview-explorer/*"],
-      "@viewer/*": ["src/webview-viewer/*"],
       "@tests/*": ["tests/*"]
     }
   },
