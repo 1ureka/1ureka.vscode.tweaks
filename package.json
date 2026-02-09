@@ -3,7 +3,7 @@
   "displayName": "1ureka 的 VS Code QOL 套件",
   "author": "1ureka",
   "publisher": "1ureka",
-  "description": "一個用於改善 VS Code QOL 的個人擴展套件",
+  "description": "一個用於改善 VS Code 使用體驗的個人擴充套件",
   "version": "1.0.0",
   "main": "./dist/extension.js",
   "type": "module",
