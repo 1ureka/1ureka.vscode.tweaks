@@ -87,18 +87,15 @@
     "@types/fs-extra": "^11.0.4",
     "@types/node": "^22.19.1",
     "@types/vscode": "^1.106.1",
-    "@typescript-eslint/eslint-plugin": "^8.56.0",
-    "@typescript-eslint/parser": "^8.56.0",
+    "@typescript-eslint/eslint-plugin": "^8.56.1",
+    "@typescript-eslint/parser": "^8.56.1",
     "dayjs": "^1.11.19",
-    "esbuild": "^0.27.0",
-    "eslint": "^10.0.1",
+    "esbuild": "^0.27.3",
+    "eslint": "^10.0.2",
     "fs-extra": "^11.3.2",
-    "node-html-parser": "^7.0.1",
+    "node-html-parser": "^7.0.2",
     "open": "^11.0.0",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3"
-  },
-  "overrides": {
-    "minimatch": "^10.2.2"
   }
 }
