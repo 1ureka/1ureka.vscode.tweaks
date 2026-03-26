@@ -28,7 +28,8 @@
   max-width: none !important;
 }
 
-.command-center-center {
+.command-center-center,
+.agent-status-container {
   width: auto !important;
 }
 
