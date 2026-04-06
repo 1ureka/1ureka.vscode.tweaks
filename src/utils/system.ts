@@ -2,10 +2,12 @@ import open from "open";
 import * as path from "path";
 import { tryCatch } from "@/utils";
 
+import { getAllExtensions } from "@/file-intercept/provider";
+
 /**
  * 允許開啟的副檔名白名單
  */
-const AllowedFiles = [".blend", ".spp", ".html"];
+const AllowedFiles = [".blend", ".spp", ".html", ...getAllExtensions()];
 
 /**
  * 使用系統預設應用打開指定檔案

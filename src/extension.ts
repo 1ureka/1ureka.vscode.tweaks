@@ -2,11 +2,12 @@ import * as vscode from "vscode";
 import FileMetadataDisplay from "@/metadata-display";
 import CustomStylesPatch from "@/custom-styles";
 import OpenFile from "@/open-file";
+import FileIntercept from "@/file-intercept";
 
 /**
  * 擴展功能模組清單，包含所有需要啟動的功能
  */
-const features = [FileMetadataDisplay, CustomStylesPatch, OpenFile];
+const features = [FileMetadataDisplay, CustomStylesPatch, OpenFile, FileIntercept];
 
 /**
  * 擴展啟動函數，依序啟動所有功能模組
