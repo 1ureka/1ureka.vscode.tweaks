@@ -13,7 +13,7 @@ async function buildExtension() {
     format: "esm",
     external: ["sharp", "vscode"],
     outfile: "dist/extension.js",
-    loader: { ".svg": "dataurl", ".css": "text" },
+    loader: { ".svg": "text", ".css": "text" },
     minify: true,
     alias: { "@": "./src" },
     banner: {
