@@ -4,7 +4,7 @@
   "author": "1ureka",
   "publisher": "1ureka",
   "description": "一個用於改善 VS Code 使用體驗的個人擴充套件",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "main": "./dist/extension.js",
   "type": "module",
   "engines": {
@@ -109,7 +109,7 @@
   },
   "devDependencies": {
     "@types/fs-extra": "^11.0.4",
-    "@types/node": "^22.19.1",
+    "@types/node": "^25.6.0",
     "@types/vscode": "^1.106.1",
     "@typescript-eslint/eslint-plugin": "^8.56.1",
     "@typescript-eslint/parser": "^8.56.1",
