@@ -68,21 +68,51 @@
         "viewType": "1ureka.vscode.fileIntercept",
         "displayName": "檔案攔截預覽",
         "selector": [
-          { "filenamePattern": "*.pdf" },
-          { "filenamePattern": "*.mp4" },
-          { "filenamePattern": "*.avi" },
-          { "filenamePattern": "*.mkv" },
-          { "filenamePattern": "*.mov" },
-          { "filenamePattern": "*.wmv" },
-          { "filenamePattern": "*.flv" },
-          { "filenamePattern": "*.webm" },
-          { "filenamePattern": "*.mp3" },
-          { "filenamePattern": "*.wav" },
-          { "filenamePattern": "*.flac" },
-          { "filenamePattern": "*.aac" },
-          { "filenamePattern": "*.ogg" },
-          { "filenamePattern": "*.wma" },
-          { "filenamePattern": "*.m4a" }
+          {
+            "filenamePattern": "*.pdf"
+          },
+          {
+            "filenamePattern": "*.mp4"
+          },
+          {
+            "filenamePattern": "*.avi"
+          },
+          {
+            "filenamePattern": "*.mkv"
+          },
+          {
+            "filenamePattern": "*.mov"
+          },
+          {
+            "filenamePattern": "*.wmv"
+          },
+          {
+            "filenamePattern": "*.flv"
+          },
+          {
+            "filenamePattern": "*.webm"
+          },
+          {
+            "filenamePattern": "*.mp3"
+          },
+          {
+            "filenamePattern": "*.wav"
+          },
+          {
+            "filenamePattern": "*.flac"
+          },
+          {
+            "filenamePattern": "*.aac"
+          },
+          {
+            "filenamePattern": "*.ogg"
+          },
+          {
+            "filenamePattern": "*.wma"
+          },
+          {
+            "filenamePattern": "*.m4a"
+          }
         ],
         "priority": "default"
       }
@@ -102,7 +132,7 @@
   "scripts": {
     "build": "tsx src/build.ts",
     "compile": "tsc --noEmit",
-    "lint": "eslint ."
+    "lint": "oxlint ."
   },
   "dependencies": {
     "sharp": "^0.34.5"
@@ -111,14 +141,12 @@
     "@types/fs-extra": "^11.0.4",
     "@types/node": "^25.6.0",
     "@types/vscode": "^1.106.1",
-    "@typescript-eslint/eslint-plugin": "^8.56.1",
-    "@typescript-eslint/parser": "^8.56.1",
-    "dayjs": "^1.11.19",
-    "esbuild": "^0.27.3",
-    "eslint": "^10.0.2",
-    "fs-extra": "^11.3.2",
-    "node-html-parser": "^7.0.2",
+    "dayjs": "^1.11.20",
+    "esbuild": "^0.28.0",
+    "fs-extra": "^11.3.4",
+    "node-html-parser": "^7.1.0",
     "open": "^11.0.0",
+    "oxlint": "^1.59.0",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3"
   }
