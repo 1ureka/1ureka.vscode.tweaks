@@ -4,7 +4,7 @@
   "author": "1ureka",
   "publisher": "1ureka",
   "description": "一個用於改善 VS Code 使用體驗的個人擴充套件",
-  "version": "1.0.4",
+  "version": "1.1.0",
   "main": "./dist/extension.js",
   "type": "module",
   "engines": {
