@@ -1,10 +1,14 @@
 import fs from "fs-extra";
-import { getBackupPath, locateWorkbenchHtml, modifyWorkbenchHtml } from "@/custom-styles/patcher";
+import { getBackupPath } from "@/custom-styles/patcher";
+import { locateWorkbenchHtml, modifyWorkbenchHtml } from "@/custom-styles/patcher";
+import { locateMarkdownCss, modifyMarkdownCss } from "@/custom-styles/patcher";
 
 /**
  * 注入自訂樣式
  */
 function injectStyles() {
+  // --- Workbench HTML ---
+
   const { success: successLocate, message: locateHtmlMessage } = locateWorkbenchHtml();
   if (!successLocate) {
     return { success: false, message: locateHtmlMessage };
@@ -26,35 +30,72 @@ function injectStyles() {
 
   const modifiedContent = modifyHtmlMessage;
 
-  fs.writeFileSync(backupPath, htmlContent, "utf-8"); // 備份原始檔案
+  // --- Markdown CSS ---
+
+  const { success: successLocateMd, message: locateMdMessage } = locateMarkdownCss();
+  if (!successLocateMd) {
+    return { success: false, message: locateMdMessage };
+  }
+
+  const mdCssPath = locateMdMessage;
+  const mdBackupPath = getBackupPath(mdCssPath);
+
+  if (fs.existsSync(mdBackupPath)) {
+    return { success: false, message: "markdown.css 已經存在備份檔案，請先還原樣式後再進行注入。" };
+  }
+
+  const mdCssContent = fs.readFileSync(mdCssPath, "utf-8");
+  const { message: modifiedMarkdownCss } = modifyMarkdownCss();
+
+  // ---
+
+  fs.writeFileSync(backupPath, htmlContent, "utf-8");
   fs.writeFileSync(htmlPath, modifiedContent, "utf-8");
+  fs.writeFileSync(mdBackupPath, mdCssContent, "utf-8");
+  fs.writeFileSync(mdCssPath, modifiedMarkdownCss, "utf-8");
 
   return { success: true, message: "自訂樣式注入成功。" };
 }
 
 /**
- * 還原備份的 workbench HTML 檔案
+ * 還原備份的 workbench HTML 及 markdown CSS 檔案
  */
 function restoreStyles() {
-  const { success, message } = locateWorkbenchHtml();
-  if (!success) return { success: false, message };
+  const locateHtml = locateWorkbenchHtml();
+  if (!locateHtml.success) return { success: false, message: locateHtml.message };
 
-  const htmlPath = message;
-
+  const htmlPath = locateHtml.message;
   const backupPath = getBackupPath(htmlPath);
   if (!fs.existsSync(backupPath)) {
-    return { success: false, message: "找不到備份檔案，無法還原。" };
+    return { success: false, message: "找不到 workbench HTML 的備份檔案，無法還原。" };
   }
 
   try {
     const backupContent = fs.readFileSync(backupPath, "utf-8");
     fs.writeFileSync(htmlPath, backupContent, "utf-8");
-    fs.unlinkSync(backupPath); // 刪除備份檔案
-
-    return { success: true, message: "還原 workbench HTML 成功。" };
+    fs.unlinkSync(backupPath);
   } catch (error) {
-    return { success: false, message: `還原 workbench HTML 失敗: ${error}` };
+    return { success: false, message: `還原樣式失敗: ${error}` };
   }
+
+  const locateMd = locateMarkdownCss();
+  if (!locateMd.success) return { success: false, message: locateMd.message };
+
+  const mdCssPath = locateMd.message;
+  const mdBackupPath = getBackupPath(mdCssPath);
+  if (!fs.existsSync(mdBackupPath)) {
+    return { success: true, message: `已還原 workbench HTML ，跳過無備份的 markdown.css 。` };
+  }
+
+  try {
+    const mdBackupContent = fs.readFileSync(mdBackupPath, "utf-8");
+    fs.writeFileSync(mdCssPath, mdBackupContent, "utf-8");
+    fs.unlinkSync(mdBackupPath);
+  } catch (error) {
+    return { success: false, message: `還原樣式失敗: ${error}` };
+  }
+
+  return { success: true, message: "已還原 workbench HTML 及 markdown.css 。" };
 }
 
 /**

@@ -1,7 +1,9 @@
 import fs from "fs-extra";
 import * as path from "path";
-import customStyle from "@/assets/customStyle.css";
 import { parse as parseHtml } from "node-html-parser";
+
+import customStyle from "@/assets/customStyle.css";
+import markdownStyle from "@/assets/markdownStyle.css";
 import { getConfig } from "@/vscode/config";
 
 /**
@@ -89,10 +91,46 @@ function modifyWorkbenchHtml(htmlContent: string) {
 }
 
 /**
+ * 定位 VSCode markdown 預覽的 CSS 檔案路徑，成功時回傳找到的路徑
+ */
+function locateMarkdownCss() {
+  const resourceDir = getConfig("1ureka.vscodeResourcePath");
+  if (!resourceDir) {
+    return { success: false, message: "請先在設定中指定 VSCode 資源目錄路徑，以啟用自訂樣式功能。" };
+  }
+
+  // resourceDir: .../resources/app/out/vs
+  // markdown.css: .../resources/app/extensions/markdown-language-features/media/markdown.css
+  const markdownCssPath = path.resolve(
+    resourceDir,
+    "..",
+    "..",
+    "extensions",
+    "markdown-language-features",
+    "media",
+    "markdown.css",
+  );
+
+  if (fs.existsSync(markdownCssPath)) {
+    return { success: true, message: markdownCssPath };
+  }
+
+  return { success: false, message: "無法找到 markdown.css，請確認所設定的資源目錄路徑是否正確。" };
+}
+
+/**
+ * 修改 markdown 預覽的 CSS，回傳修改結果
+ */
+function modifyMarkdownCss() {
+  // 該修改不需要管原始內容
+  return { success: true, message: markdownStyle };
+}
+
+/**
  * 取得備份檔案路徑
  */
 function getBackupPath(htmlPath: string) {
   return htmlPath + ".bak";
 }
 
-export { locateWorkbenchHtml, modifyWorkbenchHtml, getBackupPath };
+export { locateWorkbenchHtml, modifyWorkbenchHtml, getBackupPath, locateMarkdownCss, modifyMarkdownCss };
